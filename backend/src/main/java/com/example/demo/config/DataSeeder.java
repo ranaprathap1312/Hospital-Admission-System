@@ -23,7 +23,7 @@ public class DataSeeder implements CommandLineRunner {
             Admin defaultAdmin = new Admin();
             defaultAdmin.setName("System Administrator");
             defaultAdmin.setEmail("ranaprathap13122003@gmail.com");
-            defaultAdmin.setPhone("0000000000");
+            defaultAdmin.setPhone("9999999999");
             // In production, you would hash this password
             defaultAdmin.setPassword("password123"); 
             defaultAdmin.setRole("SUPER_ADMIN");
