@@ -1,0 +1,92 @@
+.official-login-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+  position: relative;
+  padding: 1rem;
+}
+
+.back-link.dark {
+  color: #9ca3af;
+}
+
+.back-link.dark:hover {
+  color: white;
+}
+
+.official-panel {
+  background: rgba(17, 24, 39, 0.8);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: white;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.official-panel .login-header p {
+  color: #9ca3af;
+}
+
+.danger-circle {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.btn-danger {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+}
+
+.btn-danger:hover {
+  background-color: #dc2626;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.official-panel input {
+  background-color: rgba(31, 41, 55, 0.8) !important;
+  border-color: rgba(75, 85, 99, 0.4);
+  color: white !important;
+}
+
+.official-panel input:-webkit-autofill,
+.official-panel input:-webkit-autofill:hover, 
+.official-panel input:-webkit-autofill:focus, 
+.official-panel input:-webkit-autofill:active{
+    -webkit-box-shadow: 0 0 0 30px #1f2937 inset !important;
+    -webkit-text-fill-color: white !important;
+}
+
+.official-panel input::placeholder {
+  color: #6b7280;
+}
+
+.official-panel input:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.official-panel label {
+  color: #d1d5db;
+}
+
+.official-panel .input-icon {
+  color: #9ca3af;
+}
+
+.official-panel .success-message-banner {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #34d399;
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.official-panel .error-message {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.official-panel .otp-section {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-color: rgba(239, 68, 68, 0.2);
+}
