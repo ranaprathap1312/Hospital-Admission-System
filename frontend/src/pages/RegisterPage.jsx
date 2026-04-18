@@ -129,8 +129,8 @@ const RegisterPage = () => {
       const data = await response.json();
       
       if (data.success) {
-        console.log('Registration successful');
-        navigate('/login'); 
+        setSuccessMsg('Registration successful! Redirecting to login...');
+        setTimeout(() => navigate('/login'), 1500); 
       } else {
         setError(data.message || 'Registration failed');
       }
