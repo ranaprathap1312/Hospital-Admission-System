@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { ShieldCheck, LogOut, Check, X, Clock, UserCheck } from 'lucide-react';
 import './OfficialDashboard.css';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+
 const OfficialDashboard = () => {
   const [pendingAdmins, setPendingAdmins] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -16,7 +18,7 @@ const OfficialDashboard = () => {
   const fetchPendingAdmins = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8080/api/admin/pending');
+      const response = await fetch(`${API_BASE_URL}/api/admin/pending`);
       const data = await response.json();
       setPendingAdmins(data);
     } catch (err) {
@@ -29,7 +31,7 @@ const OfficialDashboard = () => {
 
   const handleApprove = async (id) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/admin/approve/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/approve/${id}`, {
         method: 'PUT'
       });
       if (response.ok) {
@@ -43,7 +45,7 @@ const OfficialDashboard = () => {
   const handleReject = async (id) => {
     if (!window.confirm('Are you sure you want to completely remove this candidate?')) return;
     try {
-      const response = await fetch(`http://localhost:8080/api/admin/reject/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/reject/${id}`, {
         method: 'DELETE'
       });
       if (response.ok) {
