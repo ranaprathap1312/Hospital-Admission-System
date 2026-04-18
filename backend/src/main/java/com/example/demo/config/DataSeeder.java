@@ -17,12 +17,12 @@ public class DataSeeder implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         // Check if admin already exists
-        Optional<Admin> existingAdmin = adminRepository.findByEmail("rajaji.gh@gmail.com");
+        Optional<Admin> existingAdmin = adminRepository.findByEmail("ranaprathap13122003@gmail.com");
         
         if (existingAdmin.isEmpty()) {
             Admin defaultAdmin = new Admin();
             defaultAdmin.setName("System Administrator");
-            defaultAdmin.setEmail("rajaji.gh@gmail.com");
+            defaultAdmin.setEmail("ranaprathap13122003@gmail.com");
             defaultAdmin.setPhone("0000000000");
             // In production, you would hash this password
             defaultAdmin.setPassword("password123"); 
@@ -30,7 +30,7 @@ public class DataSeeder implements CommandLineRunner {
             defaultAdmin.setStatus("ACTIVE");
             
             adminRepository.save(defaultAdmin);
-            System.out.println("Default Super Admin created: email='rajaji.gh@gmail.com', password='password123'");
+            System.out.println("Default Super Admin created: email='ranaprathap13122003@gmail.com', password='password123'");
         }
     }
 }
