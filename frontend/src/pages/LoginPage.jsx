@@ -3,6 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Activity, Lock, Mail, ArrowLeft } from 'lucide-react';
 import './LoginPage.css';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -15,7 +17,7 @@ const LoginPage = () => {
     setError('');
     
     try {
-      const response = await fetch('http://localhost:8080/api/admin/login', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })

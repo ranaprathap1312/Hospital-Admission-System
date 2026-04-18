@@ -3,6 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Activity, Lock, Mail, User, Phone, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import './RegisterPage.css';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
     name: '',
@@ -41,7 +43,7 @@ const RegisterPage = () => {
     setSuccessMsg('');
 
     try {
-      const response = await fetch('http://localhost:8080/api/admin/generate-otp', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/generate-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: formData.email })
@@ -74,7 +76,7 @@ const RegisterPage = () => {
     setSuccessMsg('');
 
     try {
-      const response = await fetch('http://localhost:8080/api/admin/verify-otp', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/verify-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: formData.email, otp: formData.otp })
@@ -118,7 +120,7 @@ const RegisterPage = () => {
         password: formData.password
       };
 
-      const response = await fetch('http://localhost:8080/api/admin/register', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(submitData)
