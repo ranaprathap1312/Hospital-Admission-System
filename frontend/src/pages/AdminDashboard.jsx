@@ -114,13 +114,17 @@ const AdminDashboard = () => {
         setIsSubmitting(false);
         setSubmittedData(savedPatient);
         setViewMode('SUCCESS');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         setIsSubmitting(false);
-        setError('Failed to admit patient. Please check the data.');
+        setError('Failed to admit patient. Make sure Aadhar number is unique and all data is correct.');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        alert("Failed to admit patient! Please check the error at the top of the form.");
       }
     } catch (err) {
       setIsSubmitting(false);
       setError('Could not connect to the server. Is the backend running?');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       console.error(err);
     }
   };
