@@ -24,39 +24,6 @@ const DischargePage = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
-  const [dischargeRecords, setDischargeRecords] = useState([]);
-  const [showRecords, setShowRecords] = useState(false);
-  const [loadingRecords, setLoadingRecords] = useState(false);
-
-  const formatTime12Hour = (timeString) => {
-    if (!timeString) return '';
-    const [hours, minutes] = timeString.split(':');
-    if (!hours || !minutes) return timeString;
-    let h = parseInt(hours, 10);
-    const ampm = h >= 12 ? 'PM' : 'AM';
-    h = h % 12;
-    h = h ? h : 12; // 0 becomes 12
-    return `${h.toString().padStart(2, '0')}:${minutes} ${ampm}`;
-  };
-
-  const fetchDischargeRecords = async () => {
-    if (showRecords) {
-      setShowRecords(false);
-      return;
-    }
-    setLoadingRecords(true);
-    setShowRecords(true);
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/patients/discharge-entries`);
-      const data = await response.json();
-      setDischargeRecords(data);
-    } catch (err) {
-      console.error('Failed to fetch discharge records', err);
-    } finally {
-      setLoadingRecords(false);
-    }
-  };
-
   const handleSearch = async (e) => {
     e.preventDefault();
     if (!patientId.trim()) return;
@@ -275,73 +242,6 @@ const DischargePage = () => {
                   <p><strong>Discharge Type:</strong> <span style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>{dischargeType}</span></p>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
-
-        {/* Discharge Records Section */}
-        <div style={{ marginTop: '3rem' }}>
-          <button 
-            onClick={fetchDischargeRecords} 
-            className="btn btn-outline" 
-            style={{ width: '100%', marginBottom: '1.5rem', fontWeight: 'bold' }}
-          >
-            {showRecords ? 'Hide Discharge Records' : 'Load Discharge Records Table'}
-          </button>
-
-          {showRecords && (
-            <div className="glass-panel" style={{ padding: '1.5rem', overflowX: 'auto' }}>
-              <h2 style={{ marginBottom: '1.5rem' }}>Discharge Records Table</h2>
-              {loadingRecords ? (
-                <p>Loading discharge records...</p>
-              ) : dischargeRecords.length === 0 ? (
-                <p>No discharge records found.</p>
-              ) : (
-                <table className="records-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', whiteSpace: 'nowrap' }}>
-                  <thead>
-                    <tr style={{ backgroundColor: '#f8fafc', borderBottom: '2px solid var(--border-color)' }}>
-                      <th style={{ padding: '1rem' }}>Patient ID</th>
-                      <th style={{ padding: '1rem' }}>Name</th>
-                      <th style={{ padding: '1rem' }}>Age</th>
-                      <th style={{ padding: '1rem' }}>Gender</th>
-                      <th style={{ padding: '1rem' }}>Case Type</th>
-                      <th style={{ padding: '1rem' }}>AR No</th>
-                      <th style={{ padding: '1rem' }}>Admission Date</th>
-                      <th style={{ padding: '1rem' }}>Discharge Date</th>
-                      <th style={{ padding: '1rem' }}>Discharge Type</th>
-                      <th style={{ padding: '1rem' }}>Discharge Ward</th>
-                      <th style={{ padding: '1rem' }}>Mobile</th>
-                      <th style={{ padding: '1rem' }}>Aadhar No</th>
-                      <th style={{ padding: '1rem' }}>Occupation</th>
-                      <th style={{ padding: '1rem' }}>Address</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {dischargeRecords.map((record, i) => (
-                      <tr key={i} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                        <td style={{ padding: '1rem' }}>{record.customPatientId || record.patient?.patientId}</td>
-                        <td style={{ padding: '1rem', fontWeight: '500' }}>{record.patientName || 'N/A'}</td>
-                        <td style={{ padding: '1rem' }}>{record.age || 'N/A'}</td>
-                        <td style={{ padding: '1rem' }}>{record.gender || 'N/A'}</td>
-                        <td style={{ padding: '1rem' }}>{record.caseType || 'N/A'}</td>
-                        <td style={{ padding: '1rem' }}>{record.arNo || 'N/A'}</td>
-                        <td style={{ padding: '1rem' }}>{record.admissionDate ? `${record.admissionDate} ${formatTime12Hour(record.admissionTime)}` : 'N/A'}</td>
-                        <td style={{ padding: '1rem', color: 'var(--primary)', fontWeight: 'bold' }}>{new Date(record.dischargeDate).toLocaleString()}</td>
-                        <td style={{ padding: '1rem' }}>
-                          <span style={{ padding: '0.25rem 0.5rem', borderRadius: '0.25rem', fontSize: '0.875rem', fontWeight: 'bold', backgroundColor: record.dischargeType === 'Death' ? '#fee2e2' : '#dcfce3', color: record.dischargeType === 'Death' ? '#ef4444' : '#16a34a' }}>
-                            {record.dischargeType}
-                          </span>
-                        </td>
-                        <td style={{ padding: '1rem' }}>{record.dischargeWard}</td>
-                        <td style={{ padding: '1rem' }}>{record.mobileNo || 'N/A'}</td>
-                        <td style={{ padding: '1rem' }}>{record.aadharNo || 'N/A'}</td>
-                        <td style={{ padding: '1rem' }}>{record.occupation || 'N/A'}</td>
-                        <td style={{ padding: '1rem', maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis' }} title={record.address}>{record.address || 'N/A'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
             </div>
           )}
         </div>

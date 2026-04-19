@@ -108,6 +108,10 @@ const AdminDashboard = () => {
   const [loadingRecords, setLoadingRecords] = useState(false);
   const [filters, setFilters] = useState([{ column: 'All Columns', value: '', addressType: 'All', subType: 'All', rangeStart: '', rangeEnd: '' }]);
 
+  // Discharge Records State
+  const [dischargeRecords, setDischargeRecords] = useState([]);
+  const [loadingDischarges, setLoadingDischarges] = useState(false);
+
   const addFilter = () => {
     setFilters([...filters, { column: 'All Columns', value: '', addressType: 'All', subType: 'All', rangeStart: '', rangeEnd: '' }]);
   };
@@ -141,6 +145,8 @@ const AdminDashboard = () => {
   React.useEffect(() => {
     if (activeTab === 'RECORDS') {
       fetchPatients();
+    } else if (activeTab === 'DISCHARGE_RECORDS') {
+      fetchDischargeRecords();
     }
   }, [activeTab]);
 
@@ -169,6 +175,19 @@ const AdminDashboard = () => {
       console.error('Failed to fetch patients', err);
     } finally {
       setLoadingRecords(false);
+    }
+  };
+
+  const fetchDischargeRecords = async () => {
+    setLoadingDischarges(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/patients/discharge-entries`);
+      const data = await response.json();
+      setDischargeRecords(data);
+    } catch (err) {
+      console.error('Failed to fetch discharge records', err);
+    } finally {
+      setLoadingDischarges(false);
     }
   };
 
@@ -381,6 +400,9 @@ const AdminDashboard = () => {
           <Link to="/discharge" className="nav-item">
             <Activity size={20} /> Discharge Entry
           </Link>
+          <a href="#" className={`nav-item ${activeTab === 'DISCHARGE_RECORDS' ? 'active' : ''}`} onClick={(e) => { e.preventDefault(); setActiveTab('DISCHARGE_RECORDS'); }}>
+            <Activity size={20} /> Discharge Records
+          </a>
         </nav>
         <div className="sidebar-footer">
           <Link to="/" className="nav-item text-danger">
@@ -397,11 +419,16 @@ const AdminDashboard = () => {
               <h1>DIET SHEET - ADMISSION FORM</h1>
               <p className="subtitle">GOVERNMENT HOSPITAL VRIDHACHALAM</p>
             </div>
+          ) : activeTab === 'DISCHARGE_RECORDS' ? (
+            <div>
+              <h1>Discharge Records</h1>
+              <p className="subtitle">View all discharged patient entries.</p>
+            </div>
           ) : (
-            <>
+            <div>
               <h1>Patient Records</h1>
               <p className="subtitle">View and search through all admitted patients.</p>
-            </>
+            </div>
           )}
         </header>
 
@@ -592,8 +619,10 @@ const AdminDashboard = () => {
                           </td>
                         </tr>
                       ))}
-                    </tbody>
-                  </table>
+                      </tbody>
+                    </table>
+                  </div>
+
                   <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
                     <button 
                       onClick={downloadAsExcel}
@@ -616,6 +645,63 @@ const AdminDashboard = () => {
                       Download Excel
                     </button>
                   </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'DISCHARGE_RECORDS' && (
+            <div className="records-container glass-panel">
+              {loadingDischarges ? (
+                <p>Loading discharge records...</p>
+              ) : dischargeRecords.length === 0 ? (
+                <p>No discharge records found.</p>
+              ) : (
+                <div style={{ overflowX: 'auto' }}>
+                  <table className="records-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', whiteSpace: 'nowrap' }}>
+                    <thead>
+                      <tr style={{ backgroundColor: '#f8fafc', borderBottom: '2px solid var(--border-color)' }}>
+                        <th style={{ padding: '1rem' }}>Patient ID</th>
+                        <th style={{ padding: '1rem' }}>Name</th>
+                        <th style={{ padding: '1rem' }}>Age</th>
+                        <th style={{ padding: '1rem' }}>Gender</th>
+                        <th style={{ padding: '1rem' }}>Case Type</th>
+                        <th style={{ padding: '1rem' }}>AR No</th>
+                        <th style={{ padding: '1rem' }}>Admission Date</th>
+                        <th style={{ padding: '1rem' }}>Discharge Date</th>
+                        <th style={{ padding: '1rem' }}>Discharge Type</th>
+                        <th style={{ padding: '1rem' }}>Discharge Ward</th>
+                        <th style={{ padding: '1rem' }}>Mobile</th>
+                        <th style={{ padding: '1rem' }}>Aadhar No</th>
+                        <th style={{ padding: '1rem' }}>Occupation</th>
+                        <th style={{ padding: '1rem' }}>Address</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {dischargeRecords.map((record, i) => (
+                        <tr key={i} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                          <td style={{ padding: '1rem' }}>{record.customPatientId || record.patient?.patientId}</td>
+                          <td style={{ padding: '1rem', fontWeight: '500' }}>{record.patientName || 'N/A'}</td>
+                          <td style={{ padding: '1rem' }}>{record.age || 'N/A'}</td>
+                          <td style={{ padding: '1rem' }}>{record.gender || 'N/A'}</td>
+                          <td style={{ padding: '1rem' }}>{record.caseType || 'N/A'}</td>
+                          <td style={{ padding: '1rem' }}>{record.arNo || 'N/A'}</td>
+                          <td style={{ padding: '1rem' }}>{record.admissionDate ? `${record.admissionDate} ${formatTime12Hour(record.admissionTime)}` : 'N/A'}</td>
+                          <td style={{ padding: '1rem', color: 'var(--primary)', fontWeight: 'bold' }}>{new Date(record.dischargeDate).toLocaleString()}</td>
+                          <td style={{ padding: '1rem' }}>
+                            <span style={{ padding: '0.25rem 0.5rem', borderRadius: '0.25rem', fontSize: '0.875rem', fontWeight: 'bold', backgroundColor: record.dischargeType === 'Death' ? '#fee2e2' : '#dcfce3', color: record.dischargeType === 'Death' ? '#ef4444' : '#16a34a' }}>
+                              {record.dischargeType}
+                            </span>
+                          </td>
+                          <td style={{ padding: '1rem' }}>{record.dischargeWard}</td>
+                          <td style={{ padding: '1rem' }}>{record.mobileNo || 'N/A'}</td>
+                          <td style={{ padding: '1rem' }}>{record.aadharNo || 'N/A'}</td>
+                          <td style={{ padding: '1rem' }}>{record.occupation || 'N/A'}</td>
+                          <td style={{ padding: '1rem', maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis' }} title={record.address}>{record.address || 'N/A'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </div>
