@@ -45,6 +45,7 @@ const AdminDashboard = () => {
   const [patients, setPatients] = useState([]);
   const [loadingRecords, setLoadingRecords] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchColumn, setSearchColumn] = useState('All Columns');
 
   // Fetch next ID on mount
   React.useEffect(() => {
@@ -88,12 +89,41 @@ const AdminDashboard = () => {
 
   const filteredPatients = patients.filter(patient => {
     const query = searchQuery.toLowerCase();
-    return (
-      (patient.patientName && patient.patientName.toLowerCase().includes(query)) ||
-      (patient.patientId && patient.patientId.toLowerCase().includes(query)) ||
-      (patient.mobileNo && patient.mobileNo.includes(query)) ||
-      (patient.wardName && patient.wardName.toLowerCase().includes(query))
-    );
+    if (!query) return true;
+
+    if (searchColumn === 'All Columns') {
+      return (
+        (patient.patientName && patient.patientName.toLowerCase().includes(query)) ||
+        (patient.patientId && patient.patientId.toLowerCase().includes(query)) ||
+        (patient.mobileNo && patient.mobileNo.includes(query)) ||
+        (patient.wardName && patient.wardName.toLowerCase().includes(query)) ||
+        (patient.aadharNo && patient.aadharNo.includes(query)) ||
+        (patient.address && patient.address.toLowerCase().includes(query))
+      );
+    }
+
+    const valueToCheck = (() => {
+      switch (searchColumn) {
+        case 'Patient ID': return patient.patientId;
+        case 'Name': return patient.patientName;
+        case 'Age': return patient.age ? patient.age.toString() : '';
+        case 'Gender': return patient.gender;
+        case 'Case Type': return patient.caseType;
+        case 'AR No': return patient.arNo;
+        case 'Aadhar No': return patient.aadharNo;
+        case 'Mobile': return patient.mobileNo;
+        case 'Ward': return patient.wardName;
+        case 'Admission Date': return patient.admissionDate ? new Date(patient.admissionDate).toLocaleString() : '';
+        case 'Occupation': return patient.occupation;
+        case "Mother's Name": return patient.motherName;
+        case 'Caretaker Name': return patient.caretakerName;
+        case 'Address': return patient.address;
+        case 'Status': return patient.status;
+        default: return '';
+      }
+    })();
+
+    return valueToCheck && valueToCheck.toString().toLowerCase().includes(query);
   });
 
   const handleChange = (e) => {
@@ -219,15 +249,37 @@ const AdminDashboard = () => {
         <div className="form-container glass-panel">
           {activeTab === 'RECORDS' && (
             <div className="records-view">
-              <div className="records-controls" style={{ marginBottom: '1.5rem' }}>
+              <div className="records-controls" style={{ marginBottom: '1.5rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
                 <input 
                   type="text" 
-                  placeholder="Filter by Name, ID, Ward, or Mobile..." 
+                  placeholder={`Search by ${searchColumn}...`} 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="search-input"
-                  style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem' }}
+                  style={{ flexGrow: 1, padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem' }}
                 />
+                <select 
+                  value={searchColumn} 
+                  onChange={(e) => setSearchColumn(e.target.value)}
+                  style={{ padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white', minWidth: '180px' }}
+                >
+                  <option value="All Columns">All Columns</option>
+                  <option value="Patient ID">Patient ID</option>
+                  <option value="Name">Name</option>
+                  <option value="Age">Age</option>
+                  <option value="Gender">Gender</option>
+                  <option value="Case Type">Case Type</option>
+                  <option value="AR No">AR No</option>
+                  <option value="Aadhar No">Aadhar No</option>
+                  <option value="Mobile">Mobile</option>
+                  <option value="Ward">Ward</option>
+                  <option value="Admission Date">Admission Date</option>
+                  <option value="Occupation">Occupation</option>
+                  <option value="Mother's Name">Mother's Name</option>
+                  <option value="Caretaker Name">Caretaker Name</option>
+                  <option value="Address">Address</option>
+                  <option value="Status">Status</option>
+                </select>
               </div>
               
               {loadingRecords ? (
