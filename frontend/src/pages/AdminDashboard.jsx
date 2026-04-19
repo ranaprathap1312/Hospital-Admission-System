@@ -378,9 +378,9 @@ const AdminDashboard = () => {
           <a href="#" className={`nav-item ${activeTab === 'RECORDS' ? 'active' : ''}`} onClick={(e) => { e.preventDefault(); setActiveTab('RECORDS'); }}>
             <LayoutDashboard size={20} /> Patient Records
           </a>
-          <a href="#" className="nav-item">
-            <Settings size={20} /> Settings
-          </a>
+          <Link to="/discharge" className="nav-item">
+            <Activity size={20} /> Discharge Entry
+          </Link>
         </nav>
         <div className="sidebar-footer">
           <Link to="/" className="nav-item text-danger">
