@@ -1,6 +1,8 @@
 package com.example.demo.service;
 
+import com.example.demo.entity.DischargeEntry;
 import com.example.demo.entity.Patient;
+import com.example.demo.repository.DischargeEntryRepository;
 import com.example.demo.repository.PatientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,6 +14,9 @@ public class PatientService {
 
     @Autowired
     private PatientRepository patientRepository;
+
+    @Autowired
+    private DischargeEntryRepository dischargeEntryRepository;
 
     public Patient admitPatient(Patient patient) {
         // Set creation timestamp
@@ -43,9 +48,16 @@ public class PatientService {
         if (optionalPatient.isPresent()) {
             Patient patient = optionalPatient.get();
             patient.setStatus("DISCHARGED");
-            patient.setDischargeType(dischargeType);
-            patient.setDischargeDate(LocalDateTime.now());
-            return patientRepository.save(patient);
+            patientRepository.save(patient);
+
+            DischargeEntry entry = new DischargeEntry();
+            entry.setPatient(patient);
+            entry.setCustomPatientId(patient.getPatientId());
+            entry.setDischargeType(dischargeType);
+            entry.setDischargeDate(LocalDateTime.now());
+            dischargeEntryRepository.save(entry);
+
+            return patient;
         }
         throw new RuntimeException("Patient not found with ID: " + patientId);
     }
