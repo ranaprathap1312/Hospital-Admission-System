@@ -86,6 +86,18 @@ public class PatientService {
             entry.setCustomPatientId(patient.getPatientId());
             entry.setCaseType(patient.getCaseType());
             entry.setArNo(patient.getArNo());
+            entry.setPatientName(patient.getPatientName());
+            entry.setAge(patient.getAge());
+            entry.setGender(patient.getGender());
+            entry.setMotherName(patient.getMotherName());
+            entry.setMobileNo(patient.getMobileNo());
+            entry.setAadharNo(patient.getAadharNo());
+            entry.setOccupation(patient.getOccupation());
+            entry.setCaretakerName(patient.getCaretakerName());
+            entry.setAddress(patient.getAddress());
+            entry.setAdmissionWard(patient.getWardName());
+            entry.setAdmissionDate(patient.getAdmissionDate());
+            entry.setAdmissionTime(patient.getAdmissionTime());
             entry.setDischargeType(dischargeType);
             entry.setDischargeWard(dischargeWard);
 
