@@ -66,6 +66,10 @@ public class PatientService {
         return patientRepository.findAll();
     }
 
+    public java.util.List<DischargeEntry> getAllDischargeEntries() {
+        return dischargeEntryRepository.findAll();
+    }
+
     public java.util.List<MasterAdmission> getAllMasterAdmissions() {
         return masterAdmissionRepository.findAll();
     }

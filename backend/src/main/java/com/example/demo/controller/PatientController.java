@@ -35,6 +35,16 @@ public class PatientController {
         }
     }
 
+    @GetMapping("/discharge-entries")
+    public ResponseEntity<java.util.List<com.example.demo.entity.DischargeEntry>> getAllDischargeEntries() {
+        try {
+            java.util.List<com.example.demo.entity.DischargeEntry> entries = patientService.getAllDischargeEntries();
+            return new ResponseEntity<>(entries, HttpStatus.OK);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     @GetMapping("/master-admissions")
     public ResponseEntity<java.util.List<MasterAdmission>> getAllMasterAdmissions() {
         try {
