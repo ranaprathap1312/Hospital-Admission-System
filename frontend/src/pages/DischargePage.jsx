@@ -82,7 +82,7 @@ const DischargePage = () => {
     <div className="dashboard-wrapper">
       <main className="main-content" style={{ marginLeft: 0, padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
         <header className="content-header no-print" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
-          <button onClick={() => navigate('/')} className="btn btn-outline" style={{ padding: '0.5rem' }}>
+          <button onClick={() => navigate('/admin')} className="btn btn-outline" style={{ padding: '0.5rem' }}>
             <ArrowLeft size={20} />
           </button>
           <div>
