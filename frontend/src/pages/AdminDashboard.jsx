@@ -410,9 +410,14 @@ const AdminDashboard = () => {
                 <div className="form-section">
                   <h3 className="section-title">Personal Details</h3>
                   
-                  <div className="form-group">
-                    <label>Patient Name *</label>
-                    <input type="text" name="patientName" value={formData.patientName} onChange={handleChange} required />
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Patient Name *</label>
+                      <input type="text" name="patientName" value={formData.patientName} onChange={handleChange} required />
+                    </div>
+                    <div className="form-group">
+                      {/* Empty slot for balance */}
+                    </div>
                   </div>
                   
                   <div className="form-row">
@@ -536,7 +541,7 @@ const AdminDashboard = () => {
                           disabled={!manualAdmissionDate}
                           className="search-input"
                           wrapperClassName="date-picker-wrapper"
-                          style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }}
+                          style={{ width: '100%', padding: '0.6rem 0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }}
                         />
                       </div>
                     </div>
