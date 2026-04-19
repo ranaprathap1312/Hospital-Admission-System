@@ -88,18 +88,25 @@ const AdminDashboard = () => {
   };
 
   const filteredPatients = patients.filter(patient => {
-    const query = searchQuery.toLowerCase();
+    const query = searchQuery.toLowerCase().trim();
     if (!query) return true;
 
-    const checkMatch = (val) => val != null && val.toString().toLowerCase().includes(query);
+    const checkMatch = (val, strict = false) => {
+      if (val == null) return false;
+      const strVal = val.toString().toLowerCase();
+      if (strict) {
+        return strVal === query || strVal.startsWith(query);
+      }
+      return strVal.includes(query);
+    };
 
     if (searchColumn === 'All Columns') {
       return (
         checkMatch(patient.patientId) ||
         checkMatch(patient.patientName) ||
         checkMatch(patient.age) ||
-        checkMatch(patient.gender) ||
-        checkMatch(patient.caseType) ||
+        checkMatch(patient.gender, true) ||
+        checkMatch(patient.caseType, true) ||
         checkMatch(patient.arNo) ||
         checkMatch(patient.aadharNo) ||
         checkMatch(patient.mobileNo) ||
@@ -109,7 +116,7 @@ const AdminDashboard = () => {
         checkMatch(patient.motherName) ||
         checkMatch(patient.caretakerName) ||
         checkMatch(patient.address) ||
-        checkMatch(patient.status)
+        checkMatch(patient.status, true)
       );
     }
 
@@ -134,7 +141,8 @@ const AdminDashboard = () => {
       }
     })();
 
-    return checkMatch(valueToCheck);
+    const isStrictColumn = ['Case Type', 'Gender', 'Status'].includes(searchColumn);
+    return checkMatch(valueToCheck, isStrictColumn);
   });
 
   const handleChange = (e) => {
