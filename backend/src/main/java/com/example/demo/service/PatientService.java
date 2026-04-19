@@ -53,6 +53,8 @@ public class PatientService {
             DischargeEntry entry = new DischargeEntry();
             entry.setPatient(patient);
             entry.setCustomPatientId(patient.getPatientId());
+            entry.setCaseType(patient.getCaseType());
+            entry.setArNo(patient.getArNo());
             entry.setDischargeType(dischargeType);
             entry.setDischargeWard(dischargeWard);
 

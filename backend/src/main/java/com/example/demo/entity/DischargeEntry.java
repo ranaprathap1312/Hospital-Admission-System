@@ -27,6 +27,12 @@ public class DischargeEntry {
     @Column(name = "discharge_date")
     private LocalDateTime dischargeDate;
 
+    @Column(name = "case_type")
+    private String caseType;
+
+    @Column(name = "ar_no")
+    private String arNo;
+
     // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -45,4 +51,10 @@ public class DischargeEntry {
 
     public LocalDateTime getDischargeDate() { return dischargeDate; }
     public void setDischargeDate(LocalDateTime dischargeDate) { this.dischargeDate = dischargeDate; }
+
+    public String getCaseType() { return caseType; }
+    public void setCaseType(String caseType) { this.caseType = caseType; }
+
+    public String getArNo() { return arNo; }
+    public void setArNo(String arNo) { this.arNo = arNo; }
 }
