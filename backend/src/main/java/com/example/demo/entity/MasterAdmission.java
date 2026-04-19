@@ -1,7 +1,9 @@
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Entity
 @Table(name = "master_admission_table_of_patients")
@@ -23,7 +25,10 @@ public class MasterAdmission {
     private String motherName;
 
     @Column(name = "admission_date")
-    private LocalDateTime admissionDate;
+    private LocalDate admissionDate;
+
+    @Column(name = "admission_time")
+    private LocalTime admissionTime;
 
     @Column(name = "ward_name")
     private String wardName;
@@ -71,8 +76,11 @@ public class MasterAdmission {
     public String getMotherName() { return motherName; }
     public void setMotherName(String motherName) { this.motherName = motherName; }
 
-    public LocalDateTime getAdmissionDate() { return admissionDate; }
-    public void setAdmissionDate(LocalDateTime admissionDate) { this.admissionDate = admissionDate; }
+    public LocalDate getAdmissionDate() { return admissionDate; }
+    public void setAdmissionDate(LocalDate admissionDate) { this.admissionDate = admissionDate; }
+
+    public LocalTime getAdmissionTime() { return admissionTime; }
+    public void setAdmissionTime(LocalTime admissionTime) { this.admissionTime = admissionTime; }
 
     public String getWardName() { return wardName; }
     public void setWardName(String wardName) { this.wardName = wardName; }

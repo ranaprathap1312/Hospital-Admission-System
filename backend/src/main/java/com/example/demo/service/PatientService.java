@@ -44,6 +44,7 @@ public class PatientService {
         master.setAge(savedPatient.getAge());
         master.setMotherName(savedPatient.getMotherName());
         master.setAdmissionDate(savedPatient.getAdmissionDate());
+        master.setAdmissionTime(savedPatient.getAdmissionTime());
         master.setWardName(savedPatient.getWardName());
         master.setMobileNo(savedPatient.getMobileNo());
         master.setAadharNo(savedPatient.getAadharNo());

@@ -8,8 +8,13 @@ import './AdminDashboard.css';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
 const AdminDashboard = () => {
-  const getCurrentDateTime = () => {
-    return new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  const getCurrentDate = () => {
+    return new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
+  };
+
+  const getCurrentTime = () => {
+    const now = new Date();
+    return now.toTimeString().split(' ')[0].substring(0, 5);
   };
 
   const [formData, setFormData] = useState({
@@ -17,7 +22,8 @@ const AdminDashboard = () => {
     age: '',
     motherName: '',
     patientId: '',
-    admissionDate: getCurrentDateTime(),
+    admissionDate: getCurrentDate(),
+    admissionTime: getCurrentTime(),
     wardName: '',
     mobileNo: '',
     aadharNo: '',
@@ -130,7 +136,8 @@ const AdminDashboard = () => {
           checkMatch(patient.aadharNo) ||
           checkMatch(patient.mobileNo) ||
           checkMatch(patient.wardName) ||
-          (patient.admissionDate && checkMatch(new Date(patient.admissionDate).toLocaleString())) ||
+          checkMatch(patient.admissionDate) ||
+          checkMatch(patient.admissionTime) ||
           checkMatch(patient.occupation) ||
           checkMatch(patient.motherName) ||
           checkMatch(patient.caretakerName) ||
@@ -150,7 +157,8 @@ const AdminDashboard = () => {
           case 'Aadhar No': return patient.aadharNo;
           case 'Mobile': return patient.mobileNo;
           case 'Ward': return patient.wardName;
-          case 'Admission Date': return patient.admissionDate ? new Date(patient.admissionDate).toLocaleString() : '';
+          case 'Admission Date': return patient.admissionDate;
+          case 'Admission Time': return patient.admissionTime;
           case 'Occupation': return patient.occupation;
           case "Mother's Name": return patient.motherName;
           case 'Caretaker Name': return patient.caretakerName;
@@ -240,7 +248,7 @@ const AdminDashboard = () => {
   const handleNewAdmission = () => {
     setFormData({
       patientName: '', age: '', motherName: '', patientId: '',
-      admissionDate: getCurrentDateTime(), wardName: '', mobileNo: '', aadharNo: '',
+      admissionDate: getCurrentDate(), admissionTime: getCurrentTime(), wardName: '', mobileNo: '', aadharNo: '',
       occupation: '', caretakerName: '', street: '', village: '',
       taluk: 'Vridhachalam', district: 'Cuddalore', caseType: 'NON MLC', arNo: '', gender: ''
     });
@@ -322,6 +330,7 @@ const AdminDashboard = () => {
                       <option value="Mobile">Mobile</option>
                       <option value="Ward">Ward</option>
                       <option value="Admission Date">Admission Date</option>
+                      <option value="Admission Time">Admission Time</option>
                       <option value="Occupation">Occupation</option>
                       <option value="Mother's Name">Mother's Name</option>
                       <option value="Caretaker Name">Caretaker Name</option>
@@ -380,6 +389,7 @@ const AdminDashboard = () => {
                         <th style={{ padding: '1rem' }}>Mobile</th>
                         <th style={{ padding: '1rem' }}>Ward</th>
                         <th style={{ padding: '1rem' }}>Admission Date</th>
+                        <th style={{ padding: '1rem' }}>Admission Time</th>
                         <th style={{ padding: '1rem' }}>Occupation</th>
                         <th style={{ padding: '1rem' }}>Mother's Name</th>
                         <th style={{ padding: '1rem' }}>Caretaker Name</th>
@@ -399,7 +409,8 @@ const AdminDashboard = () => {
                           <td style={{ padding: '1rem' }}>{patient.aadharNo || 'N/A'}</td>
                           <td style={{ padding: '1rem' }}>{patient.mobileNo}</td>
                           <td style={{ padding: '1rem' }}>{patient.wardName}</td>
-                          <td style={{ padding: '1rem' }}>{new Date(patient.admissionDate).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}</td>
+                          <td style={{ padding: '1rem' }}>{patient.admissionDate}</td>
+                          <td style={{ padding: '1rem' }}>{patient.admissionTime}</td>
                           <td style={{ padding: '1rem' }}>{patient.occupation || 'N/A'}</td>
                           <td style={{ padding: '1rem' }}>{patient.motherName || 'N/A'}</td>
                           <td style={{ padding: '1rem' }}>{patient.caretakerName || 'N/A'}</td>
@@ -466,7 +477,8 @@ const AdminDashboard = () => {
                     <p><strong>Case Type:</strong> {submittedData.caseType}</p>
                     {submittedData.caseType === 'MLC' && <p><strong>AR No:</strong> {submittedData.arNo}</p>}
                     <p><strong>Aadhar No:</strong> {submittedData.aadharNo}</p>
-                    <p><strong>Admission Date:</strong> {new Date(submittedData.admissionDate).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}</p>
+                    <p><strong>Admission Date:</strong> {submittedData.admissionDate}</p>
+                    <p><strong>Admission Time:</strong> {submittedData.admissionTime}</p>
                     <p><strong>Ward Name:</strong> {submittedData.wardName}</p>
                     <p><strong>Mobile No:</strong> {submittedData.mobileNo}</p>
                   </div>
@@ -589,38 +601,38 @@ const AdminDashboard = () => {
                   <div className="form-row">
                     <div className="form-group">
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <label>Admission Date *</label>
+                        <label>Admission Date & Time *</label>
                         <label style={{ fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                           <input 
                             type="checkbox" 
                             checked={manualAdmissionDate} 
                             onChange={(e) => {
                               setManualAdmissionDate(e.target.checked);
-                              if (!e.target.checked) setFormData({...formData, admissionDate: getCurrentDateTime()});
+                              if (!e.target.checked) setFormData({...formData, admissionDate: getCurrentDate(), admissionTime: getCurrentTime()});
                             }} 
                             style={{ width: 'auto' }}
                           />
                           Edit
                         </label>
                       </div>
-                      <div style={{ width: '100%' }}>
-                        <DatePicker
-                          selected={formData.admissionDate ? new Date(formData.admissionDate) : null}
-                          onChange={(date) => {
-                            if (date) {
-                              const offsetDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-                              setFormData({...formData, admissionDate: offsetDate.toISOString().slice(0, 16)});
-                            }
-                          }}
-                          showTimeSelect
-                          timeFormat="hh:mm aa"
-                          timeIntervals={15}
-                          timeCaption="Time"
-                          dateFormat="MMM d, yyyy h:mm aa"
+                      <div style={{ width: '100%', display: 'flex', gap: '0.5rem' }}>
+                        <input 
+                          type="date"
+                          name="admissionDate"
+                          value={formData.admissionDate}
+                          onChange={handleChange}
                           disabled={!manualAdmissionDate}
                           className="search-input"
-                          wrapperClassName="date-picker-wrapper"
-                          style={{ width: '100%', padding: '0.6rem 0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }}
+                          style={{ width: '50%', padding: '0.6rem 0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }}
+                        />
+                        <input 
+                          type="time"
+                          name="admissionTime"
+                          value={formData.admissionTime}
+                          onChange={handleChange}
+                          disabled={!manualAdmissionDate}
+                          className="search-input"
+                          style={{ width: '50%', padding: '0.6rem 0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }}
                         />
                       </div>
                     </div>
