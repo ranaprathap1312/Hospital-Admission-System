@@ -192,10 +192,10 @@ const AdminDashboard = () => {
       <main className="main-content">
         <header className="content-header">
           {activeTab === 'ADMISSION' ? (
-            <>
-              <h1>Patient Admission Form</h1>
-              <p className="subtitle">Enter patient details to register a new admission.</p>
-            </>
+            <div style={{ textAlign: 'center', width: '100%' }}>
+              <h1>DIET SHEET - ADMISSION FORM</h1>
+              <p className="subtitle">GOVERNMENT HOSPITAL VRIDHACHALAM</p>
+            </div>
           ) : (
             <>
               <h1>Patient Records</h1>
