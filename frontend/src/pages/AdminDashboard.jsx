@@ -26,7 +26,10 @@ const AdminDashboard = () => {
     street: '',
     village: '',
     taluk: 'Vridhachalam',
-    district: 'Cuddalore'
+    district: 'Cuddalore',
+    caseType: 'NON MLC',
+    arNo: '',
+    gender: ''
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -163,7 +166,7 @@ const AdminDashboard = () => {
       patientName: '', age: '', motherName: '', patientId: '',
       admissionDate: getCurrentDateTime(), wardName: '', mobileNo: '', aadharNo: '',
       occupation: '', caretakerName: '', street: '', village: '',
-      taluk: 'Vridhachalam', district: 'Cuddalore'
+      taluk: 'Vridhachalam', district: 'Cuddalore', caseType: 'NON MLC', arNo: '', gender: ''
     });
     setManualPatientId(false);
     setManualAdmissionDate(false);
@@ -288,6 +291,7 @@ const AdminDashboard = () => {
                   <div className="print-grid">
                     <p><strong>Name:</strong> {submittedData.patientName}</p>
                     <p><strong>Age:</strong> {submittedData.age}</p>
+                    <p><strong>Gender:</strong> {submittedData.gender}</p>
                     <p><strong>Mother's Name:</strong> {submittedData.motherName || 'N/A'}</p>
                     <p><strong>Occupation:</strong> {submittedData.occupation || 'N/A'}</p>
                     <p><strong>Caretaker:</strong> {submittedData.caretakerName || 'N/A'}</p>
@@ -299,6 +303,8 @@ const AdminDashboard = () => {
                   <h3>Admission Details</h3>
                   <div className="print-grid">
                     <p><strong>Patient ID:</strong> {submittedData.patientId || 'Pending Assignment'}</p>
+                    <p><strong>Case Type:</strong> {submittedData.caseType}</p>
+                    {submittedData.caseType === 'MLC' && <p><strong>AR No:</strong> {submittedData.arNo}</p>}
                     <p><strong>Aadhar No:</strong> {submittedData.aadharNo}</p>
                     <p><strong>Admission Date:</strong> {new Date(submittedData.admissionDate).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}</p>
                     <p><strong>Ward Name:</strong> {submittedData.wardName}</p>
@@ -334,19 +340,29 @@ const AdminDashboard = () => {
                       <input type="number" name="age" value={formData.age} onChange={handleChange} required />
                     </div>
                     <div className="form-group">
-                      <label>Mother's Name</label>
-                      <input type="text" name="motherName" value={formData.motherName} onChange={handleChange} />
+                      <label>Gender *</label>
+                      <input type="text" name="gender" value={formData.gender} onChange={handleChange} required />
                     </div>
                   </div>
 
                   <div className="form-row">
                     <div className="form-group">
+                      <label>Mother's Name</label>
+                      <input type="text" name="motherName" value={formData.motherName} onChange={handleChange} />
+                    </div>
+                    <div className="form-group">
                       <label>Occupation</label>
                       <input type="text" name="occupation" value={formData.occupation} onChange={handleChange} />
                     </div>
+                  </div>
+
+                  <div className="form-row">
                     <div className="form-group">
                       <label>Caretaker Name</label>
                       <input type="text" name="caretakerName" value={formData.caretakerName} onChange={handleChange} />
+                    </div>
+                    <div className="form-group">
+                      {/* Empty slot for balance */}
                     </div>
                   </div>
                 </div>
@@ -388,6 +404,20 @@ const AdminDashboard = () => {
                     <div className="form-group">
                       <label>Aadhar No *</label>
                       <input type="text" name="aadharNo" value={formData.aadharNo} onChange={handleChange} required />
+                    </div>
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Case Type *</label>
+                      <select name="caseType" value={formData.caseType} onChange={handleChange} required>
+                        <option value="NON MLC">NON MLC</option>
+                        <option value="MLC">MLC</option>
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label>AR No {formData.caseType === 'MLC' ? '*' : ''}</label>
+                      <input type="text" name="arNo" value={formData.arNo} onChange={handleChange} required={formData.caseType === 'MLC'} />
                     </div>
                   </div>
 

@@ -41,6 +41,14 @@ public class Patient {
 
     private String address;
 
+    @Column(name = "case_type")
+    private String caseType;
+
+    @Column(name = "ar_no")
+    private String arNo;
+
+    private String gender;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
@@ -80,6 +88,15 @@ public class Patient {
 
     public String getAddress() { return address; }
     public void setAddress(String address) { this.address = address; }
+
+    public String getCaseType() { return caseType; }
+    public void setCaseType(String caseType) { this.caseType = caseType; }
+
+    public String getArNo() { return arNo; }
+    public void setArNo(String arNo) { this.arNo = arNo; }
+
+    public String getGender() { return gender; }
+    public void setGender(String gender) { this.gender = gender; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
