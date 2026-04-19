@@ -91,9 +91,26 @@ const AdminDashboard = () => {
   });
 
   const handleChange = (e) => {
+    let { name, value } = e.target;
+    
+    if (name === 'mobileNo') {
+      // Allow only numbers and restrict to 10 digits
+      value = value.replace(/\D/g, '');
+      if (value.length > 10) value = value.slice(0, 10);
+    }
+    
+    if (name === 'aadharNo') {
+      // Allow only numbers, restrict to 12 digits, and format as XXXX XXXX XXXX
+      value = value.replace(/\D/g, '');
+      if (value.length > 12) value = value.slice(0, 12);
+      if (value.length > 0) {
+        value = value.match(/.{1,4}/g).join(' ');
+      }
+    }
+
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [name]: value
     });
   };
 
