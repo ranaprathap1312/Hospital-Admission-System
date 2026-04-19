@@ -1,8 +1,10 @@
 package com.example.demo.service;
 
 import com.example.demo.entity.DischargeEntry;
+import com.example.demo.entity.MasterAdmission;
 import com.example.demo.entity.Patient;
 import com.example.demo.repository.DischargeEntryRepository;
+import com.example.demo.repository.MasterAdmissionRepository;
 import com.example.demo.repository.PatientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,9 @@ public class PatientService {
     @Autowired
     private DischargeEntryRepository dischargeEntryRepository;
 
+    @Autowired
+    private MasterAdmissionRepository masterAdmissionRepository;
+
     public Patient admitPatient(Patient patient) {
         // Set creation timestamp
         patient.setCreatedAt(LocalDateTime.now());
@@ -31,7 +36,28 @@ public class PatientService {
             // Save again to persist the auto-generated Patient ID
             savedPatient = patientRepository.save(savedPatient);
         }
-        
+
+        // Save a duplicate into MasterAdmissionTableOfPatients
+        MasterAdmission master = new MasterAdmission();
+        master.setPatientId(savedPatient.getPatientId());
+        master.setPatientName(savedPatient.getPatientName());
+        master.setAge(savedPatient.getAge());
+        master.setMotherName(savedPatient.getMotherName());
+        master.setAdmissionDate(savedPatient.getAdmissionDate());
+        master.setWardName(savedPatient.getWardName());
+        master.setMobileNo(savedPatient.getMobileNo());
+        master.setAadharNo(savedPatient.getAadharNo());
+        master.setOccupation(savedPatient.getOccupation());
+        master.setCaretakerName(savedPatient.getCaretakerName());
+        master.setAddress(savedPatient.getAddress());
+        master.setCaseType(savedPatient.getCaseType());
+        master.setArNo(savedPatient.getArNo());
+        master.setGender(savedPatient.getGender());
+        master.setCreatedAt(savedPatient.getCreatedAt());
+        master.setStatus(savedPatient.getStatus());
+
+        masterAdmissionRepository.save(master);
+
         return savedPatient;
     }
 
