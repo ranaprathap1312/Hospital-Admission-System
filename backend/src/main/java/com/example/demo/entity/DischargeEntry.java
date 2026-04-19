@@ -27,7 +27,10 @@ public class DischargeEntry {
     private String dischargeWard;
 
     @Column(name = "discharge_date")
-    private LocalDateTime dischargeDate;
+    private LocalDate dischargeDate;
+
+    @Column(name = "discharge_time")
+    private LocalTime dischargeTime;
 
     @Column(name = "case_type")
     private String caseType;
@@ -83,8 +86,11 @@ public class DischargeEntry {
     public String getDischargeWard() { return dischargeWard; }
     public void setDischargeWard(String dischargeWard) { this.dischargeWard = dischargeWard; }
 
-    public LocalDateTime getDischargeDate() { return dischargeDate; }
-    public void setDischargeDate(LocalDateTime dischargeDate) { this.dischargeDate = dischargeDate; }
+    public LocalDate getDischargeDate() { return dischargeDate; }
+    public void setDischargeDate(LocalDate dischargeDate) { this.dischargeDate = dischargeDate; }
+
+    public LocalTime getDischargeTime() { return dischargeTime; }
+    public void setDischargeTime(LocalTime dischargeTime) { this.dischargeTime = dischargeTime; }
 
     public String getCaseType() { return caseType; }
     public void setCaseType(String caseType) { this.caseType = caseType; }

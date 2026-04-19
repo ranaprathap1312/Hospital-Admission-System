@@ -107,12 +107,18 @@ public class PatientService {
 
             if (dischargeDateStr != null && !dischargeDateStr.isEmpty()) {
                 try {
-                    entry.setDischargeDate(LocalDateTime.parse(dischargeDateStr));
+                    LocalDateTime dt = LocalDateTime.parse(dischargeDateStr);
+                    entry.setDischargeDate(dt.toLocalDate());
+                    entry.setDischargeTime(dt.toLocalTime());
                 } catch (Exception e) {
-                    entry.setDischargeDate(LocalDateTime.now());
+                    LocalDateTime now = LocalDateTime.now();
+                    entry.setDischargeDate(now.toLocalDate());
+                    entry.setDischargeTime(now.toLocalTime());
                 }
             } else {
-                entry.setDischargeDate(LocalDateTime.now());
+                LocalDateTime now = LocalDateTime.now();
+                entry.setDischargeDate(now.toLocalDate());
+                entry.setDischargeTime(now.toLocalTime());
             }
 
             dischargeEntryRepository.save(entry);

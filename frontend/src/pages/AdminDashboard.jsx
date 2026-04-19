@@ -304,6 +304,154 @@ const AdminDashboard = () => {
     });
   });
 
+  const filteredDischargeRecords = dischargeRecords.filter(record => {
+    return filters.every(filter => {
+      const searchColumn = filter.column;
+
+      if (searchColumn === 'Admission Date' && filter.subType === 'Between') {
+        if (!record.admissionDate) return false;
+        const pDate = new Date(record.admissionDate);
+        if (filter.rangeStart && new Date(filter.rangeStart) > pDate) return false;
+        if (filter.rangeEnd && new Date(filter.rangeEnd) < pDate) return false;
+        return true;
+      }
+      if (searchColumn === 'Discharge Date' && filter.subType === 'Between') {
+        if (!record.dischargeDate) return false;
+        const pDate = new Date(record.dischargeDate);
+        if (filter.rangeStart && new Date(filter.rangeStart) > pDate) return false;
+        if (filter.rangeEnd && new Date(filter.rangeEnd) < pDate) return false;
+        return true;
+      }
+
+      if (searchColumn === 'Admission Time' && filter.subType === 'Between') {
+        if (!record.admissionTime) return false;
+        const pTimeStr = record.admissionTime.substring(0, 5); // "HH:MM"
+        if (filter.rangeStart && filter.rangeStart > pTimeStr) return false;
+        if (filter.rangeEnd && filter.rangeEnd < pTimeStr) return false;
+        return true;
+      }
+      if (searchColumn === 'Discharge Time' && filter.subType === 'Between') {
+        if (!record.dischargeTime) return false;
+        const pTimeStr = record.dischargeTime.substring(0, 5); // "HH:MM"
+        if (filter.rangeStart && filter.rangeStart > pTimeStr) return false;
+        if (filter.rangeEnd && filter.rangeEnd < pTimeStr) return false;
+        return true;
+      }
+
+      if (searchColumn === 'Admission Time' && filter.subType === 'AM') {
+        if (!record.admissionTime) return false;
+        return parseInt(record.admissionTime.split(':')[0], 10) < 12;
+      }
+      if (searchColumn === 'Admission Time' && filter.subType === 'PM') {
+        if (!record.admissionTime) return false;
+        return parseInt(record.admissionTime.split(':')[0], 10) >= 12;
+      }
+      if (searchColumn === 'Discharge Time' && filter.subType === 'AM') {
+        if (!record.dischargeTime) return false;
+        return parseInt(record.dischargeTime.split(':')[0], 10) < 12;
+      }
+      if (searchColumn === 'Discharge Time' && filter.subType === 'PM') {
+        if (!record.dischargeTime) return false;
+        return parseInt(record.dischargeTime.split(':')[0], 10) >= 12;
+      }
+
+      const query = filter.value ? filter.value.toLowerCase().trim() : '';
+      if (!query) return true;
+
+      const checkMatch = (val, strict = false) => {
+        if (val == null) return false;
+        const strVal = val.toString().toLowerCase();
+        if (strict) {
+          return strVal === query || strVal.startsWith(query);
+        }
+        return strVal.includes(query);
+      };
+
+      if (searchColumn === 'All Columns') {
+        return (
+          checkMatch(record.customPatientId || (record.patient && record.patient.patientId)) ||
+          checkMatch(record.patientName) ||
+          checkMatch(record.age) ||
+          checkMatch(record.gender, true) ||
+          checkMatch(record.caseType, true) ||
+          checkMatch(record.arNo) ||
+          checkMatch(record.aadharNo) ||
+          checkMatch(record.mobileNo) ||
+          checkMatch(record.admissionWard) ||
+          checkMatch(record.admissionDate) ||
+          checkMatch(record.admissionTime) ||
+          checkMatch(record.dischargeWard) ||
+          checkMatch(record.dischargeDate) ||
+          checkMatch(record.dischargeTime) ||
+          checkMatch(record.dischargeType) ||
+          checkMatch(record.occupation) ||
+          checkMatch(record.motherName) ||
+          checkMatch(record.caretakerName) ||
+          checkMatch(record.address)
+        );
+      }
+
+      const valueToCheck = (() => {
+        switch (searchColumn) {
+          case 'Patient ID': return record.customPatientId || (record.patient && record.patient.patientId);
+          case 'Name': return record.patientName;
+          case 'Age': return record.age;
+          case 'Gender': return record.gender;
+          case 'Case Type': return record.caseType;
+          case 'AR No': return record.arNo;
+          case 'Aadhar No': return record.aadharNo;
+          case 'Mobile': return record.mobileNo;
+          case 'Ward': return record.admissionWard;
+          case 'Discharge Ward': return record.dischargeWard;
+          case 'Discharge Type': return record.dischargeType;
+          case 'Admission Date': 
+            if (!record.admissionDate) return '';
+            const dParts = record.admissionDate.split('-');
+            if (filter.subType === 'Year') return dParts[0];
+            if (filter.subType === 'Month') return dParts[1];
+            if (filter.subType === 'Date') return dParts[2];
+            return record.admissionDate;
+          case 'Discharge Date': 
+            if (!record.dischargeDate) return '';
+            const ddParts = record.dischargeDate.split('-');
+            if (filter.subType === 'Year') return ddParts[0];
+            if (filter.subType === 'Month') return ddParts[1];
+            if (filter.subType === 'Date') return ddParts[2];
+            return record.dischargeDate;
+          case 'Admission Time': 
+            if (!record.admissionTime) return '';
+            const tParts = record.admissionTime.split(':');
+            const hh = parseInt(tParts[0], 10);
+            if (filter.subType === 'Hour') return (hh % 12 || 12).toString();
+            if (filter.subType === 'Minute') return tParts[1];
+            return record.admissionTime;
+          case 'Discharge Time': 
+            if (!record.dischargeTime) return '';
+            const dtParts = record.dischargeTime.split(':');
+            const dhh = parseInt(dtParts[0], 10);
+            if (filter.subType === 'Hour') return (dhh % 12 || 12).toString();
+            if (filter.subType === 'Minute') return dtParts[1];
+            return record.dischargeTime;
+          case 'Occupation': return record.occupation;
+          case "Mother's Name": return record.motherName;
+          case 'Caretaker Name': return record.caretakerName;
+          case 'Address': 
+            if (!filter.addressType || filter.addressType === 'All') return record.address;
+            if (!record.address) return '';
+            const parts = record.address.split(',').map(s => s.trim());
+            if (filter.addressType === 'Village') return parts[1] || '';
+            if (filter.addressType === 'Taluk') return parts[2] || '';
+            if (filter.addressType === 'District') return parts[3] || '';
+            return record.address;
+          default: return '';
+        }
+      })();
+
+      const isStrictColumn = ['Case Type', 'Gender', 'Discharge Type'].includes(searchColumn);
+      return checkMatch(valueToCheck, isStrictColumn);
+    });
+  });
+
   const handleChange = (e) => {
     let { name, value } = e.target;
     
@@ -433,7 +581,7 @@ const AdminDashboard = () => {
         </header>
 
         <div className="form-container glass-panel">
-          {activeTab === 'RECORDS' && (
+          {(activeTab === 'RECORDS' || activeTab === 'DISCHARGE_RECORDS') && (
             <div className="records-view">
               <div className="records-controls" style={{ marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 {filters.map((filter, index) => (
@@ -499,6 +647,14 @@ const AdminDashboard = () => {
                       <option value="Caretaker Name">Caretaker Name</option>
                       <option value="Address">Address</option>
                       <option value="Status">Status</option>
+                      {activeTab === 'DISCHARGE_RECORDS' && (
+                        <>
+                          <option value="Discharge Date">Discharge Date</option>
+                          <option value="Discharge Time">Discharge Time</option>
+                          <option value="Discharge Type">Discharge Type</option>
+                          <option value="Discharge Ward">Discharge Ward</option>
+                        </>
+                      )}
                     </select>
                     {filter.column === 'Address' && (
                       <select 
@@ -512,7 +668,7 @@ const AdminDashboard = () => {
                         <option value="District">District</option>
                       </select>
                     )}
-                    {filter.column === 'Admission Date' && (
+                    {(filter.column === 'Admission Date' || filter.column === 'Discharge Date') && (
                       <select 
                         value={filter.subType || 'All'} 
                         onChange={(e) => updateFilter(index, 'subType', e.target.value)}
@@ -525,7 +681,7 @@ const AdminDashboard = () => {
                         <option value="Between">Between (Range)</option>
                       </select>
                     )}
-                    {filter.column === 'Admission Time' && (
+                    {(filter.column === 'Admission Time' || filter.column === 'Discharge Time') && (
                       <select 
                         value={filter.subType || 'All'} 
                         onChange={(e) => updateFilter(index, 'subType', e.target.value)}
@@ -627,7 +783,7 @@ const AdminDashboard = () => {
                   <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
                     <button 
                       onClick={downloadAsExcel}
-                      disabled={filteredPatients.length === 0}
+                      disabled={activeTab === 'RECORDS' ? filteredPatients.length === 0 : filteredDischargeRecords.length === 0}
                       className="btn btn-primary"
                       style={{ 
                         backgroundColor: '#107c41', // Excel Green
@@ -635,7 +791,7 @@ const AdminDashboard = () => {
                         display: 'flex', 
                         alignItems: 'center', 
                         gap: '0.5rem',
-                        opacity: filteredPatients.length === 0 ? 0.6 : 1
+                        opacity: (activeTab === 'RECORDS' ? filteredPatients.length === 0 : filteredDischargeRecords.length === 0) ? 0.6 : 1
                       }}
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -670,6 +826,7 @@ const AdminDashboard = () => {
                         <th style={{ padding: '1rem' }}>AR No</th>
                         <th style={{ padding: '1rem' }}>Admission Date</th>
                         <th style={{ padding: '1rem' }}>Discharge Date</th>
+                        <th style={{ padding: '1rem' }}>Discharge Time</th>
                         <th style={{ padding: '1rem' }}>Discharge Type</th>
                         <th style={{ padding: '1rem' }}>Discharge Ward</th>
                         <th style={{ padding: '1rem' }}>Mobile</th>
@@ -679,7 +836,7 @@ const AdminDashboard = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {dischargeRecords.map((record, i) => (
+                      {filteredDischargeRecords.map((record, i) => (
                         <tr key={i} style={{ borderBottom: '1px solid var(--border-color)' }}>
                           <td style={{ padding: '1rem' }}>{record.customPatientId || record.patient?.patientId}</td>
                           <td style={{ padding: '1rem', fontWeight: '500' }}>{record.patientName || 'N/A'}</td>
@@ -688,7 +845,8 @@ const AdminDashboard = () => {
                           <td style={{ padding: '1rem' }}>{record.caseType || 'N/A'}</td>
                           <td style={{ padding: '1rem' }}>{record.arNo || 'N/A'}</td>
                           <td style={{ padding: '1rem' }}>{record.admissionDate ? `${record.admissionDate} ${formatTime12Hour(record.admissionTime)}` : 'N/A'}</td>
-                          <td style={{ padding: '1rem', color: 'var(--primary)', fontWeight: 'bold' }}>{new Date(record.dischargeDate).toLocaleString()}</td>
+                          <td style={{ padding: '1rem', color: 'var(--primary)', fontWeight: 'bold' }}>{record.dischargeDate || 'N/A'}</td>
+                          <td style={{ padding: '1rem', color: 'var(--primary)', fontWeight: 'bold' }}>{formatTime12Hour(record.dischargeTime)}</td>
                           <td style={{ padding: '1rem' }}>
                             <span style={{ padding: '0.25rem 0.5rem', borderRadius: '0.25rem', fontSize: '0.875rem', fontWeight: 'bold', backgroundColor: record.dischargeType === 'Death' ? '#fee2e2' : '#dcfce3', color: record.dischargeType === 'Death' ? '#ef4444' : '#16a34a' }}>
                               {record.dischargeType}
