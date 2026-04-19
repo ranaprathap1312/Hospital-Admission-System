@@ -23,7 +23,10 @@ const AdminDashboard = () => {
     aadharNo: '',
     occupation: '',
     caretakerName: '',
-    address: ''
+    street: '',
+    village: '',
+    taluk: 'Vridhachalam',
+    district: 'Cuddalore'
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -120,10 +123,15 @@ const AdminDashboard = () => {
     setError('');
     
     try {
+      const payload = {
+        ...formData,
+        address: `${formData.street}, ${formData.village}, ${formData.taluk}, ${formData.district}`
+      };
+
       const response = await fetch(`${API_BASE_URL}/api/patients/admit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(payload)
       });
       
       if (response.ok) {
@@ -154,7 +162,8 @@ const AdminDashboard = () => {
     setFormData({
       patientName: '', age: '', motherName: '', patientId: '',
       admissionDate: getCurrentDateTime(), wardName: '', mobileNo: '', aadharNo: '',
-      occupation: '', caretakerName: '', address: ''
+      occupation: '', caretakerName: '', street: '', village: '',
+      taluk: 'Vridhachalam', district: 'Cuddalore'
     });
     setManualPatientId(false);
     setManualAdmissionDate(false);
@@ -439,9 +448,26 @@ const AdminDashboard = () => {
                     </div>
                   </div>
                   
-                  <div className="form-group">
-                    <label>Address *</label>
-                    <textarea name="address" rows="2" value={formData.address} onChange={handleChange} required></textarea>
+                  <h3 className="section-title" style={{ marginTop: '1.5rem' }}>Address Details</h3>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Street / Box *</label>
+                      <input type="text" name="street" value={formData.street} onChange={handleChange} required />
+                    </div>
+                    <div className="form-group">
+                      <label>Village / Town *</label>
+                      <input type="text" name="village" value={formData.village} onChange={handleChange} required />
+                    </div>
+                  </div>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Taluk *</label>
+                      <input type="text" name="taluk" value={formData.taluk} onChange={handleChange} required />
+                    </div>
+                    <div className="form-group">
+                      <label>District *</label>
+                      <input type="text" name="district" value={formData.district} onChange={handleChange} required />
+                    </div>
                   </div>
                 </div>
 
