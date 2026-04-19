@@ -81,7 +81,7 @@ const DischargePage = () => {
   return (
     <div className="dashboard-wrapper">
       <main className="main-content" style={{ marginLeft: 0, padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
-        <header className="content-header" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
+        <header className="content-header no-print" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
           <button onClick={() => navigate('/')} className="btn btn-outline" style={{ padding: '0.5rem' }}>
             <ArrowLeft size={20} />
           </button>
@@ -188,17 +188,54 @@ const DischargePage = () => {
               )}
             </>
           ) : (
-            <div className="success-message" style={{ textAlign: 'center', padding: '3rem 1rem' }}>
-              <CheckCircle2 size={64} className="success-icon" style={{ margin: '0 auto 1rem auto' }} />
-              <h2 style={{ marginBottom: '1rem' }}>Discharge Successful!</h2>
-              <p style={{ marginBottom: '2rem' }}>Patient {patientData?.patientName} has been officially discharged as <strong>{dischargeType}</strong>.</p>
-              <button className="btn btn-outline" onClick={() => {
-                setSuccess(false);
-                setPatientData(null);
-                setPatientId('');
-              }}>
-                Process Another Discharge
-              </button>
+            <div className="success-wrapper">
+              <div className="success-message no-print" style={{ textAlign: 'center', padding: '2rem 1rem 1rem' }}>
+                <CheckCircle2 size={64} className="success-icon" style={{ margin: '0 auto 1rem auto' }} />
+                <h2 style={{ marginBottom: '1rem' }}>Discharge Successful!</h2>
+                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '1.5rem' }}>
+                  <button className="btn btn-primary" onClick={() => window.print()} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    Print Discharge Form
+                  </button>
+                  <button className="btn btn-outline" onClick={() => {
+                    setSuccess(false);
+                    setPatientData(null);
+                    setPatientId('');
+                    setDischargeType('Normal Discharge');
+                  }}>
+                    Process Another Discharge
+                  </button>
+                </div>
+              </div>
+
+              {/* Printable Discharge Summary */}
+              <div className="print-section" style={{ border: '1px solid var(--border-color)', borderRadius: '0.5rem', padding: '2rem', marginTop: '2rem' }}>
+                <div className="print-header" style={{ textAlign: 'center', marginBottom: '2rem', borderBottom: '2px solid #000', paddingBottom: '1rem' }}>
+                  <h2 style={{ margin: '0 0 0.5rem 0', textTransform: 'uppercase', letterSpacing: '1px' }}>DIET SHEET - DISCHARGE FORM</h2>
+                  <h3 style={{ margin: 0, fontWeight: 'normal' }}>GOVERNMENT HOSPITAL VRIDHACHALAM</h3>
+                </div>
+
+                <div className="print-grid" style={{ marginBottom: '2rem' }}>
+                  <p><strong>Patient ID:</strong> {patientData?.patientId}</p>
+                  <p><strong>Name:</strong> {patientData?.patientName}</p>
+                  <p><strong>Age:</strong> {patientData?.age}</p>
+                  <p><strong>Gender:</strong> {patientData?.gender || 'N/A'}</p>
+                  <p><strong>Mother's Name:</strong> {patientData?.motherName || 'N/A'}</p>
+                  <p><strong>Mobile No:</strong> {patientData?.mobileNo || 'N/A'}</p>
+                  <p><strong>Aadhar No:</strong> {patientData?.aadharNo || 'N/A'}</p>
+                  <p><strong>Address:</strong> {patientData?.address || 'N/A'}</p>
+                </div>
+
+                <h3 style={{ marginBottom: '1rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>Admission & Discharge Details</h3>
+                <div className="print-grid">
+                  <p><strong>Case Type:</strong> {patientData?.caseType}</p>
+                  {patientData?.caseType === 'MLC' && <p><strong>AR No:</strong> {patientData?.arNo}</p>}
+                  <p><strong>Admission Date:</strong> {new Date(patientData?.admissionDate).toLocaleString()}</p>
+                  <p><strong>Admission Ward:</strong> {patientData?.wardName}</p>
+                  <p><strong>Discharge Date:</strong> {new Date(dischargeDate).toLocaleString()}</p>
+                  <p><strong>Discharge Ward:</strong> {dischargeWard}</p>
+                  <p><strong>Discharge Type:</strong> <span style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>{dischargeType}</span></p>
+                </div>
+              </div>
             </div>
           )}
         </div>
