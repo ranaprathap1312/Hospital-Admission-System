@@ -17,6 +17,17 @@ const AdminDashboard = () => {
     return now.toTimeString().split(' ')[0].substring(0, 5);
   };
 
+  const formatTime12Hour = (timeString) => {
+    if (!timeString) return '';
+    const [hours, minutes] = timeString.split(':');
+    if (!hours || !minutes) return timeString;
+    let h = parseInt(hours, 10);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12;
+    h = h ? h : 12; // 0 becomes 12
+    return `${h.toString().padStart(2, '0')}:${minutes} ${ampm}`;
+  };
+
   const [formData, setFormData] = useState({
     patientName: '',
     age: '',
@@ -410,7 +421,7 @@ const AdminDashboard = () => {
                           <td style={{ padding: '1rem' }}>{patient.mobileNo}</td>
                           <td style={{ padding: '1rem' }}>{patient.wardName}</td>
                           <td style={{ padding: '1rem' }}>{patient.admissionDate}</td>
-                          <td style={{ padding: '1rem' }}>{patient.admissionTime}</td>
+                          <td style={{ padding: '1rem' }}>{formatTime12Hour(patient.admissionTime)}</td>
                           <td style={{ padding: '1rem' }}>{patient.occupation || 'N/A'}</td>
                           <td style={{ padding: '1rem' }}>{patient.motherName || 'N/A'}</td>
                           <td style={{ padding: '1rem' }}>{patient.caretakerName || 'N/A'}</td>
@@ -478,7 +489,7 @@ const AdminDashboard = () => {
                     {submittedData.caseType === 'MLC' && <p><strong>AR No:</strong> {submittedData.arNo}</p>}
                     <p><strong>Aadhar No:</strong> {submittedData.aadharNo}</p>
                     <p><strong>Admission Date:</strong> {submittedData.admissionDate}</p>
-                    <p><strong>Admission Time:</strong> {submittedData.admissionTime}</p>
+                    <p><strong>Admission Time:</strong> {formatTime12Hour(submittedData.admissionTime)}</p>
                     <p><strong>Ward Name:</strong> {submittedData.wardName}</p>
                     <p><strong>Mobile No:</strong> {submittedData.mobileNo}</p>
                   </div>
