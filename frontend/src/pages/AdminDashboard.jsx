@@ -76,7 +76,7 @@ const AdminDashboard = () => {
   const fetchPatients = async () => {
     setLoadingRecords(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/patients`);
+      const response = await fetch(`${API_BASE_URL}/api/patients/master-admissions`);
       const data = await response.json();
       setPatients(data);
     } catch (err) {

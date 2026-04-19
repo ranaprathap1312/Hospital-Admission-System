@@ -65,6 +65,10 @@ public class PatientService {
         return patientRepository.findAll();
     }
 
+    public java.util.List<MasterAdmission> getAllMasterAdmissions() {
+        return masterAdmissionRepository.findAll();
+    }
+
     public java.util.Optional<Patient> getPatientByPatientId(String patientId) {
         return patientRepository.findByPatientId(patientId);
     }

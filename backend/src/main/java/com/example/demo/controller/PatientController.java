@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.entity.MasterAdmission;
 import com.example.demo.entity.Patient;
 import com.example.demo.service.PatientService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,16 @@ public class PatientController {
         try {
             java.util.List<Patient> patients = patientService.getAllPatients();
             return new ResponseEntity<>(patients, HttpStatus.OK);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/master-admissions")
+    public ResponseEntity<java.util.List<MasterAdmission>> getAllMasterAdmissions() {
+        try {
+            java.util.List<MasterAdmission> admissions = patientService.getAllMasterAdmissions();
+            return new ResponseEntity<>(admissions, HttpStatus.OK);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
