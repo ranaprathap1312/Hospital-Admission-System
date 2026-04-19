@@ -78,6 +78,12 @@ const AdminDashboard = () => {
   const updateFilter = (index, field, value) => {
     const newFilters = [...filters];
     newFilters[index][field] = value;
+    if (field === 'column') {
+      newFilters[index].subType = 'All';
+      newFilters[index].value = '';
+      newFilters[index].rangeStart = '';
+      newFilters[index].rangeEnd = '';
+    }
     setFilters(newFilters);
   };
 
