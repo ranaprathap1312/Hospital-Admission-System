@@ -141,8 +141,20 @@ const AdminDashboard = () => {
         return true;
       }
 
+      if (searchColumn === 'Admission Time' && filter.subType === 'AM') {
+        if (!patient.admissionTime) return false;
+        const hh = parseInt(patient.admissionTime.split(':')[0], 10);
+        return hh < 12;
+      }
+
+      if (searchColumn === 'Admission Time' && filter.subType === 'PM') {
+        if (!patient.admissionTime) return false;
+        const hh = parseInt(patient.admissionTime.split(':')[0], 10);
+        return hh >= 12;
+      }
+
       const query = filter.value ? filter.value.toLowerCase().trim() : '';
-      if (!query && filter.subType !== 'AM/PM') return true;
+      if (!query) return true;
 
       const checkMatch = (val, strict = false) => {
         if (val == null) return false;
@@ -200,7 +212,6 @@ const AdminDashboard = () => {
                 return (hh % 12 || 12).toString(); // Return 12-hour integer string for easy match
             }
             if (filter.subType === 'Minute') return tParts[1];
-            if (filter.subType === 'AM/PM') return hh >= 12 ? 'pm' : 'am';
             return formatTime12Hour(patient.admissionTime);
           case 'Occupation': return patient.occupation;
           case "Mother's Name": return patient.motherName;
@@ -367,16 +378,10 @@ const AdminDashboard = () => {
                           style={{ width: '50%', padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem' }}
                         />
                       </div>
-                    ) : filter.subType === 'AM/PM' && filter.column === 'Admission Time' ? (
-                      <select
-                        value={filter.value}
-                        onChange={(e) => updateFilter(index, 'value', e.target.value)}
-                        style={{ flexGrow: 1, padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white' }}
-                      >
-                        <option value="">Any AM/PM</option>
-                        <option value="am">AM</option>
-                        <option value="pm">PM</option>
-                      </select>
+                    ) : (filter.subType === 'AM' || filter.subType === 'PM') ? (
+                      <div style={{ flexGrow: 1, padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px dashed var(--primary)', backgroundColor: 'rgba(59, 130, 246, 0.05)', color: 'var(--primary)', textAlign: 'center', fontWeight: 'bold' }}>
+                        Showing {filter.subType} Patients Only
+                      </div>
                     ) : (
                       <input 
                         type="text" 
@@ -451,7 +456,8 @@ const AdminDashboard = () => {
                         <option value="All">Exact Time</option>
                         <option value="Hour">Hour</option>
                         <option value="Minute">Minute</option>
-                        <option value="AM/PM">AM / PM</option>
+                        <option value="AM">Morning (AM)</option>
+                        <option value="PM">Evening (PM)</option>
                         <option value="Between">Between (Range)</option>
                       </select>
                     )}
