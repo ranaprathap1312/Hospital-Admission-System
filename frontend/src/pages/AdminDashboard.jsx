@@ -91,14 +91,25 @@ const AdminDashboard = () => {
     const query = searchQuery.toLowerCase();
     if (!query) return true;
 
+    const checkMatch = (val) => val != null && val.toString().toLowerCase().includes(query);
+
     if (searchColumn === 'All Columns') {
       return (
-        (patient.patientName && patient.patientName.toLowerCase().includes(query)) ||
-        (patient.patientId && patient.patientId.toLowerCase().includes(query)) ||
-        (patient.mobileNo && patient.mobileNo.includes(query)) ||
-        (patient.wardName && patient.wardName.toLowerCase().includes(query)) ||
-        (patient.aadharNo && patient.aadharNo.includes(query)) ||
-        (patient.address && patient.address.toLowerCase().includes(query))
+        checkMatch(patient.patientId) ||
+        checkMatch(patient.patientName) ||
+        checkMatch(patient.age) ||
+        checkMatch(patient.gender) ||
+        checkMatch(patient.caseType) ||
+        checkMatch(patient.arNo) ||
+        checkMatch(patient.aadharNo) ||
+        checkMatch(patient.mobileNo) ||
+        checkMatch(patient.wardName) ||
+        (patient.admissionDate && checkMatch(new Date(patient.admissionDate).toLocaleString())) ||
+        checkMatch(patient.occupation) ||
+        checkMatch(patient.motherName) ||
+        checkMatch(patient.caretakerName) ||
+        checkMatch(patient.address) ||
+        checkMatch(patient.status)
       );
     }
 
@@ -106,7 +117,7 @@ const AdminDashboard = () => {
       switch (searchColumn) {
         case 'Patient ID': return patient.patientId;
         case 'Name': return patient.patientName;
-        case 'Age': return patient.age ? patient.age.toString() : '';
+        case 'Age': return patient.age;
         case 'Gender': return patient.gender;
         case 'Case Type': return patient.caseType;
         case 'AR No': return patient.arNo;
@@ -123,7 +134,7 @@ const AdminDashboard = () => {
       }
     })();
 
-    return valueToCheck && valueToCheck.toString().toLowerCase().includes(query);
+    return checkMatch(valueToCheck);
   });
 
   const handleChange = (e) => {
