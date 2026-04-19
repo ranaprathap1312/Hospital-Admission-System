@@ -128,7 +128,7 @@ const DischargePage = () => {
                     <p><strong>Address:</strong> {patientData.address || 'N/A'}</p>
                     <p><strong>Admission Ward:</strong> {patientData.wardName}</p>
                     <p><strong>Case Type:</strong> {patientData.caseType}</p>
-                    {patientData.caseType === 'MLC' && <p><strong>AR No:</strong> {patientData.arNo}</p>}
+                    <p><strong>AR No:</strong> {patientData.arNo || 'N/A'}</p>
                     <p><strong>Admission Date:</strong> {new Date(patientData.admissionDate).toLocaleString()}</p>
                   </div>
 
@@ -228,7 +228,7 @@ const DischargePage = () => {
                 <h3 style={{ marginBottom: '1rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>Admission & Discharge Details</h3>
                 <div className="print-grid">
                   <p><strong>Case Type:</strong> {patientData?.caseType}</p>
-                  {patientData?.caseType === 'MLC' && <p><strong>AR No:</strong> {patientData?.arNo}</p>}
+                  <p><strong>AR No:</strong> {patientData?.arNo || 'N/A'}</p>
                   <p><strong>Admission Date:</strong> {new Date(patientData?.admissionDate).toLocaleString()}</p>
                   <p><strong>Admission Ward:</strong> {patientData?.wardName}</p>
                   <p><strong>Discharge Date:</strong> {new Date(dischargeDate).toLocaleString()}</p>
