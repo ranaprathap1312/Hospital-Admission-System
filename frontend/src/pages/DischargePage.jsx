@@ -41,7 +41,7 @@ const DischargePage = () => {
             setError(`Patient ${data.patientName} is already discharged.`);
         } else {
             setPatientData(data);
-            setDischargeWard(data.wardName || 'MALE MEDICAL WARD');
+            setDischargeWard('');
             setDischargeDate(getCurrentDateTime());
         }
       } else {
@@ -154,14 +154,20 @@ const DischargePage = () => {
                           required
                           style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white' }}
                         >
-                          <option value="MALE MEDICAL WARD">MALE MEDICAL WARD</option>
-                          <option value="MALE SURGICAL WARD">MALE SURGICAL WARD</option>
-                          <option value="FEMALE MEDICAL WARD">FEMALE MEDICAL WARD</option>
-                          <option value="FEMALE SURGICAL WARD">FEMALE SURGICAL WARD</option>
-                          <option value="MATERNITY WARD">MATERNITY WARD</option>
-                          <option value="PAEDIATRIC WARD">PAEDIATRIC WARD</option>
-                          <option value="POST OPERATIVE WARD">POST OPERATIVE WARD</option>
-                          <option value="EMERGENCY WARD">EMERGENCY WARD</option>
+                          <option value="">Select</option>
+                          <option value="CH-Children Ward">CH-Children Ward</option>
+                          <option value="CMCHIS Female Ward">CMCHIS Female Ward</option>
+                          <option value="CMCHIS Male Ward">CMCHIS Male Ward</option>
+                          <option value="Eye Ward">Eye Ward</option>
+                          <option value="F1-Female Ward-1">F1-Female Ward-1</option>
+                          <option value="F2-Female Ward-2">F2-Female Ward-2</option>
+                          <option value="HD-Dialysis ward">HD-Dialysis ward</option>
+                          <option value="Labour Ward">Labour Ward</option>
+                          <option value="M1-Male Ward-1">M1-Male Ward-1</option>
+                          <option value="M2-Male Ward-2">M2-Male Ward-2</option>
+                          <option value="PS Ward">PS Ward</option>
+                          <option value="SNCU">SNCU</option>
+                          <option value="DEATH">DEATH</option>
                         </select>
                       </div>
                     </div>
