@@ -716,10 +716,12 @@ const AdminDashboard = () => {
                 </div>
               </div>
               
-              {loadingRecords ? (
-                <p>Loading patient records...</p>
-              ) : filteredPatients.length === 0 ? (
-                <p>No patient records found.</p>
+              {activeTab === 'RECORDS' && (
+                <>
+                  {loadingRecords ? (
+                    <p>Loading patient records...</p>
+                  ) : filteredPatients.length === 0 ? (
+                    <p>No patient records found.</p>
               ) : (
                 <>
                   <div style={{ overflowX: 'auto' }}>
@@ -804,17 +806,18 @@ const AdminDashboard = () => {
                   </div>
                 </>
               )}
-            </div>
+            </>
           )}
 
           {activeTab === 'DISCHARGE_RECORDS' && (
-            <div className="records-container glass-panel">
-              {loadingDischarges ? (
-                <p>Loading discharge records...</p>
-              ) : dischargeRecords.length === 0 ? (
-                <p>No discharge records found.</p>
-              ) : (
-                <div style={{ overflowX: 'auto' }}>
+            <>
+                  {loadingDischarges ? (
+                    <p>Loading discharge records...</p>
+                  ) : filteredDischargeRecords.length === 0 ? (
+                    <p>No discharge records found.</p>
+                  ) : (
+                    <>
+                      <div style={{ overflowX: 'auto' }}>
                   <table className="records-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', whiteSpace: 'nowrap' }}>
                     <thead>
                       <tr style={{ backgroundColor: '#f8fafc', borderBottom: '2px solid var(--border-color)' }}>
@@ -862,9 +865,34 @@ const AdminDashboard = () => {
                     </tbody>
                   </table>
                 </div>
-              )}
-            </div>
-          )}
+                <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
+                  <button 
+                    onClick={downloadAsExcel}
+                    disabled={filteredDischargeRecords.length === 0}
+                    className="btn btn-primary"
+                    style={{ 
+                      backgroundColor: '#107c41', // Excel Green
+                      borderColor: '#107c41',
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '0.5rem',
+                      opacity: filteredDischargeRecords.length === 0 ? 0.6 : 1
+                    }}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="7 10 12 15 17 10"></polyline>
+                      <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Download Excel
+                  </button>
+                </div>
+              </>
+            )}
+          </>
+        )}
+      </div>
+    )}
 
           {activeTab === 'ADMISSION' && viewMode === 'SUCCESS' && (
             <div className="success-message">
