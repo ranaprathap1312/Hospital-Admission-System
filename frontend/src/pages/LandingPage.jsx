@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldPlus, Activity, Stethoscope, ChevronRight } from 'lucide-react';
+import { ShieldPlus, Activity, Stethoscope, ChevronRight, ChevronDown } from 'lucide-react';
 import './LandingPage.css';
 
 const LandingPage = () => {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   return (
     <div className="landing-wrapper">
       {/* Navbar */}
@@ -14,12 +15,23 @@ const LandingPage = () => {
             <span className="logo-text">TN GH</span>
           </div>
           <div className="nav-actions">
-            <Link to="/official-login" className="btn btn-outline" style={{ marginRight: '1rem' }}>
-              Official
-            </Link>
-            <Link to="/login" className="btn btn-primary">
-              Admission login
-            </Link>
+            <div className="dropdown-container">
+              <button 
+                className="btn btn-primary" 
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                onBlur={() => setTimeout(() => setIsDropdownOpen(false), 200)}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+              >
+                Login <ChevronDown size={18} />
+              </button>
+              
+              {isDropdownOpen && (
+                <div className="dropdown-menu">
+                  <Link to="/official-login" className="dropdown-item">Higher Official Login</Link>
+                  <Link to="/login" className="dropdown-item">Admission Login</Link>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </nav>
@@ -35,9 +47,9 @@ const LandingPage = () => {
               Streamlining patient admissions, optimizing hospital workflows, and delivering the best care possible with our state-of-the-art management system.
             </p>
             <div className="hero-buttons">
-              <Link to="/login" className="btn btn-primary btn-large">
+              <button className="btn btn-primary btn-large" onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
                 Access Portal <ChevronRight size={20} />
-              </Link>
+              </button>
             </div>
           </div>
           <div className="hero-image-area">
