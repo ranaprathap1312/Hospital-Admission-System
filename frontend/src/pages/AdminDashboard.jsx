@@ -28,6 +28,51 @@ const AdminDashboard = () => {
     return `${h.toString().padStart(2, '0')}:${minutes} ${ampm}`;
   };
 
+  const downloadAsExcel = () => {
+    if (filteredPatients.length === 0) return;
+
+    // Define the headers
+    const headers = [
+      'Patient ID', 'Name', 'Age', 'Gender', 'Case Type', 'AR No', 
+      'Aadhar No', 'Mobile', 'Ward', 'Admission Date', 'Admission Time', 
+      'Occupation', 'Mother Name', 'Caretaker Name', 'Address', 'Status'
+    ];
+
+    // Map the filtered patients to rows
+    const rows = filteredPatients.map(p => [
+      p.patientId || '',
+      p.patientName || '',
+      p.age || '',
+      p.gender || '',
+      p.caseType || '',
+      p.arNo || '',
+      p.aadharNo || '',
+      p.mobileNo || '',
+      p.wardName || '',
+      p.admissionDate || '',
+      formatTime12Hour(p.admissionTime),
+      p.occupation || '',
+      p.motherName || '',
+      p.caretakerName || '',
+      p.address ? `"${p.address.replace(/"/g, '""')}"` : '', // Escape commas
+      p.status || ''
+    ]);
+
+    // Construct the CSV string
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+
+    // Create a Blob and trigger the download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const dateStr = new Date().toISOString().split('T')[0];
+    link.setAttribute('download', `Filtered_Patients_${dateStr}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const [formData, setFormData] = useState({
     patientName: '',
     age: '',
@@ -549,6 +594,28 @@ const AdminDashboard = () => {
                       ))}
                     </tbody>
                   </table>
+                  <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
+                    <button 
+                      onClick={downloadAsExcel}
+                      disabled={filteredPatients.length === 0}
+                      className="btn btn-primary"
+                      style={{ 
+                        backgroundColor: '#107c41', // Excel Green
+                        borderColor: '#107c41',
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '0.5rem',
+                        opacity: filteredPatients.length === 0 ? 0.6 : 1
+                      }}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                      </svg>
+                      Download Excel
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
