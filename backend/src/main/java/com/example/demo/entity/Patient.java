@@ -52,6 +52,15 @@ public class Patient {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @Column(name = "status")
+    private String status = "ADMITTED";
+
+    @Column(name = "discharge_type")
+    private String dischargeType;
+
+    @Column(name = "discharge_date")
+    private LocalDateTime dischargeDate;
+
     // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -100,4 +109,13 @@ public class Patient {
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public String getDischargeType() { return dischargeType; }
+    public void setDischargeType(String dischargeType) { this.dischargeType = dischargeType; }
+
+    public LocalDateTime getDischargeDate() { return dischargeDate; }
+    public void setDischargeDate(LocalDateTime dischargeDate) { this.dischargeDate = dischargeDate; }
 }

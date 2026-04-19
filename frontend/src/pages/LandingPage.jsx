@@ -29,6 +29,7 @@ const LandingPage = () => {
                 <div className="dropdown-menu">
                   <Link to="/official-login" className="dropdown-item">Higher Official Login</Link>
                   <Link to="/login" className="dropdown-item">Admission Login</Link>
+                  <Link to="/discharge" className="dropdown-item">Discharge Entry</Link>
                 </div>
               )}
             </div>

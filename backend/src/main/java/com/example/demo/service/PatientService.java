@@ -33,4 +33,20 @@ public class PatientService {
     public java.util.List<Patient> getAllPatients() {
         return patientRepository.findAll();
     }
+
+    public java.util.Optional<Patient> getPatientByPatientId(String patientId) {
+        return patientRepository.findByPatientId(patientId);
+    }
+
+    public Patient dischargePatient(String patientId, String dischargeType) {
+        java.util.Optional<Patient> optionalPatient = patientRepository.findByPatientId(patientId);
+        if (optionalPatient.isPresent()) {
+            Patient patient = optionalPatient.get();
+            patient.setStatus("DISCHARGED");
+            patient.setDischargeType(dischargeType);
+            patient.setDischargeDate(LocalDateTime.now());
+            return patientRepository.save(patient);
+        }
+        throw new RuntimeException("Patient not found with ID: " + patientId);
+    }
 }

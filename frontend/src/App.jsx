@@ -5,6 +5,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import RegisterPage from './pages/RegisterPage';
 import OfficialLoginPage from './pages/OfficialLoginPage';
 import OfficialDashboard from './pages/OfficialDashboard';
+import DischargePage from './pages/DischargePage';
 import './App.css';
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
           <Route path="/official-login" element={<OfficialLoginPage />} />
           <Route path="/official-dashboard" element={<OfficialDashboard />} />
           <Route path="/admin/*" element={<AdminDashboard />} />
+          <Route path="/discharge" element={<DischargePage />} />
         </Routes>
       </div>
     </Router>

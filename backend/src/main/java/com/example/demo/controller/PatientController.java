@@ -33,4 +33,24 @@ public class PatientController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+    @GetMapping("/id/{patientId}")
+    public ResponseEntity<Patient> getPatientByPatientId(@PathVariable String patientId) {
+        java.util.Optional<Patient> patient = patientService.getPatientByPatientId(patientId);
+        return patient.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
+    @PutMapping("/{patientId}/discharge")
+    public ResponseEntity<Patient> dischargePatient(@PathVariable String patientId, @RequestBody java.util.Map<String, String> payload) {
+        try {
+            String dischargeType = payload.get("dischargeType");
+            Patient dischargedPatient = patientService.dischargePatient(patientId, dischargeType);
+            return new ResponseEntity<>(dischargedPatient, HttpStatus.OK);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
