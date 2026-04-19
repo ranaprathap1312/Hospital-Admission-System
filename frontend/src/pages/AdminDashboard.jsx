@@ -44,17 +44,17 @@ const AdminDashboard = () => {
   // Patient Records State
   const [patients, setPatients] = useState([]);
   const [loadingRecords, setLoadingRecords] = useState(false);
-  const [filters, setFilters] = useState([{ column: 'All Columns', value: '' }]);
+  const [filters, setFilters] = useState([{ column: 'All Columns', value: '', addressType: 'All' }]);
 
   const addFilter = () => {
-    setFilters([...filters, { column: 'All Columns', value: '' }]);
+    setFilters([...filters, { column: 'All Columns', value: '', addressType: 'All' }]);
   };
 
   const removeFilter = (index) => {
     if (filters.length > 1) {
       setFilters(filters.filter((_, i) => i !== index));
     } else {
-      setFilters([{ column: 'All Columns', value: '' }]);
+      setFilters([{ column: 'All Columns', value: '', addressType: 'All' }]);
     }
   };
 
@@ -154,7 +154,14 @@ const AdminDashboard = () => {
           case 'Occupation': return patient.occupation;
           case "Mother's Name": return patient.motherName;
           case 'Caretaker Name': return patient.caretakerName;
-          case 'Address': return patient.address;
+          case 'Address': 
+            if (!filter.addressType || filter.addressType === 'All') return patient.address;
+            if (!patient.address) return '';
+            const parts = patient.address.split(',').map(s => s.trim());
+            if (filter.addressType === 'Village') return parts[1] || '';
+            if (filter.addressType === 'Taluk') return parts[2] || '';
+            if (filter.addressType === 'District') return parts[3] || '';
+            return patient.address;
           case 'Status': return patient.status;
           default: return '';
         }
@@ -321,6 +328,18 @@ const AdminDashboard = () => {
                       <option value="Address">Address</option>
                       <option value="Status">Status</option>
                     </select>
+                    {filter.column === 'Address' && (
+                      <select 
+                        value={filter.addressType || 'All'} 
+                        onChange={(e) => updateFilter(index, 'addressType', e.target.value)}
+                        style={{ padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white', minWidth: '150px' }}
+                      >
+                        <option value="All">Full Address</option>
+                        <option value="Village">Village / Town</option>
+                        <option value="Taluk">Taluk</option>
+                        <option value="District">District</option>
+                      </select>
+                    )}
                     {filters.length > 1 && (
                       <button 
                         onClick={() => removeFilter(index)}
