@@ -43,7 +43,7 @@ public class PatientService {
         return patientRepository.findByPatientId(patientId);
     }
 
-    public Patient dischargePatient(String patientId, String dischargeType) {
+    public Patient dischargePatient(String patientId, String dischargeType, String dischargeWard, String dischargeDateStr) {
         java.util.Optional<Patient> optionalPatient = patientRepository.findByPatientId(patientId);
         if (optionalPatient.isPresent()) {
             Patient patient = optionalPatient.get();
@@ -54,7 +54,18 @@ public class PatientService {
             entry.setPatient(patient);
             entry.setCustomPatientId(patient.getPatientId());
             entry.setDischargeType(dischargeType);
-            entry.setDischargeDate(LocalDateTime.now());
+            entry.setDischargeWard(dischargeWard);
+
+            if (dischargeDateStr != null && !dischargeDateStr.isEmpty()) {
+                try {
+                    entry.setDischargeDate(LocalDateTime.parse(dischargeDateStr));
+                } catch (Exception e) {
+                    entry.setDischargeDate(LocalDateTime.now());
+                }
+            } else {
+                entry.setDischargeDate(LocalDateTime.now());
+            }
+
             dischargeEntryRepository.save(entry);
 
             return patient;

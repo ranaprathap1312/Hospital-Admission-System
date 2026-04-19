@@ -45,7 +45,9 @@ public class PatientController {
     public ResponseEntity<Patient> dischargePatient(@PathVariable String patientId, @RequestBody java.util.Map<String, String> payload) {
         try {
             String dischargeType = payload.get("dischargeType");
-            Patient dischargedPatient = patientService.dischargePatient(patientId, dischargeType);
+            String dischargeWard = payload.get("dischargeWard");
+            String dischargeDate = payload.get("dischargeDate");
+            Patient dischargedPatient = patientService.dischargePatient(patientId, dischargeType, dischargeWard, dischargeDate);
             return new ResponseEntity<>(dischargedPatient, HttpStatus.OK);
         } catch (RuntimeException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);

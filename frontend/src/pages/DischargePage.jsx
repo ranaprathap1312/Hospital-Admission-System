@@ -9,7 +9,15 @@ const DischargePage = () => {
   const navigate = useNavigate();
   const [patientId, setPatientId] = useState('');
   const [patientData, setPatientData] = useState(null);
+  
+  const getCurrentDateTime = () => {
+    const now = new Date();
+    return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  };
+
   const [dischargeType, setDischargeType] = useState('Normal Discharge');
+  const [dischargeWard, setDischargeWard] = useState('');
+  const [dischargeDate, setDischargeDate] = useState(getCurrentDateTime());
   
   const [isSearching, setIsSearching] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -33,6 +41,8 @@ const DischargePage = () => {
             setError(`Patient ${data.patientName} is already discharged.`);
         } else {
             setPatientData(data);
+            setDischargeWard(data.wardName || 'MALE MEDICAL WARD');
+            setDischargeDate(getCurrentDateTime());
         }
       } else {
         setError('Patient not found with that ID.');
@@ -53,7 +63,7 @@ const DischargePage = () => {
       const response = await fetch(`${API_BASE_URL}/api/patients/${patientId}/discharge`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dischargeType })
+        body: JSON.stringify({ dischargeType, dischargeWard, dischargeDate })
       });
 
       if (response.ok) {
@@ -110,7 +120,13 @@ const DischargePage = () => {
                     <p><strong>Name:</strong> {patientData.patientName}</p>
                     <p><strong>Age:</strong> {patientData.age}</p>
                     <p><strong>Gender:</strong> {patientData.gender || 'N/A'}</p>
-                    <p><strong>Ward:</strong> {patientData.wardName}</p>
+                    <p><strong>Mother's Name:</strong> {patientData.motherName || 'N/A'}</p>
+                    <p><strong>Mobile No:</strong> {patientData.mobileNo || 'N/A'}</p>
+                    <p><strong>Aadhar No:</strong> {patientData.aadharNo || 'N/A'}</p>
+                    <p><strong>Occupation:</strong> {patientData.occupation || 'N/A'}</p>
+                    <p><strong>Caretaker:</strong> {patientData.caretakerName || 'N/A'}</p>
+                    <p><strong>Address:</strong> {patientData.address || 'N/A'}</p>
+                    <p><strong>Admission Ward:</strong> {patientData.wardName}</p>
                     <p><strong>Case Type:</strong> {patientData.caseType}</p>
                     {patientData.caseType === 'MLC' && <p><strong>AR No:</strong> {patientData.arNo}</p>}
                     <p><strong>Admission Date:</strong> {new Date(patientData.admissionDate).toLocaleString()}</p>
@@ -118,6 +134,38 @@ const DischargePage = () => {
 
                   <form onSubmit={handleDischarge}>
                     <h3 style={{ marginBottom: '1rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>Discharge Processing</h3>
+                    
+                    <div className="form-row" style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
+                      <div className="form-group" style={{ flex: 1 }}>
+                        <label>Discharge Date & Time *</label>
+                        <input 
+                          type="datetime-local" 
+                          value={dischargeDate}
+                          onChange={(e) => setDischargeDate(e.target.value)}
+                          required
+                          style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white' }}
+                        />
+                      </div>
+                      <div className="form-group" style={{ flex: 1 }}>
+                        <label>Discharge Ward *</label>
+                        <select 
+                          value={dischargeWard} 
+                          onChange={(e) => setDischargeWard(e.target.value)} 
+                          required
+                          style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white' }}
+                        >
+                          <option value="MALE MEDICAL WARD">MALE MEDICAL WARD</option>
+                          <option value="MALE SURGICAL WARD">MALE SURGICAL WARD</option>
+                          <option value="FEMALE MEDICAL WARD">FEMALE MEDICAL WARD</option>
+                          <option value="FEMALE SURGICAL WARD">FEMALE SURGICAL WARD</option>
+                          <option value="MATERNITY WARD">MATERNITY WARD</option>
+                          <option value="PAEDIATRIC WARD">PAEDIATRIC WARD</option>
+                          <option value="POST OPERATIVE WARD">POST OPERATIVE WARD</option>
+                          <option value="EMERGENCY WARD">EMERGENCY WARD</option>
+                        </select>
+                      </div>
+                    </div>
+
                     <div className="form-group" style={{ marginBottom: '1.5rem' }}>
                       <label>Discharge Type *</label>
                       <select 

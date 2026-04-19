@@ -21,6 +21,9 @@ public class DischargeEntry {
     @Column(name = "discharge_type")
     private String dischargeType;
 
+    @Column(name = "discharge_ward")
+    private String dischargeWard;
+
     @Column(name = "discharge_date")
     private LocalDateTime dischargeDate;
 
@@ -36,6 +39,9 @@ public class DischargeEntry {
 
     public String getDischargeType() { return dischargeType; }
     public void setDischargeType(String dischargeType) { this.dischargeType = dischargeType; }
+
+    public String getDischargeWard() { return dischargeWard; }
+    public void setDischargeWard(String dischargeWard) { this.dischargeWard = dischargeWard; }
 
     public LocalDateTime getDischargeDate() { return dischargeDate; }
     public void setDischargeDate(LocalDateTime dischargeDate) { this.dischargeDate = dischargeDate; }
