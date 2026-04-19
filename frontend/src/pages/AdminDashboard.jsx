@@ -61,17 +61,17 @@ const AdminDashboard = () => {
   // Patient Records State
   const [patients, setPatients] = useState([]);
   const [loadingRecords, setLoadingRecords] = useState(false);
-  const [filters, setFilters] = useState([{ column: 'All Columns', value: '', addressType: 'All' }]);
+  const [filters, setFilters] = useState([{ column: 'All Columns', value: '', addressType: 'All', subType: 'All', rangeStart: '', rangeEnd: '' }]);
 
   const addFilter = () => {
-    setFilters([...filters, { column: 'All Columns', value: '', addressType: 'All' }]);
+    setFilters([...filters, { column: 'All Columns', value: '', addressType: 'All', subType: 'All', rangeStart: '', rangeEnd: '' }]);
   };
 
   const removeFilter = (index) => {
     if (filters.length > 1) {
       setFilters(filters.filter((_, i) => i !== index));
     } else {
-      setFilters([{ column: 'All Columns', value: '', addressType: 'All' }]);
+      setFilters([{ column: 'All Columns', value: '', addressType: 'All', subType: 'All', rangeStart: '', rangeEnd: '' }]);
     }
   };
 
@@ -123,9 +123,26 @@ const AdminDashboard = () => {
 
   const filteredPatients = patients.filter(patient => {
     return filters.every(filter => {
-      const query = filter.value.toLowerCase().trim();
-      if (!query) return true;
       const searchColumn = filter.column;
+
+      if (searchColumn === 'Admission Date' && filter.subType === 'Between') {
+        if (!patient.admissionDate) return false;
+        const pDate = new Date(patient.admissionDate);
+        if (filter.rangeStart && new Date(filter.rangeStart) > pDate) return false;
+        if (filter.rangeEnd && new Date(filter.rangeEnd) < pDate) return false;
+        return true;
+      }
+
+      if (searchColumn === 'Admission Time' && filter.subType === 'Between') {
+        if (!patient.admissionTime) return false;
+        const pTimeStr = patient.admissionTime.substring(0, 5); // "HH:MM"
+        if (filter.rangeStart && filter.rangeStart > pTimeStr) return false;
+        if (filter.rangeEnd && filter.rangeEnd < pTimeStr) return false;
+        return true;
+      }
+
+      const query = filter.value ? filter.value.toLowerCase().trim() : '';
+      if (!query && filter.subType !== 'AM/PM') return true;
 
       const checkMatch = (val, strict = false) => {
         if (val == null) return false;
@@ -168,8 +185,23 @@ const AdminDashboard = () => {
           case 'Aadhar No': return patient.aadharNo;
           case 'Mobile': return patient.mobileNo;
           case 'Ward': return patient.wardName;
-          case 'Admission Date': return patient.admissionDate;
-          case 'Admission Time': return patient.admissionTime;
+          case 'Admission Date': 
+            if (!patient.admissionDate) return '';
+            const dParts = patient.admissionDate.split('-'); // YYYY-MM-DD
+            if (filter.subType === 'Year') return dParts[0];
+            if (filter.subType === 'Month') return dParts[1];
+            if (filter.subType === 'Date') return dParts[2];
+            return patient.admissionDate;
+          case 'Admission Time': 
+            if (!patient.admissionTime) return '';
+            const tParts = patient.admissionTime.split(':'); // HH:MM:SS
+            const hh = parseInt(tParts[0], 10);
+            if (filter.subType === 'Hour') {
+                return (hh % 12 || 12).toString(); // Return 12-hour integer string for easy match
+            }
+            if (filter.subType === 'Minute') return tParts[1];
+            if (filter.subType === 'AM/PM') return hh >= 12 ? 'pm' : 'am';
+            return formatTime12Hour(patient.admissionTime);
           case 'Occupation': return patient.occupation;
           case "Mother's Name": return patient.motherName;
           case 'Caretaker Name': return patient.caretakerName;
@@ -317,14 +349,51 @@ const AdminDashboard = () => {
               <div className="records-controls" style={{ marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 {filters.map((filter, index) => (
                   <div key={index} style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                    <input 
-                      type="text" 
-                      placeholder={`Search by ${filter.column}...`} 
-                      value={filter.value}
-                      onChange={(e) => updateFilter(index, 'value', e.target.value)}
-                      className="search-input"
-                      style={{ flexGrow: 1, padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem' }}
-                    />
+                    {filter.subType === 'Between' ? (
+                      <div style={{ display: 'flex', gap: '0.5rem', flexGrow: 1 }}>
+                        <input 
+                          type={filter.column === 'Admission Date' ? 'date' : 'time'}
+                          value={filter.rangeStart || ''}
+                          onChange={(e) => updateFilter(index, 'rangeStart', e.target.value)}
+                          className="search-input"
+                          style={{ width: '50%', padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem' }}
+                        />
+                        <span style={{ alignSelf: 'center' }}>to</span>
+                        <input 
+                          type={filter.column === 'Admission Date' ? 'date' : 'time'}
+                          value={filter.rangeEnd || ''}
+                          onChange={(e) => updateFilter(index, 'rangeEnd', e.target.value)}
+                          className="search-input"
+                          style={{ width: '50%', padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem' }}
+                        />
+                      </div>
+                    ) : filter.subType === 'AM/PM' && filter.column === 'Admission Time' ? (
+                      <select
+                        value={filter.value}
+                        onChange={(e) => updateFilter(index, 'value', e.target.value)}
+                        style={{ flexGrow: 1, padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white' }}
+                      >
+                        <option value="">Any AM/PM</option>
+                        <option value="am">AM</option>
+                        <option value="pm">PM</option>
+                      </select>
+                    ) : (
+                      <input 
+                        type="text" 
+                        placeholder={
+                           filter.column === 'Admission Date' && filter.subType === 'Year' ? 'e.g. 2026' :
+                           filter.column === 'Admission Date' && filter.subType === 'Month' ? 'e.g. 04' :
+                           filter.column === 'Admission Date' && filter.subType === 'Date' ? 'e.g. 19' :
+                           filter.column === 'Admission Time' && filter.subType === 'Hour' ? 'e.g. 05 or 5' :
+                           filter.column === 'Admission Time' && filter.subType === 'Minute' ? 'e.g. 30' :
+                           `Search by ${filter.column}...`
+                        }
+                        value={filter.value}
+                        onChange={(e) => updateFilter(index, 'value', e.target.value)}
+                        className="search-input"
+                        style={{ flexGrow: 1, padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem' }}
+                      />
+                    )}
                     <select 
                       value={filter.column} 
                       onChange={(e) => updateFilter(index, 'column', e.target.value)}
@@ -358,6 +427,32 @@ const AdminDashboard = () => {
                         <option value="Village">Village / Town</option>
                         <option value="Taluk">Taluk</option>
                         <option value="District">District</option>
+                      </select>
+                    )}
+                    {filter.column === 'Admission Date' && (
+                      <select 
+                        value={filter.subType || 'All'} 
+                        onChange={(e) => updateFilter(index, 'subType', e.target.value)}
+                        style={{ padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white', minWidth: '130px' }}
+                      >
+                        <option value="All">Exact Date</option>
+                        <option value="Date">Day</option>
+                        <option value="Month">Month</option>
+                        <option value="Year">Year</option>
+                        <option value="Between">Between (Range)</option>
+                      </select>
+                    )}
+                    {filter.column === 'Admission Time' && (
+                      <select 
+                        value={filter.subType || 'All'} 
+                        onChange={(e) => updateFilter(index, 'subType', e.target.value)}
+                        style={{ padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white', minWidth: '130px' }}
+                      >
+                        <option value="All">Exact Time</option>
+                        <option value="Hour">Hour</option>
+                        <option value="Minute">Minute</option>
+                        <option value="AM/PM">AM / PM</option>
+                        <option value="Between">Between (Range)</option>
                       </select>
                     )}
                     {filters.length > 1 && (
