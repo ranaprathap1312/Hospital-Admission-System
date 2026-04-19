@@ -565,7 +565,8 @@ const AdminDashboard = () => {
               ) : filteredPatients.length === 0 ? (
                 <p>No patient records found.</p>
               ) : (
-                <div style={{ overflowX: 'auto' }}>
+                <>
+                  <div style={{ overflowX: 'auto' }}>
                   <table className="records-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', whiteSpace: 'nowrap' }}>
                     <thead>
                       <tr style={{ backgroundColor: '#f8fafc', borderBottom: '2px solid var(--border-color)' }}>
@@ -645,7 +646,7 @@ const AdminDashboard = () => {
                       Download Excel
                     </button>
                   </div>
-                </div>
+                </>
               )}
             </div>
           )}
