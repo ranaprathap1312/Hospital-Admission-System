@@ -44,8 +44,25 @@ const AdminDashboard = () => {
   // Patient Records State
   const [patients, setPatients] = useState([]);
   const [loadingRecords, setLoadingRecords] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchColumn, setSearchColumn] = useState('All Columns');
+  const [filters, setFilters] = useState([{ column: 'All Columns', value: '' }]);
+
+  const addFilter = () => {
+    setFilters([...filters, { column: 'All Columns', value: '' }]);
+  };
+
+  const removeFilter = (index) => {
+    if (filters.length > 1) {
+      setFilters(filters.filter((_, i) => i !== index));
+    } else {
+      setFilters([{ column: 'All Columns', value: '' }]);
+    }
+  };
+
+  const updateFilter = (index, field, value) => {
+    const newFilters = [...filters];
+    newFilters[index][field] = value;
+    setFilters(newFilters);
+  };
 
   // Fetch next ID on mount
   React.useEffect(() => {
@@ -88,61 +105,64 @@ const AdminDashboard = () => {
   };
 
   const filteredPatients = patients.filter(patient => {
-    const query = searchQuery.toLowerCase().trim();
-    if (!query) return true;
+    return filters.every(filter => {
+      const query = filter.value.toLowerCase().trim();
+      if (!query) return true;
+      const searchColumn = filter.column;
 
-    const checkMatch = (val, strict = false) => {
-      if (val == null) return false;
-      const strVal = val.toString().toLowerCase();
-      if (strict) {
-        return strVal === query || strVal.startsWith(query);
+      const checkMatch = (val, strict = false) => {
+        if (val == null) return false;
+        const strVal = val.toString().toLowerCase();
+        if (strict) {
+          return strVal === query || strVal.startsWith(query);
+        }
+        return strVal.includes(query);
+      };
+
+      if (searchColumn === 'All Columns') {
+        return (
+          checkMatch(patient.patientId) ||
+          checkMatch(patient.patientName) ||
+          checkMatch(patient.age) ||
+          checkMatch(patient.gender, true) ||
+          checkMatch(patient.caseType, true) ||
+          checkMatch(patient.arNo) ||
+          checkMatch(patient.aadharNo) ||
+          checkMatch(patient.mobileNo) ||
+          checkMatch(patient.wardName) ||
+          (patient.admissionDate && checkMatch(new Date(patient.admissionDate).toLocaleString())) ||
+          checkMatch(patient.occupation) ||
+          checkMatch(patient.motherName) ||
+          checkMatch(patient.caretakerName) ||
+          checkMatch(patient.address) ||
+          checkMatch(patient.status, true)
+        );
       }
-      return strVal.includes(query);
-    };
 
-    if (searchColumn === 'All Columns') {
-      return (
-        checkMatch(patient.patientId) ||
-        checkMatch(patient.patientName) ||
-        checkMatch(patient.age) ||
-        checkMatch(patient.gender, true) ||
-        checkMatch(patient.caseType, true) ||
-        checkMatch(patient.arNo) ||
-        checkMatch(patient.aadharNo) ||
-        checkMatch(patient.mobileNo) ||
-        checkMatch(patient.wardName) ||
-        (patient.admissionDate && checkMatch(new Date(patient.admissionDate).toLocaleString())) ||
-        checkMatch(patient.occupation) ||
-        checkMatch(patient.motherName) ||
-        checkMatch(patient.caretakerName) ||
-        checkMatch(patient.address) ||
-        checkMatch(patient.status, true)
-      );
-    }
+      const valueToCheck = (() => {
+        switch (searchColumn) {
+          case 'Patient ID': return patient.patientId;
+          case 'Name': return patient.patientName;
+          case 'Age': return patient.age;
+          case 'Gender': return patient.gender;
+          case 'Case Type': return patient.caseType;
+          case 'AR No': return patient.arNo;
+          case 'Aadhar No': return patient.aadharNo;
+          case 'Mobile': return patient.mobileNo;
+          case 'Ward': return patient.wardName;
+          case 'Admission Date': return patient.admissionDate ? new Date(patient.admissionDate).toLocaleString() : '';
+          case 'Occupation': return patient.occupation;
+          case "Mother's Name": return patient.motherName;
+          case 'Caretaker Name': return patient.caretakerName;
+          case 'Address': return patient.address;
+          case 'Status': return patient.status;
+          default: return '';
+        }
+      })();
 
-    const valueToCheck = (() => {
-      switch (searchColumn) {
-        case 'Patient ID': return patient.patientId;
-        case 'Name': return patient.patientName;
-        case 'Age': return patient.age;
-        case 'Gender': return patient.gender;
-        case 'Case Type': return patient.caseType;
-        case 'AR No': return patient.arNo;
-        case 'Aadhar No': return patient.aadharNo;
-        case 'Mobile': return patient.mobileNo;
-        case 'Ward': return patient.wardName;
-        case 'Admission Date': return patient.admissionDate ? new Date(patient.admissionDate).toLocaleString() : '';
-        case 'Occupation': return patient.occupation;
-        case "Mother's Name": return patient.motherName;
-        case 'Caretaker Name': return patient.caretakerName;
-        case 'Address': return patient.address;
-        case 'Status': return patient.status;
-        default: return '';
-      }
-    })();
-
-    const isStrictColumn = ['Case Type', 'Gender', 'Status'].includes(searchColumn);
-    return checkMatch(valueToCheck, isStrictColumn);
+      const isStrictColumn = ['Case Type', 'Gender', 'Status'].includes(searchColumn);
+      return checkMatch(valueToCheck, isStrictColumn);
+    });
   });
 
   const handleChange = (e) => {
@@ -268,37 +288,58 @@ const AdminDashboard = () => {
         <div className="form-container glass-panel">
           {activeTab === 'RECORDS' && (
             <div className="records-view">
-              <div className="records-controls" style={{ marginBottom: '1.5rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                <input 
-                  type="text" 
-                  placeholder={`Search by ${searchColumn}...`} 
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="search-input"
-                  style={{ flexGrow: 1, padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem' }}
-                />
-                <select 
-                  value={searchColumn} 
-                  onChange={(e) => setSearchColumn(e.target.value)}
-                  style={{ padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white', minWidth: '180px' }}
-                >
-                  <option value="All Columns">All Columns</option>
-                  <option value="Patient ID">Patient ID</option>
-                  <option value="Name">Name</option>
-                  <option value="Age">Age</option>
-                  <option value="Gender">Gender</option>
-                  <option value="Case Type">Case Type</option>
-                  <option value="AR No">AR No</option>
-                  <option value="Aadhar No">Aadhar No</option>
-                  <option value="Mobile">Mobile</option>
-                  <option value="Ward">Ward</option>
-                  <option value="Admission Date">Admission Date</option>
-                  <option value="Occupation">Occupation</option>
-                  <option value="Mother's Name">Mother's Name</option>
-                  <option value="Caretaker Name">Caretaker Name</option>
-                  <option value="Address">Address</option>
-                  <option value="Status">Status</option>
-                </select>
+              <div className="records-controls" style={{ marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {filters.map((filter, index) => (
+                  <div key={index} style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                    <input 
+                      type="text" 
+                      placeholder={`Search by ${filter.column}...`} 
+                      value={filter.value}
+                      onChange={(e) => updateFilter(index, 'value', e.target.value)}
+                      className="search-input"
+                      style={{ flexGrow: 1, padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem' }}
+                    />
+                    <select 
+                      value={filter.column} 
+                      onChange={(e) => updateFilter(index, 'column', e.target.value)}
+                      style={{ padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white', minWidth: '180px' }}
+                    >
+                      <option value="All Columns">All Columns</option>
+                      <option value="Patient ID">Patient ID</option>
+                      <option value="Name">Name</option>
+                      <option value="Age">Age</option>
+                      <option value="Gender">Gender</option>
+                      <option value="Case Type">Case Type</option>
+                      <option value="AR No">AR No</option>
+                      <option value="Aadhar No">Aadhar No</option>
+                      <option value="Mobile">Mobile</option>
+                      <option value="Ward">Ward</option>
+                      <option value="Admission Date">Admission Date</option>
+                      <option value="Occupation">Occupation</option>
+                      <option value="Mother's Name">Mother's Name</option>
+                      <option value="Caretaker Name">Caretaker Name</option>
+                      <option value="Address">Address</option>
+                      <option value="Status">Status</option>
+                    </select>
+                    {filters.length > 1 && (
+                      <button 
+                        onClick={() => removeFilter(index)}
+                        style={{ padding: '0.75rem', borderRadius: '0.5rem', border: 'none', backgroundColor: '#fee2e2', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold' }}
+                        title="Remove Filter"
+                      >
+                        X
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <div>
+                  <button 
+                    onClick={addFilter}
+                    style={{ padding: '0.5rem 1rem', borderRadius: '0.5rem', border: '1px dashed var(--primary)', backgroundColor: 'transparent', color: 'var(--primary)', cursor: 'pointer', fontWeight: '500', fontSize: '0.9rem' }}
+                  >
+                    + Add Filter
+                  </button>
+                </div>
               </div>
               
               {loadingRecords ? (
