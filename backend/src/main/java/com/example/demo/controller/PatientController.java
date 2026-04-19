@@ -45,6 +45,14 @@ public class PatientController {
         }
     }
 
+    @GetMapping("/debug")
+    public ResponseEntity<java.util.Map<String, Object>> getDebugInfo() {
+        java.util.Map<String, Object> info = new java.util.HashMap<>();
+        info.put("patientsCount", patientService.getAllPatients().size());
+        info.put("masterAdmissionsCount", patientService.getAllMasterAdmissions().size());
+        return new ResponseEntity<>(info, HttpStatus.OK);
+    }
+
     @GetMapping("/id/{patientId}")
     public ResponseEntity<Patient> getPatientByPatientId(@PathVariable String patientId) {
         java.util.Optional<Patient> patient = patientService.getPatientByPatientId(patientId);

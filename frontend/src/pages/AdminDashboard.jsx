@@ -236,15 +236,24 @@ const AdminDashboard = () => {
                 <p>No patient records found.</p>
               ) : (
                 <div style={{ overflowX: 'auto' }}>
-                  <table className="records-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                  <table className="records-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', whiteSpace: 'nowrap' }}>
                     <thead>
                       <tr style={{ backgroundColor: '#f8fafc', borderBottom: '2px solid var(--border-color)' }}>
                         <th style={{ padding: '1rem' }}>Patient ID</th>
                         <th style={{ padding: '1rem' }}>Name</th>
                         <th style={{ padding: '1rem' }}>Age</th>
-                        <th style={{ padding: '1rem' }}>Ward</th>
+                        <th style={{ padding: '1rem' }}>Gender</th>
+                        <th style={{ padding: '1rem' }}>Case Type</th>
+                        <th style={{ padding: '1rem' }}>AR No</th>
+                        <th style={{ padding: '1rem' }}>Aadhar No</th>
                         <th style={{ padding: '1rem' }}>Mobile</th>
+                        <th style={{ padding: '1rem' }}>Ward</th>
                         <th style={{ padding: '1rem' }}>Admission Date</th>
+                        <th style={{ padding: '1rem' }}>Occupation</th>
+                        <th style={{ padding: '1rem' }}>Mother's Name</th>
+                        <th style={{ padding: '1rem' }}>Caretaker Name</th>
+                        <th style={{ padding: '1rem' }}>Address</th>
+                        <th style={{ padding: '1rem' }}>Status</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -253,9 +262,29 @@ const AdminDashboard = () => {
                           <td style={{ padding: '1rem' }}>{patient.patientId || 'N/A'}</td>
                           <td style={{ padding: '1rem', fontWeight: '500' }}>{patient.patientName}</td>
                           <td style={{ padding: '1rem' }}>{patient.age}</td>
-                          <td style={{ padding: '1rem' }}>{patient.wardName}</td>
+                          <td style={{ padding: '1rem' }}>{patient.gender || 'N/A'}</td>
+                          <td style={{ padding: '1rem' }}>{patient.caseType || 'N/A'}</td>
+                          <td style={{ padding: '1rem' }}>{patient.arNo || 'N/A'}</td>
+                          <td style={{ padding: '1rem' }}>{patient.aadharNo || 'N/A'}</td>
                           <td style={{ padding: '1rem' }}>{patient.mobileNo}</td>
+                          <td style={{ padding: '1rem' }}>{patient.wardName}</td>
                           <td style={{ padding: '1rem' }}>{new Date(patient.admissionDate).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}</td>
+                          <td style={{ padding: '1rem' }}>{patient.occupation || 'N/A'}</td>
+                          <td style={{ padding: '1rem' }}>{patient.motherName || 'N/A'}</td>
+                          <td style={{ padding: '1rem' }}>{patient.caretakerName || 'N/A'}</td>
+                          <td style={{ padding: '1rem', maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis' }} title={patient.address}>{patient.address || 'N/A'}</td>
+                          <td style={{ padding: '1rem' }}>
+                            <span style={{ 
+                              padding: '0.25rem 0.5rem', 
+                              borderRadius: '999px', 
+                              fontSize: '0.85rem',
+                              fontWeight: '500',
+                              backgroundColor: patient.status === 'ADMITTED' ? '#dcfce7' : '#f1f5f9',
+                              color: patient.status === 'ADMITTED' ? '#166534' : '#475569'
+                            }}>
+                              {patient.status || 'N/A'}
+                            </span>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
