@@ -158,10 +158,10 @@ const AdminDashboard = () => {
 
   const fetchNextId = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/patients`);
+      const response = await fetch(`${API_BASE_URL}/api/patients/master-admissions`);
       const data = await response.json();
       if (data && data.length > 0) {
-        const maxId = Math.max(...data.map(p => p.id || 0));
+        const maxId = Math.max(...data.map(p => parseInt(p.patientId, 10) || 0));
         setPredictedNextId(`${maxId + 1}`);
       } else {
         setPredictedNextId('1');
