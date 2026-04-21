@@ -1466,36 +1466,34 @@ const AdminDashboard = () => {
                       <label>Occupation</label>
                       <input type="text" name="occupation" value={formData.occupation} onChange={handleChange} />
                     </div>
+                  </div>
+
+                  <div className="form-row">
                     <div className="form-group">
                       <label>Income *</label>
                       <input type="text" name="income" value={formData.income} onChange={handleChange} required />
                     </div>
-                  </div>
-
-                  <div className="form-row">
                     <div className="form-group">
                       <label>Caretaker Name</label>
                       <input type="text" name="caretakerName" value={formData.caretakerName} onChange={handleChange} />
                     </div>
-                    <div className="form-group">
-                      {/* Empty slot for balance */}
-                    </div>
                   </div>
-                </div>
-
-                {/* Admission & Contact Details */}
-                <div className="form-section">
-                  <h3 className="section-title">Admission & Contact Info</h3>
 
                   <div className="form-row">
-                    <div className="form-group">
-                      {/* Empty slot for balance */}
-                    </div>
                     <div className="form-group">
                       <label>Aadhar No *</label>
                       <input type="text" name="aadharNo" value={formData.aadharNo} onChange={handleChange} required minLength="14" maxLength="14" pattern="\d{4} \d{4} \d{4}" title="Aadhar number must be exactly 12 digits" />
                     </div>
+                    <div className="form-group">
+                      <label>Mobile No *</label>
+                      <input type="tel" name="mobileNo" value={formData.mobileNo} onChange={handleChange} required />
+                    </div>
                   </div>
+                </div>
+
+                {/* Admission Info */}
+                <div className="form-section">
+                  <h3 className="section-title">Admission Info</h3>
 
                   <div className="form-row">
                     <div className="form-group">
@@ -1567,13 +1565,6 @@ const AdminDashboard = () => {
                         <option value="PS Ward">PS Ward</option>
                         <option value="SNCU">SNCU</option>
                       </select>
-                    </div>
-                  </div>
-
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Mobile No *</label>
-                      <input type="tel" name="mobileNo" value={formData.mobileNo} onChange={handleChange} required />
                     </div>
                   </div>
 
