@@ -11,6 +11,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class PatientService {
@@ -82,6 +83,7 @@ public class PatientService {
         return patientRepository.findByPatientId(patientId);
     }
 
+    @Transactional
     public Patient dischargePatient(String patientId, String dischargeType, String dischargeWard, String dischargeDateStr, String destinationTable) {
         java.util.Optional<Patient> optionalPatient = patientRepository.findByPatientId(patientId);
         if (optionalPatient.isPresent()) {
