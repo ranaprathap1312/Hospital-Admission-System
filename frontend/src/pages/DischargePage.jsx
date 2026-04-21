@@ -203,10 +203,10 @@ const DischargePage = () => {
                           style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white' }}
                         >
                           <option value="mlc_discharge">mlc_discharge</option>
-                          <option value="x2">x2</option>
-                          <option value="x3">x3</option>
-                          <option value="x4">x4</option>
-                          <option value="x5">x5</option>
+                          <option value="death_discharge">death_discharge</option>
+                          <option value="maternity_block_discharge">maternity_block_discharge</option>
+                          <option value="insurance_block_discharge">insurance_block_discharge</option>
+                          <option value="general_side_discharge">general_side_discharge</option>
                           <option value="x6">x6</option>
                           <option value="x7">x7</option>
                         </select>
