@@ -133,14 +133,14 @@ public class PatientService {
                 // Replicate to x1-x7 table if requested
                 if (destinationTable != null && destinationTable.matches("x[1-7]")) {
                     String sql = "INSERT INTO " + destinationTable + " (" +
-                        "table_name_id, custom_patient_id, discharge_type, patient_db_id, discharge_ward, " +
+                        "custom_patient_id, discharge_type, patient_db_id, discharge_ward, " +
                         "ar_no, case_type, patient_name, age, gender, mother_name, mobile_no, " +
                         "aadhar_no, occupation, caretaker_name, address, admission_ward, " +
                         "admission_date, admission_time, discharge_date, discharge_time" +
-                        ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                        ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                     
                     jdbcTemplate.update(sql, 
-                        Integer.parseInt(entry.getCustomPatientId()), entry.getCustomPatientId(), entry.getDischargeType(), patient.getId(), entry.getDischargeWard(),
+                        entry.getCustomPatientId(), entry.getDischargeType(), patient.getId(), entry.getDischargeWard(),
                         entry.getArNo(), entry.getCaseType(), entry.getPatientName(), entry.getAge(), entry.getGender(), entry.getMotherName(), entry.getMobileNo(),
                         entry.getAadharNo(), entry.getOccupation(), entry.getCaretakerName(), entry.getAddress(), entry.getAdmissionWard(),
                         entry.getAdmissionDate(), entry.getAdmissionTime(), entry.getDischargeDate(), entry.getDischargeTime()
