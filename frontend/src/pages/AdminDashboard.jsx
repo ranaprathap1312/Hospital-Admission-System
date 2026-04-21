@@ -1627,8 +1627,10 @@ const AdminDashboard = () => {
                         <option value="Chandigarh" />
                         <option value="Dadra and Nagar Haveli and Daman and Diu" />
                         <option value="Delhi" />
+                        <option value="Jammu and Kashmir" />
                         <option value="Lakshadweep" />
-                        <option value="Puducherry" />
+                        <option value="Ladakh" />
+                        <option value="Pondicherry (Puducherry)" />
                       </datalist>
                     </div>
                     <div className="form-group">
