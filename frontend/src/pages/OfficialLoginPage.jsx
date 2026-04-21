@@ -11,6 +11,7 @@ const OfficialLoginPage = () => {
   const [otp, setOtp] = useState('');
   
   const [error, setError] = useState('');
+  const [formErrors, setFormErrors] = useState({});
   const [successMsg, setSuccessMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [step, setStep] = useState(1); // 1: Email/Pass, 2: OTP
@@ -117,7 +118,7 @@ const OfficialLoginPage = () => {
         </div>
 
         {step === 1 ? (
-          <form onSubmit={handleLoginStep1} className="login-form">
+          <form onSubmit={handleLoginStep1} className="login-form" noValidate>
             {error && <div className="error-message">{error}</div>}
             
             <div className="form-group">
@@ -128,7 +129,10 @@ const OfficialLoginPage = () => {
                   type="email" 
                   placeholder="Enter official email" 
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                setEmail(e.target.value);
+                if (formErrors.email) setFormErrors(prev => ({...prev, email: null}));
+              }}
                   required
                 />
               </div>
@@ -142,7 +146,10 @@ const OfficialLoginPage = () => {
                   type="password" 
                   placeholder="Enter master password" 
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                setPassword(e.target.value);
+                if (formErrors.password) setFormErrors(prev => ({...prev, password: null}));
+              }}
                   required
                 />
               </div>

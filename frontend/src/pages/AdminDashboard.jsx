@@ -185,6 +185,7 @@ const AdminDashboard = () => {
   const [selectedDestinationTable, setSelectedDestinationTable] = useState('');
   const [submittedData, setSubmittedData] = useState(null);
   const [error, setError] = useState('');
+  const [formErrors, setFormErrors] = useState({});
   const [manualPatientId, setManualPatientId] = useState(false);
   const [manualAdmissionDate, setManualAdmissionDate] = useState(false);
   const [predictedNextId, setPredictedNextId] = useState('Loading...');
@@ -753,6 +754,9 @@ const AdminDashboard = () => {
       [name]: value,
       ...(name === 'state' ? { district: '' } : {})
     }));
+    if (formErrors[name]) {
+      setFormErrors(prev => ({ ...prev, [name]: null }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -761,7 +765,31 @@ const AdminDashboard = () => {
     setError('');
 
     try {
-      const payload = {
+          // Perform custom validation
+    const errors = {};
+    const requiredFields = ['patientName', 'age', 'gender', 'income', 'aadharNo', 'mobileNo', 'caseType', 'wardName', 'street', 'village', 'taluk', 'district', 'state'];
+    if (formData.caseType === 'MLC') requiredFields.push('arNo');
+
+    requiredFields.forEach(field => {
+      if (!formData[field]) {
+        const formattedField = field.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+        errors[field] = `${formattedField} is required`;
+      }
+    });
+
+    if (formData.aadharNo && formData.aadharNo.replace(/\s/g, '').length !== 12) {
+      errors.aadharNo = 'Aadhar number must be exactly 12 digits';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      setIsSubmitting(false);
+      return;
+    }
+
+    setFormErrors({});
+
+    const payload = {
         ...formData,
         patientId: manualPatientId ? formData.patientId : predictedNextId,
         address: `${formData.street}, ${formData.village}, ${formData.taluk}, ${formData.district}, ${formData.state}`
@@ -1393,7 +1421,7 @@ const AdminDashboard = () => {
           )}
 
           {activeTab === 'ADMISSION' && viewMode === 'FORM' && (
-            <form onSubmit={handleSubmit} className="admission-form">
+            <form onSubmit={handleSubmit} className="admission-form" noValidate>
               {error && <div className="error-message" style={{ marginBottom: '2rem' }}>{error}</div>}
               <div className="form-grid">
 
@@ -1405,6 +1433,7 @@ const AdminDashboard = () => {
                     <div className="form-group">
                       <label>Patient Name *</label>
                       <input type="text" name="patientName" value={formData.patientName} onChange={handleChange} required />
+                      {formErrors.patientName && <span className="error-text">{formErrors.patientName}</span>}
                     </div>
                     <div className="form-group">
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1448,6 +1477,7 @@ const AdminDashboard = () => {
                     <div className="form-group">
                       <label>Age *</label>
                       <input type="number" name="age" value={formData.age} onChange={handleChange} required />
+                      {formErrors.age && <span className="error-text">{formErrors.age}</span>}
                     </div>
                     <div className="form-group">
                       <label>Gender *</label>
@@ -1457,6 +1487,7 @@ const AdminDashboard = () => {
                         <option value="FEMALE">FEMALE</option>
                         <option value="TRANSGENDER">TRANSGENDER</option>
                       </select>
+                      {formErrors.gender && <span className="error-text">{formErrors.gender}</span>}
                     </div>
                   </div>
 
@@ -1464,10 +1495,12 @@ const AdminDashboard = () => {
                     <div className="form-group">
                       <label>Mother's Name</label>
                       <input type="text" name="motherName" value={formData.motherName} onChange={handleChange} />
+                      {formErrors.motherName && <span className="error-text">{formErrors.motherName}</span>}
                     </div>
                     <div className="form-group">
                       <label>Occupation</label>
                       <input type="text" name="occupation" value={formData.occupation} onChange={handleChange} />
+                      {formErrors.occupation && <span className="error-text">{formErrors.occupation}</span>}
                     </div>
                   </div>
 
@@ -1475,10 +1508,12 @@ const AdminDashboard = () => {
                     <div className="form-group">
                       <label>Income *</label>
                       <input type="text" name="income" value={formData.income} onChange={handleChange} required />
+                      {formErrors.income && <span className="error-text">{formErrors.income}</span>}
                     </div>
                     <div className="form-group">
                       <label>Caretaker Name</label>
                       <input type="text" name="caretakerName" value={formData.caretakerName} onChange={handleChange} />
+                      {formErrors.caretakerName && <span className="error-text">{formErrors.caretakerName}</span>}
                     </div>
                   </div>
 
@@ -1486,10 +1521,12 @@ const AdminDashboard = () => {
                     <div className="form-group">
                       <label>Aadhar No *</label>
                       <input type="text" name="aadharNo" value={formData.aadharNo} onChange={handleChange} required minLength="14" maxLength="14" pattern="\d{4} \d{4} \d{4}" title="Aadhar number must be exactly 12 digits" />
+                      {formErrors.aadharNo && <span className="error-text">{formErrors.aadharNo}</span>}
                     </div>
                     <div className="form-group">
                       <label>Mobile No *</label>
                       <input type="tel" name="mobileNo" value={formData.mobileNo} onChange={handleChange} required />
+                      {formErrors.mobileNo && <span className="error-text">{formErrors.mobileNo}</span>}
                     </div>
                   </div>
                 </div>
@@ -1506,10 +1543,12 @@ const AdminDashboard = () => {
                         <option value="NON MLC">NON MLC</option>
                         <option value="MLC">MLC</option>
                       </select>
+                      {formErrors.caseType && <span className="error-text">{formErrors.caseType}</span>}
                     </div>
                     <div className="form-group">
                       <label>AR No {formData.caseType === 'MLC' ? '*' : ''}</label>
                       <input type="text" name="arNo" value={formData.arNo} onChange={handleChange} required={formData.caseType === 'MLC'} />
+                      {formErrors.arNo && <span className="error-text">{formErrors.arNo}</span>}
                     </div>
                   </div>
 
@@ -1568,6 +1607,7 @@ const AdminDashboard = () => {
                         <option value="PS Ward">PS Ward</option>
                         <option value="SNCU">SNCU</option>
                       </select>
+                      {formErrors.wardName && <span className="error-text">{formErrors.wardName}</span>}
                     </div>
                   </div>
 
@@ -1576,16 +1616,19 @@ const AdminDashboard = () => {
                     <div className="form-group">
                       <label>Street / Box *</label>
                       <input type="text" name="street" value={formData.street} onChange={handleChange} required />
+                      {formErrors.street && <span className="error-text">{formErrors.street}</span>}
                     </div>
                     <div className="form-group">
                       <label>Village / Town *</label>
                       <input type="text" name="village" value={formData.village} onChange={handleChange} required />
+                      {formErrors.village && <span className="error-text">{formErrors.village}</span>}
                     </div>
                   </div>
                   <div className="form-row">
                     <div className="form-group">
                       <label>Taluk *</label>
                       <input type="text" name="taluk" value={formData.taluk} onChange={handleChange} required />
+                      {formErrors.taluk && <span className="error-text">{formErrors.taluk}</span>}
                     </div>
                     <div className="form-group">
                       <label>District *</label>
@@ -1595,6 +1638,7 @@ const AdminDashboard = () => {
                           <option key={d} value={d}>{d}</option>
                         ))}
                       </select>
+                      {formErrors.district && <span className="error-text">{formErrors.district}</span>}
                     </div>
                   </div>
                   <div className="form-row">
@@ -1606,6 +1650,7 @@ const AdminDashboard = () => {
                           <option key={s.state} value={s.state}>{s.state}</option>
                         ))}
                       </select>
+                      {formErrors.state && <span className="error-text">{formErrors.state}</span>}
                     </div>
                     <div className="form-group">
                       {/* Empty slot for balance */}

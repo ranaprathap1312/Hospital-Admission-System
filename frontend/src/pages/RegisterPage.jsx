@@ -16,6 +16,7 @@ const RegisterPage = () => {
   });
   
   const [error, setError] = useState('');
+  const [formErrors, setFormErrors] = useState({});
   const [successMsg, setSuccessMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -100,6 +101,17 @@ const RegisterPage = () => {
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    // Custom Validation
+    const errors = {};
+    if (!name) errors.name = 'Name is required';
+    if (!email) errors.email = 'Email is required';
+    if (!password) errors.password = 'Password is required';
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
+    setFormErrors({});
+
     // Temporarily disabled OTP verification check
     // if (!isVerified) return;
 
