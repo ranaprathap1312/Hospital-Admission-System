@@ -91,7 +91,10 @@ public class PatientService {
             patient.setStatus("DISCHARGED");
             patientRepository.save(patient);
 
-            DischargeEntry entry = new DischargeEntry();
+            // Check if a discharge entry already exists for this patient to avoid unique constraint violations
+            DischargeEntry entry = dischargeEntryRepository.findByPatient_Id(patient.getId())
+                .orElse(new DischargeEntry());
+
             entry.setPatient(patient);
             entry.setCustomPatientId(patient.getPatientId());
             entry.setCaseType(patient.getCaseType());
