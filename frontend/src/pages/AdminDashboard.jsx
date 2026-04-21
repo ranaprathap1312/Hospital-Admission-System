@@ -1488,7 +1488,7 @@ const AdminDashboard = () => {
                     </div>
                     <div className="form-group">
                       <label>Aadhar No *</label>
-                      <input type="text" name="aadharNo" value={formData.aadharNo} onChange={handleChange} required />
+                      <input type="text" name="aadharNo" value={formData.aadharNo} onChange={handleChange} required minLength="14" maxLength="14" pattern="\d{4} \d{4} \d{4}" title="Aadhar number must be exactly 12 digits" />
                     </div>
                   </div>
 
