@@ -137,7 +137,7 @@ public class PatientService {
                     ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                 
                 jdbcTemplate.update(sql, 
-                    entry.getCustomPatientId(), entry.getCustomPatientId(), entry.getDischargeType(), patient.getId(), entry.getDischargeWard(),
+                    Integer.parseInt(entry.getCustomPatientId()), entry.getCustomPatientId(), entry.getDischargeType(), patient.getId(), entry.getDischargeWard(),
                     entry.getArNo(), entry.getCaseType(), entry.getPatientName(), entry.getAge(), entry.getGender(), entry.getMotherName(), entry.getMobileNo(),
                     entry.getAadharNo(), entry.getOccupation(), entry.getCaretakerName(), entry.getAddress(), entry.getAdmissionWard(),
                     entry.getAdmissionDate(), entry.getAdmissionTime(), entry.getDischargeDate(), entry.getDischargeTime()
