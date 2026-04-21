@@ -161,8 +161,10 @@ const AdminDashboard = () => {
       const response = await fetch(`${API_BASE_URL}/api/patients/master-admissions`);
       const data = await response.json();
       if (data && data.length > 0) {
-        const maxId = Math.max(...data.map(p => parseInt(p.patientId, 10) || 0));
-        setPredictedNextId(`${maxId + 1}`);
+        // Sort by internal id descending to get the last inserted record
+        const sorted = [...data].sort((a, b) => (b.id || 0) - (a.id || 0));
+        const lastId = parseInt(sorted[0].patientId, 10) || 0;
+        setPredictedNextId(`${lastId + 1}`);
       } else {
         setPredictedNextId('1');
       }
