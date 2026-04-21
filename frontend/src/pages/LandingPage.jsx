@@ -11,7 +11,7 @@ const LandingPage = () => {
       <nav className="navbar glass-panel">
         <div className="container flex-between">
           <div className="logo">
-            <img src="/tn_logo.png" alt="TN Logo" className="logo-icon" style={{ width: '40px', height: 'auto' }} />
+            <Activity className="logo-icon" />
             <span className="logo-text">TN GH</span>
           </div>
           <div className="nav-actions">
