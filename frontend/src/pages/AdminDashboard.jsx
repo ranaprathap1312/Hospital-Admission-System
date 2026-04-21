@@ -33,21 +33,7 @@ const AdminDashboard = () => {
 
     // Define the headers
     const headers = [
-      'ID', 'Patient Name', 'Mother Name', 'Admission Date', 'Discharge Date', 'Income', 'Village Name'
-    ];
-
-    const rows = filteredDestinationRecords.map(p => [
-      p.destinationTableId || p.customPatientId || '',
-      p.patientName || '',
-      p.motherName || '',
-      p.admissionDate || '',
-      p.dischargeDate || '',
-      p.income || '',
-      p.address ? `"${p.address.replace(/"/g, '""')}"` : ''
-    ]);*/
-
-
-    /* 'Gender', 'Case Type', 'AR No', 
+      'Patient ID', 'Name', 'Age', 'Gender', 'Case Type', 'AR No', 
       'Aadhar No', 'Mobile', 'Ward', 'Admission Date', 'Admission Time', 
       'Occupation', 'Income', 'Mother Name', 'Caretaker Name', 'Address', 'Status'
     ];
@@ -106,40 +92,7 @@ const AdminDashboard = () => {
       p.dischargeDate || '',
       p.income || '',
       p.address ? `"${p.address.replace(/"/g, '""')}"` : ''
-    ]);*/
-
-
-    /* 'Gender', 'Case Type', 'AR No', 
-      'Aadhar No', 'Mobile', 'Admission Ward', 'Admission Date', 'Admission Time', 
-      'Discharge Ward', 'Discharge Date', 'Discharge Time', 'Discharge Type',
-      'Occupation', 'Income', 'Mother Name', 'Caretaker Name', 'Address'
-    ];
-
-    // Map the filtered discharge records to rows
-    const rows = filteredDestinationRecords.map(p => [
-      p.customPatientId || p.patientId || '',
-      p.patientName || '',
-      p.age || '',
-      p.gender || '',
-      p.caseType || '',
-      p.arNo || '',
-      p.aadharNo || '',
-      p.mobileNo || '',
-      p.admissionWard || '',
-      p.admissionDate || '',
-      formatTime12Hour(p.admissionTime),
-      p.dischargeWard || '',
-      p.dischargeDate || '',
-      formatTime12Hour(p.dischargeTime),
-      p.dischargeType || '',
-      p.occupation || '',
-      p.income || '',
-      p.motherName || '',
-      p.caretakerName || '',
-      p.address ? `"${p.address.replace(/"/g, '""')}"` : ''
-    ]);*/
-
-
+    ]);
     const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -157,21 +110,7 @@ const AdminDashboard = () => {
 
     // Define the headers for discharge records
     const headers = [
-      'ID', 'Patient Name', 'Mother Name', 'Admission Date', 'Discharge Date', 'Income', 'Village Name'
-    ];
-
-    const rows = filteredDestinationRecords.map(p => [
-      p.destinationTableId || p.customPatientId || '',
-      p.patientName || '',
-      p.motherName || '',
-      p.admissionDate || '',
-      p.dischargeDate || '',
-      p.income || '',
-      p.address ? `"${p.address.replace(/"/g, '""')}"` : ''
-    ]);*/
-
-
-    /* 'Gender', 'Case Type', 'AR No', 
+      'Patient ID', 'Name', 'Age', 'Gender', 'Case Type', 'AR No', 
       'Aadhar No', 'Mobile', 'Admission Ward', 'Admission Date', 'Admission Time', 
       'Discharge Ward', 'Discharge Date', 'Discharge Time', 'Discharge Type',
       'Occupation', 'Income', 'Mother Name', 'Caretaker Name', 'Address'
@@ -199,9 +138,7 @@ const AdminDashboard = () => {
       p.motherName || '',
       p.caretakerName || '',
       p.address ? `"${p.address.replace(/"/g, '""')}"` : ''
-    ]);*/
-
-
+    ]);
     // Construct the CSV string
     const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
 
