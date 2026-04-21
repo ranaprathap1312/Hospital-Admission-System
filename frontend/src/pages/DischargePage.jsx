@@ -7,7 +7,8 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080
 
 const DischargePage = () => {
   const navigate = useNavigate();
-  const [patientId, setPatientId] = useState('');
+  const [patientNumber, setPatientNumber] = useState('');
+  const patientId = `${new Date().getFullYear()}-${patientNumber}`;
   const [patientData, setPatientData] = useState(null);
 
   const getCurrentDateTime = () => {
@@ -94,17 +95,22 @@ const DischargePage = () => {
           {!success ? (
             <>
               {/* Search Form */}
-              <form onSubmit={handleSearch} style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
-                <input
-                  type="text"
-                  className="search-input"
-                  placeholder="Enter Patient ID..."
-                  value={patientId}
-                  onChange={(e) => setPatientId(e.target.value)}
-                  style={{ flexGrow: 1, padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem' }}
-                  required
-                />
-                <button type="submit" className="btn btn-primary" disabled={isSearching} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <form onSubmit={handleSearch} style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', backgroundColor: '#fcfcfc', overflow: 'hidden', flexGrow: 1, height: '48px' }}>
+                  <span style={{ padding: '0 1rem', color: 'var(--text-muted)', fontWeight: '600', backgroundColor: '#f4f5f7', borderRight: '1px solid var(--border-color)', height: '100%', display: 'flex', alignItems: 'center' }}>
+                    {new Date().getFullYear()}-
+                  </span>
+                  <input
+                    type="number"
+                    className="search-input"
+                    placeholder="IP No..."
+                    value={patientNumber}
+                    onChange={(e) => setPatientNumber(e.target.value)}
+                    style={{ flexGrow: 1, padding: '0 1rem', border: 'none', background: 'transparent', height: '100%', outline: 'none', fontSize: '1rem' }}
+                    required
+                  />
+                </div>
+                <button type="submit" className="btn btn-primary" disabled={isSearching} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', height: '48px' }}>
                   <Search size={18} /> {isSearching ? 'Searching...' : 'Find Patient'}
                 </button>
               </form>
@@ -231,7 +237,7 @@ const DischargePage = () => {
                   <button className="btn btn-outline" onClick={() => {
                     setSuccess(false);
                     setPatientData(null);
-                    setPatientId('');
+                    setPatientNumber('');
                     setDischargeType('Normal Discharge');
                   }}>
                     Process Another Discharge
