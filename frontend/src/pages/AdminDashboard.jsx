@@ -74,6 +74,57 @@ const AdminDashboard = () => {
     document.body.removeChild(link);
   };
 
+
+  const downloadDischargeAsExcel = () => {
+    if (filteredDischargeRecords.length === 0) return;
+
+    // Define the headers for discharge records
+    const headers = [
+      'Patient ID', 'Name', 'Age', 'Gender', 'Case Type', 'AR No', 
+      'Aadhar No', 'Mobile', 'Admission Ward', 'Admission Date', 'Admission Time', 
+      'Discharge Ward', 'Discharge Date', 'Discharge Time', 'Discharge Type',
+      'Occupation', 'Income', 'Mother Name', 'Caretaker Name', 'Address'
+    ];
+
+    // Map the filtered discharge records to rows
+    const rows = filteredDischargeRecords.map(p => [
+      p.customPatientId || p.patientId || '',
+      p.patientName || '',
+      p.age || '',
+      p.gender || '',
+      p.caseType || '',
+      p.arNo || '',
+      p.aadharNo || '',
+      p.mobileNo || '',
+      p.admissionWard || '',
+      p.admissionDate || '',
+      formatTime12Hour(p.admissionTime),
+      p.dischargeWard || '',
+      p.dischargeDate || '',
+      formatTime12Hour(p.dischargeTime),
+      p.dischargeType || '',
+      p.occupation || '',
+      p.income || '',
+      p.motherName || '',
+      p.caretakerName || '',
+      p.address ? `"${p.address.replace(/"/g, '""')}"` : ''
+    ]);
+
+    // Construct the CSV string
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+
+    // Create a Blob and trigger the download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const dateStr = new Date().toISOString().split('T')[0];
+    link.setAttribute('download', `Discharge_Records_${dateStr}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const [formData, setFormData] = useState({
     patientName: '',
     age: '',
@@ -1058,7 +1109,7 @@ const AdminDashboard = () => {
                 </div>
                 <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
                   <button 
-                    onClick={downloadAsExcel}
+                    onClick={downloadDischargeAsExcel}
                     disabled={filteredDischargeRecords.length === 0}
                     className="btn btn-primary"
                     style={{ 
