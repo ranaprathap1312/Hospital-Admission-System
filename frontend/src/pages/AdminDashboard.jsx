@@ -738,6 +738,14 @@ const AdminDashboard = () => {
       value = value.toUpperCase();
     }
 
+    if (name === 'patientId') {
+      value = value.replace(/[^\d-]/g, ''); // Allow only digits and hyphens
+      value = value.replace(/-+/g, '-'); // Prevent consecutive hyphens
+      if (value.length > 4 && !value.includes('-')) {
+        value = value.slice(0, 4) + '-' + value.slice(4);
+      }
+    }
+
     setFormData({
       ...formData,
       [name]: value
