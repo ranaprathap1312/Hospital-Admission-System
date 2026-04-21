@@ -170,6 +170,7 @@ const AdminDashboard = () => {
     village: '',
     taluk: 'Vridhachalam',
     district: 'Cuddalore',
+    state: 'Tamil Nadu',
     caseType: '',
     arNo: '',
     gender: ''
@@ -761,7 +762,7 @@ const AdminDashboard = () => {
       const payload = {
         ...formData,
         patientId: manualPatientId ? formData.patientId : predictedNextId,
-        address: `${formData.street}, ${formData.village}, ${formData.taluk}, ${formData.district}`
+        address: `${formData.street}, ${formData.village}, ${formData.taluk}, ${formData.district}, ${formData.state}`
       };
 
       const response = await fetch(`${API_BASE_URL}/api/patients/admit`, {
@@ -799,7 +800,7 @@ const AdminDashboard = () => {
       patientName: '', age: '', motherName: '', patientId: '',
       admissionDate: getCurrentDate(), admissionTime: getCurrentTime(), wardName: '', mobileNo: '', aadharNo: '',
       occupation: '', income: '', caretakerName: '', street: '', village: '',
-      taluk: 'Vridhachalam', district: 'Cuddalore', caseType: '', arNo: '', gender: ''
+      taluk: 'Vridhachalam', district: 'Cuddalore', state: 'Tamil Nadu', caseType: '', arNo: '', gender: ''
     });
     setManualPatientId(false);
     setManualAdmissionDate(false);
@@ -1587,6 +1588,51 @@ const AdminDashboard = () => {
                     <div className="form-group">
                       <label>District *</label>
                       <input type="text" name="district" value={formData.district} onChange={handleChange} required />
+                    </div>
+                  </div>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>State *</label>
+                      <input type="text" list="states" name="state" value={formData.state} onChange={handleChange} required placeholder="Select or search state" />
+                      <datalist id="states">
+                        <option value="Andhra Pradesh" />
+                        <option value="Arunachal Pradesh" />
+                        <option value="Assam" />
+                        <option value="Bihar" />
+                        <option value="Chhattisgarh" />
+                        <option value="Goa" />
+                        <option value="Gujarat" />
+                        <option value="Haryana" />
+                        <option value="Himachal Pradesh" />
+                        <option value="Jharkhand" />
+                        <option value="Karnataka" />
+                        <option value="Kerala" />
+                        <option value="Madhya Pradesh" />
+                        <option value="Maharashtra" />
+                        <option value="Manipur" />
+                        <option value="Meghalaya" />
+                        <option value="Mizoram" />
+                        <option value="Nagaland" />
+                        <option value="Odisha" />
+                        <option value="Punjab" />
+                        <option value="Rajasthan" />
+                        <option value="Sikkim" />
+                        <option value="Tamil Nadu" />
+                        <option value="Telangana" />
+                        <option value="Tripura" />
+                        <option value="Uttar Pradesh" />
+                        <option value="Uttarakhand" />
+                        <option value="West Bengal" />
+                        <option value="Andaman and Nicobar Islands" />
+                        <option value="Chandigarh" />
+                        <option value="Dadra and Nagar Haveli and Daman and Diu" />
+                        <option value="Delhi" />
+                        <option value="Lakshadweep" />
+                        <option value="Puducherry" />
+                      </datalist>
+                    </div>
+                    <div className="form-group">
+                      {/* Empty slot for balance */}
                     </div>
                   </div>
                 </div>
