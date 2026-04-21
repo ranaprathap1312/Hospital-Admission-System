@@ -18,6 +18,7 @@ const DischargePage = () => {
   const [dischargeType, setDischargeType] = useState('Normal Discharge');
   const [dischargeWard, setDischargeWard] = useState('');
   const [dischargeDate, setDischargeDate] = useState(getCurrentDateTime());
+  const [destinationTable, setDestinationTable] = useState('x1');
 
   const [isSearching, setIsSearching] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -63,7 +64,7 @@ const DischargePage = () => {
       const response = await fetch(`${API_BASE_URL}/api/patients/${patientId}/discharge`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dischargeType, dischargeWard, dischargeDate })
+        body: JSON.stringify({ dischargeType, dischargeWard, dischargeDate, destinationTable })
       });
 
       if (response.ok) {
@@ -180,19 +181,38 @@ const DischargePage = () => {
                       </div>
                     </div>
 
-                    <div className="form-group" style={{ marginBottom: '1.5rem' }}>
-                      <label>Discharge Type *</label>
-                      <select
-                        value={dischargeType}
-                        onChange={(e) => setDischargeType(e.target.value)}
-                        required
-                        style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white' }}
-                      >
-                        <option value="Normal Discharge">Normal Discharge</option>
-                        <option value="Abscond">Abscond</option>
-                        <option value="Death">Death</option>
-                        <option value="Refer">Refer</option>
-                      </select>
+                    <div className="form-row" style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
+                      <div className="form-group" style={{ flex: 1 }}>
+                        <label>Discharge Type *</label>
+                        <select
+                          value={dischargeType}
+                          onChange={(e) => setDischargeType(e.target.value)}
+                          required
+                          style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white' }}
+                        >
+                          <option value="Normal Discharge">Normal Discharge</option>
+                          <option value="Abscond">Abscond</option>
+                          <option value="Death">Death</option>
+                          <option value="Refer">Refer</option>
+                        </select>
+                      </div>
+                      <div className="form-group" style={{ flex: 1 }}>
+                        <label>Destination Table *</label>
+                        <select
+                          value={destinationTable}
+                          onChange={(e) => setDestinationTable(e.target.value)}
+                          required
+                          style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white' }}
+                        >
+                          <option value="x1">x1</option>
+                          <option value="x2">x2</option>
+                          <option value="x3">x3</option>
+                          <option value="x4">x4</option>
+                          <option value="x5">x5</option>
+                          <option value="x6">x6</option>
+                          <option value="x7">x7</option>
+                        </select>
+                      </div>
                     </div>
                     <button type="submit" className="btn btn-primary" disabled={isSubmitting} style={{ width: '100%' }}>
                       {isSubmitting ? 'Processing...' : 'Confirm Discharge'}

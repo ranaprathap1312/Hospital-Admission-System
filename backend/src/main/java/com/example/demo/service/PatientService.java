@@ -7,6 +7,7 @@ import com.example.demo.repository.DischargeEntryRepository;
 import com.example.demo.repository.MasterAdmissionRepository;
 import com.example.demo.repository.PatientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -22,6 +23,9 @@ public class PatientService {
 
     @Autowired
     private MasterAdmissionRepository masterAdmissionRepository;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     public Patient admitPatient(Patient patient) {
         // Set creation timestamp
@@ -78,7 +82,7 @@ public class PatientService {
         return patientRepository.findByPatientId(patientId);
     }
 
-    public Patient dischargePatient(String patientId, String dischargeType, String dischargeWard, String dischargeDateStr) {
+    public Patient dischargePatient(String patientId, String dischargeType, String dischargeWard, String dischargeDateStr, String destinationTable) {
         java.util.Optional<Patient> optionalPatient = patientRepository.findByPatientId(patientId);
         if (optionalPatient.isPresent()) {
             Patient patient = optionalPatient.get();
@@ -122,6 +126,23 @@ public class PatientService {
             }
 
             dischargeEntryRepository.save(entry);
+
+            // Replicate to x1-x7 table if requested
+            if (destinationTable != null && destinationTable.matches("x[1-7]")) {
+                String sql = "INSERT INTO " + destinationTable + " (" +
+                    "table_name, custom_patient_id, discharge_type, patient_db_id, discharge_ward, " +
+                    "ar_no, case_type, patient_name, age, gender, mother_name, mobile_no, " +
+                    "aadhar_no, occupation, caretaker_name, address, admission_ward, " +
+                    "admission_date, admission_time, discharge_date, discharge_time" +
+                    ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                
+                jdbcTemplate.update(sql, 
+                    destinationTable, entry.getCustomPatientId(), entry.getDischargeType(), patient.getId(), entry.getDischargeWard(),
+                    entry.getArNo(), entry.getCaseType(), entry.getPatientName(), entry.getAge(), entry.getGender(), entry.getMotherName(), entry.getMobileNo(),
+                    entry.getAadharNo(), entry.getOccupation(), entry.getCaretakerName(), entry.getAddress(), entry.getAdmissionWard(),
+                    entry.getAdmissionDate(), entry.getAdmissionTime(), entry.getDischargeDate(), entry.getDischargeTime()
+                );
+            }
 
             return patient;
         }

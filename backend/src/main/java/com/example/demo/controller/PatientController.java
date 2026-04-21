@@ -76,7 +76,8 @@ public class PatientController {
             String dischargeType = payload.get("dischargeType");
             String dischargeWard = payload.get("dischargeWard");
             String dischargeDate = payload.get("dischargeDate");
-            Patient dischargedPatient = patientService.dischargePatient(patientId, dischargeType, dischargeWard, dischargeDate);
+            String destinationTable = payload.get("destinationTable");
+            Patient dischargedPatient = patientService.dischargePatient(patientId, dischargeType, dischargeWard, dischargeDate, destinationTable);
             return new ResponseEntity<>(dischargedPatient, HttpStatus.OK);
         } catch (RuntimeException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
