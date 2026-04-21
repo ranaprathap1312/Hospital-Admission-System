@@ -737,6 +737,10 @@ const AdminDashboard = () => {
       }
     }
 
+    if (['patientName', 'motherName', 'occupation', 'caretakerName'].includes(name)) {
+      value = value.toUpperCase();
+    }
+
     setFormData({
       ...formData,
       [name]: value
@@ -1406,7 +1410,11 @@ const AdminDashboard = () => {
                     </div>
                     <div className="form-group">
                       <label>Gender *</label>
-                      <input type="text" name="gender" value={formData.gender} onChange={handleChange} required />
+                      <select name="gender" value={formData.gender} onChange={handleChange} required>
+                        <option value="">Select Gender</option>
+                        <option value="MALE">MALE</option>
+                        <option value="FEMALE">FEMALE</option>
+                      </select>
                     </div>
                   </div>
 
