@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UserPlus, LayoutDashboard, Settings, LogOut, CheckCircle2, Activity } from 'lucide-react';
+import { UserPlus, LayoutDashboard, Settings, LogOut, CheckCircle2, Activity, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -108,6 +108,10 @@ const AdminDashboard = () => {
   const [loadingRecords, setLoadingRecords] = useState(false);
   const [filters, setFilters] = useState([{ column: 'All Columns', value: '', addressType: 'All', subType: 'All', rangeStart: '', rangeEnd: '' }]);
 
+  // Active Patients State (from patients table - currently admitted only)
+  const [activePatients, setActivePatients] = useState([]);
+  const [loadingActivePatients, setLoadingActivePatients] = useState(false);
+
   // Discharge Records State
   const [dischargeRecords, setDischargeRecords] = useState([]);
   const [loadingDischarges, setLoadingDischarges] = useState(false);
@@ -141,12 +145,14 @@ const AdminDashboard = () => {
     fetchNextId();
   }, []);
 
-  // Fetch patients when switching to RECORDS tab
+  // Fetch patients when switching tabs
   React.useEffect(() => {
     if (activeTab === 'RECORDS') {
       fetchPatients();
     } else if (activeTab === 'DISCHARGE_RECORDS') {
       fetchDischargeRecords();
+    } else if (activeTab === 'ACTIVE_PATIENTS') {
+      fetchActivePatients();
     }
   }, [activeTab]);
 
@@ -175,6 +181,19 @@ const AdminDashboard = () => {
       console.error('Failed to fetch patients', err);
     } finally {
       setLoadingRecords(false);
+    }
+  };
+
+  const fetchActivePatients = async () => {
+    setLoadingActivePatients(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/patients`);
+      const data = await response.json();
+      setActivePatients(data);
+    } catch (err) {
+      console.error('Failed to fetch active patients', err);
+    } finally {
+      setLoadingActivePatients(false);
     }
   };
 
@@ -301,6 +320,93 @@ const AdminDashboard = () => {
 
       const isStrictColumn = ['Case Type', 'Gender', 'Status'].includes(searchColumn);
       return checkMatch(valueToCheck, isStrictColumn);
+    });
+  });
+
+  const filteredActivePatients = activePatients.filter(patient => {
+    return filters.every(filter => {
+      const searchColumn = filter.column;
+      if (searchColumn === 'Admission Date' && filter.subType === 'Between') {
+        if (!patient.admissionDate) return false;
+        const pDate = new Date(patient.admissionDate);
+        if (filter.rangeStart && new Date(filter.rangeStart) > pDate) return false;
+        if (filter.rangeEnd && new Date(filter.rangeEnd) < pDate) return false;
+        return true;
+      }
+      if (searchColumn === 'Admission Time' && filter.subType === 'Between') {
+        if (!patient.admissionTime) return false;
+        const pTimeStr = patient.admissionTime.substring(0, 5);
+        if (filter.rangeStart && filter.rangeStart > pTimeStr) return false;
+        if (filter.rangeEnd && filter.rangeEnd < pTimeStr) return false;
+        return true;
+      }
+      if (searchColumn === 'Admission Time' && filter.subType === 'AM') {
+        return patient.admissionTime && parseInt(patient.admissionTime.split(':')[0], 10) < 12;
+      }
+      if (searchColumn === 'Admission Time' && filter.subType === 'PM') {
+        return patient.admissionTime && parseInt(patient.admissionTime.split(':')[0], 10) >= 12;
+      }
+      const query = filter.value ? filter.value.toLowerCase().trim() : '';
+      if (!query) return true;
+      const checkMatch = (val, strict = false) => {
+        if (val == null) return false;
+        const strVal = val.toString().toLowerCase();
+        return strict ? (strVal === query || strVal.startsWith(query)) : strVal.includes(query);
+      };
+      if (searchColumn === 'All Columns') {
+        return (
+          checkMatch(patient.patientId) || checkMatch(patient.patientName) || checkMatch(patient.age) ||
+          checkMatch(patient.gender, true) || checkMatch(patient.caseType, true) || checkMatch(patient.arNo) ||
+          checkMatch(patient.aadharNo) || checkMatch(patient.mobileNo) || checkMatch(patient.wardName) ||
+          checkMatch(patient.admissionDate) || checkMatch(patient.admissionTime) || checkMatch(patient.occupation) ||
+          checkMatch(patient.motherName) || checkMatch(patient.caretakerName) || checkMatch(patient.address)
+        );
+      }
+      const valueToCheck = (() => {
+        switch (searchColumn) {
+          case 'Patient ID': return patient.patientId;
+          case 'Name': return patient.patientName;
+          case 'Age': return patient.age;
+          case 'Gender': return patient.gender;
+          case 'Case Type': return patient.caseType;
+          case 'AR No': return patient.arNo;
+          case 'Aadhar No': return patient.aadharNo;
+          case 'Mobile': return patient.mobileNo;
+          case 'Ward': return patient.wardName;
+          case 'Admission Date':
+            if (!patient.admissionDate) return '';
+            const dParts = patient.admissionDate.split('-');
+            if (filter.subType === 'Year') return dParts[0];
+            if (filter.subType === 'Month') return dParts[1];
+            if (filter.subType === 'Date') return dParts[2];
+            return patient.admissionDate;
+          case 'Admission Time':
+            if (!patient.admissionTime) return '';
+            const tParts = patient.admissionTime.split(':');
+            const hh = parseInt(tParts[0], 10);
+            if (filter.subType === 'Hour') return (hh % 12 || 12).toString();
+            if (filter.subType === 'Minute') return tParts[1];
+            return formatTime12Hour(patient.admissionTime);
+          case 'Occupation': return patient.occupation;
+          case "Mother's Name": return patient.motherName;
+          case 'Caretaker Name': return patient.caretakerName;
+          case 'Address':
+            if (!filter.addressType || filter.addressType === 'All') return patient.address;
+            if (!patient.address) return '';
+            const parts = patient.address.split(',').map(s => s.trim());
+            if (filter.addressType === 'Village') return parts[1] || '';
+            if (filter.addressType === 'Taluk') return parts[2] || '';
+            if (filter.addressType === 'District') return parts[3] || '';
+            return patient.address;
+          default: return '';
+        }
+      })();
+      const isStrictColumn = ['Case Type', 'Gender'].includes(searchColumn);
+      return (() => {
+        if (valueToCheck == null) return false;
+        const strVal = valueToCheck.toString().toLowerCase();
+        return isStrictColumn ? (strVal === query || strVal.startsWith(query)) : strVal.includes(query);
+      })();
     });
   });
 
@@ -548,6 +654,9 @@ const AdminDashboard = () => {
           <Link to="/discharge" className="nav-item">
             <Activity size={20} /> Discharge Entry
           </Link>
+          <a href="#" className={`nav-item ${activeTab === 'ACTIVE_PATIENTS' ? 'active' : ''}`} onClick={(e) => { e.preventDefault(); setActiveTab('ACTIVE_PATIENTS'); }}>
+            <Users size={20} /> Active Patients
+          </a>
           <a href="#" className={`nav-item ${activeTab === 'DISCHARGE_RECORDS' ? 'active' : ''}`} onClick={(e) => { e.preventDefault(); setActiveTab('DISCHARGE_RECORDS'); }}>
             <Activity size={20} /> Discharge Records
           </a>
@@ -572,6 +681,11 @@ const AdminDashboard = () => {
               <h1>Discharge Records</h1>
               <p className="subtitle">View all discharged patient entries.</p>
             </div>
+          ) : activeTab === 'ACTIVE_PATIENTS' ? (
+            <div>
+              <h1>Active Patients</h1>
+              <p className="subtitle">Currently admitted patients — live view from the patients table.</p>
+            </div>
           ) : (
             <div>
               <h1>Patient Records</h1>
@@ -581,7 +695,7 @@ const AdminDashboard = () => {
         </header>
 
         <div className="form-container glass-panel">
-          {(activeTab === 'RECORDS' || activeTab === 'DISCHARGE_RECORDS') && (
+          {(activeTab === 'RECORDS' || activeTab === 'DISCHARGE_RECORDS' || activeTab === 'ACTIVE_PATIENTS') && (
             <div className="records-view">
               <div className="records-controls" style={{ marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 {filters.map((filter, index) => (
@@ -803,6 +917,66 @@ const AdminDashboard = () => {
                       </svg>
                       Download Excel
                     </button>
+                  </div>
+                </>
+              )}
+            </>
+          )}
+
+          {activeTab === 'ACTIVE_PATIENTS' && (
+            <>
+              {loadingActivePatients ? (
+                <p>Loading active patients...</p>
+              ) : filteredActivePatients.length === 0 ? (
+                <p>No active patients found.</p>
+              ) : (
+                <>
+                  <div style={{ marginBottom: '0.75rem', fontWeight: '600', color: '#16a34a' }}>
+                    {filteredActivePatients.length} active patient{filteredActivePatients.length !== 1 ? 's' : ''} currently admitted
+                  </div>
+                  <div style={{ overflowX: 'auto' }}>
+                    <table className="records-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', whiteSpace: 'nowrap' }}>
+                      <thead>
+                        <tr style={{ backgroundColor: '#f0fdf4', borderBottom: '2px solid #86efac' }}>
+                          <th style={{ padding: '1rem' }}>Patient ID</th>
+                          <th style={{ padding: '1rem' }}>Name</th>
+                          <th style={{ padding: '1rem' }}>Age</th>
+                          <th style={{ padding: '1rem' }}>Gender</th>
+                          <th style={{ padding: '1rem' }}>Case Type</th>
+                          <th style={{ padding: '1rem' }}>AR No</th>
+                          <th style={{ padding: '1rem' }}>Aadhar No</th>
+                          <th style={{ padding: '1rem' }}>Mobile</th>
+                          <th style={{ padding: '1rem' }}>Ward</th>
+                          <th style={{ padding: '1rem' }}>Admission Date</th>
+                          <th style={{ padding: '1rem' }}>Admission Time</th>
+                          <th style={{ padding: '1rem' }}>Occupation</th>
+                          <th style={{ padding: '1rem' }}>Mother's Name</th>
+                          <th style={{ padding: '1rem' }}>Caretaker Name</th>
+                          <th style={{ padding: '1rem' }}>Address</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredActivePatients.map(patient => (
+                          <tr key={patient.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                            <td style={{ padding: '1rem', fontWeight: '600', color: '#16a34a' }}>{patient.patientId || 'N/A'}</td>
+                            <td style={{ padding: '1rem', fontWeight: '500' }}>{patient.patientName}</td>
+                            <td style={{ padding: '1rem' }}>{patient.age}</td>
+                            <td style={{ padding: '1rem' }}>{patient.gender || 'N/A'}</td>
+                            <td style={{ padding: '1rem' }}>{patient.caseType || 'N/A'}</td>
+                            <td style={{ padding: '1rem' }}>{patient.arNo || 'N/A'}</td>
+                            <td style={{ padding: '1rem' }}>{patient.aadharNo || 'N/A'}</td>
+                            <td style={{ padding: '1rem' }}>{patient.mobileNo}</td>
+                            <td style={{ padding: '1rem' }}>{patient.wardName}</td>
+                            <td style={{ padding: '1rem' }}>{patient.admissionDate}</td>
+                            <td style={{ padding: '1rem' }}>{formatTime12Hour(patient.admissionTime)}</td>
+                            <td style={{ padding: '1rem' }}>{patient.occupation || 'N/A'}</td>
+                            <td style={{ padding: '1rem' }}>{patient.motherName || 'N/A'}</td>
+                            <td style={{ padding: '1rem' }}>{patient.caretakerName || 'N/A'}</td>
+                            <td style={{ padding: '1rem', maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis' }} title={patient.address}>{patient.address || 'N/A'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </>
               )}
