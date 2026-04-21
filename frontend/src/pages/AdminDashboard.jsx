@@ -1593,45 +1593,44 @@ const AdminDashboard = () => {
                   <div className="form-row">
                     <div className="form-group">
                       <label>State *</label>
-                      <input type="text" list="states" name="state" value={formData.state} onChange={handleChange} required placeholder="Select or search state" />
-                      <datalist id="states">
-                        <option value="Andhra Pradesh" />
-                        <option value="Arunachal Pradesh" />
-                        <option value="Assam" />
-                        <option value="Bihar" />
-                        <option value="Chhattisgarh" />
-                        <option value="Goa" />
-                        <option value="Gujarat" />
-                        <option value="Haryana" />
-                        <option value="Himachal Pradesh" />
-                        <option value="Jharkhand" />
-                        <option value="Karnataka" />
-                        <option value="Kerala" />
-                        <option value="Madhya Pradesh" />
-                        <option value="Maharashtra" />
-                        <option value="Manipur" />
-                        <option value="Meghalaya" />
-                        <option value="Mizoram" />
-                        <option value="Nagaland" />
-                        <option value="Odisha" />
-                        <option value="Punjab" />
-                        <option value="Rajasthan" />
-                        <option value="Sikkim" />
-                        <option value="Tamil Nadu" />
-                        <option value="Telangana" />
-                        <option value="Tripura" />
-                        <option value="Uttar Pradesh" />
-                        <option value="Uttarakhand" />
-                        <option value="West Bengal" />
-                        <option value="Andaman and Nicobar Islands" />
-                        <option value="Chandigarh" />
-                        <option value="Dadra and Nagar Haveli and Daman and Diu" />
-                        <option value="Delhi" />
-                        <option value="Jammu and Kashmir" />
-                        <option value="Lakshadweep" />
-                        <option value="Ladakh" />
-                        <option value="Pondicherry (Puducherry)" />
-                      </datalist>
+                      <select name="state" value={formData.state} onChange={handleChange} required>
+                        <option value="Andhra Pradesh">Andhra Pradesh</option>
+                        <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                        <option value="Assam">Assam</option>
+                        <option value="Bihar">Bihar</option>
+                        <option value="Chhattisgarh">Chhattisgarh</option>
+                        <option value="Goa">Goa</option>
+                        <option value="Gujarat">Gujarat</option>
+                        <option value="Haryana">Haryana</option>
+                        <option value="Himachal Pradesh">Himachal Pradesh</option>
+                        <option value="Jharkhand">Jharkhand</option>
+                        <option value="Karnataka">Karnataka</option>
+                        <option value="Kerala">Kerala</option>
+                        <option value="Madhya Pradesh">Madhya Pradesh</option>
+                        <option value="Maharashtra">Maharashtra</option>
+                        <option value="Manipur">Manipur</option>
+                        <option value="Meghalaya">Meghalaya</option>
+                        <option value="Mizoram">Mizoram</option>
+                        <option value="Nagaland">Nagaland</option>
+                        <option value="Odisha">Odisha</option>
+                        <option value="Punjab">Punjab</option>
+                        <option value="Rajasthan">Rajasthan</option>
+                        <option value="Sikkim">Sikkim</option>
+                        <option value="Tamil Nadu">Tamil Nadu</option>
+                        <option value="Telangana">Telangana</option>
+                        <option value="Tripura">Tripura</option>
+                        <option value="Uttar Pradesh">Uttar Pradesh</option>
+                        <option value="Uttarakhand">Uttarakhand</option>
+                        <option value="West Bengal">West Bengal</option>
+                        <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
+                        <option value="Chandigarh">Chandigarh</option>
+                        <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman and Diu</option>
+                        <option value="Delhi">Delhi</option>
+                        <option value="Jammu and Kashmir">Jammu and Kashmir</option>
+                        <option value="Lakshadweep">Lakshadweep</option>
+                        <option value="Ladakh">Ladakh</option>
+                        <option value="Pondicherry (Puducherry)">Pondicherry (Puducherry)</option>
+                      </select>
                     </div>
                     <div className="form-group">
                       {/* Empty slot for balance */}
