@@ -110,7 +110,15 @@ const DischargePage = () => {
                 </button>
               </form>
 
-              {error && <div className="error-message" style={{ marginBottom: '2rem' }}>{error}</div>}
+              {error && (
+                <div style={{ backgroundColor: '#fee2e2', color: '#b91c1c', border: '2px solid #ef4444', padding: '1.5rem', borderRadius: '0.5rem', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <Activity size={28} />
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 'bold' }}>Action Blocked</h3>
+                    <p style={{ margin: 0, marginTop: '0.25rem', fontSize: '1rem' }}>{error}</p>
+                  </div>
+                </div>
+              )}
 
               {/* Patient Details & Discharge Form */}
               {patientData && (
