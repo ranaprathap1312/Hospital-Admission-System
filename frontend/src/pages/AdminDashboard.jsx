@@ -170,7 +170,7 @@ const AdminDashboard = () => {
     village: '',
     taluk: 'Vridhachalam',
     district: 'Cuddalore',
-    caseType: 'NON MLC',
+    caseType: '',
     arNo: '',
     gender: ''
   });
@@ -799,7 +799,7 @@ const AdminDashboard = () => {
       patientName: '', age: '', motherName: '', patientId: '',
       admissionDate: getCurrentDate(), admissionTime: getCurrentTime(), wardName: '', mobileNo: '', aadharNo: '',
       occupation: '', income: '', caretakerName: '', street: '', village: '',
-      taluk: 'Vridhachalam', district: 'Cuddalore', caseType: 'NON MLC', arNo: '', gender: ''
+      taluk: 'Vridhachalam', district: 'Cuddalore', caseType: '', arNo: '', gender: ''
     });
     setManualPatientId(false);
     setManualAdmissionDate(false);
@@ -1496,6 +1496,7 @@ const AdminDashboard = () => {
                     <div className="form-group">
                       <label>Case Type *</label>
                       <select name="caseType" value={formData.caseType} onChange={handleChange} required>
+                        <option value="">Select</option>
                         <option value="NON MLC">NON MLC</option>
                         <option value="MLC">MLC</option>
                       </select>
