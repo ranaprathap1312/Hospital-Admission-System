@@ -138,7 +138,7 @@ public class PatientService {
 
         // Replicate to x1-x7 table if requested (best effort)
         try {
-            if (destinationTable != null && destinationTable.matches("x[1-7]")) {
+            if (destinationTable != null && destinationTable.matches("x[2-7]|mlc_discharge")) {
                 String sql = "INSERT INTO " + destinationTable + " (" +
                     "custom_patient_id, discharge_type, patient_db_id, discharge_ward, " +
                     "ar_no, case_type, patient_name, age, gender, mother_name, mobile_no, " +

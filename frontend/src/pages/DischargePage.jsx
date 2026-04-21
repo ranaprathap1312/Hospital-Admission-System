@@ -18,7 +18,7 @@ const DischargePage = () => {
   const [dischargeType, setDischargeType] = useState('Normal Discharge');
   const [dischargeWard, setDischargeWard] = useState('');
   const [dischargeDate, setDischargeDate] = useState(getCurrentDateTime());
-  const [destinationTable, setDestinationTable] = useState('x1');
+  const [destinationTable, setDestinationTable] = useState('mlc_discharge');
 
   const [isSearching, setIsSearching] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -202,7 +202,7 @@ const DischargePage = () => {
                           required
                           style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white' }}
                         >
-                          <option value="x1">x1</option>
+                          <option value="mlc_discharge">mlc_discharge</option>
                           <option value="x2">x2</option>
                           <option value="x3">x3</option>
                           <option value="x4">x4</option>
