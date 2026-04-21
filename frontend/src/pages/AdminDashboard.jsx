@@ -1275,17 +1275,21 @@ const AdminDashboard = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {filteredDestinationRecords.map((record, i) => (
-                          <tr key={i} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                            <td style={{ padding: '1rem', fontWeight: '500' }}>{record.destinationTableId || record.customPatientId || 'N/A'}</td>
-                            <td style={{ padding: '1rem', fontWeight: '600' }}>{record.patientName || 'N/A'}</td>
-                            <td style={{ padding: '1rem' }}>{record.motherName || 'N/A'}</td>
-                            <td style={{ padding: '1rem' }}>{record.admissionDate || 'N/A'}</td>
-                            <td style={{ padding: '1rem', color: '#b91c1c', fontWeight: 'bold' }}>{record.dischargeDate || 'N/A'}</td>
-                            <td style={{ padding: '1rem' }}>{record.income || 'N/A'}</td>
-                            <td style={{ padding: '1rem', maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis' }} title={record.address}>{record.address || 'N/A'}</td>
-                          </tr>
-                        ))}
+                        {filteredDestinationRecords.length === 0 ? (
+                          <tr><td colSpan="7" style={{ padding: '1rem', textAlign: 'center' }}>No records match the current filters.</td></tr>
+                        ) : (
+                          filteredDestinationRecords.map((record, i) => (
+                            <tr key={i} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                              <td style={{ padding: '1rem', fontWeight: '500' }}>{record.destinationTableId || record.customPatientId || 'N/A'}</td>
+                              <td style={{ padding: '1rem', fontWeight: '600' }}>{record.patientName || 'N/A'}</td>
+                              <td style={{ padding: '1rem' }}>{record.motherName || 'N/A'}</td>
+                              <td style={{ padding: '1rem' }}>{record.admissionDate || 'N/A'}</td>
+                              <td style={{ padding: '1rem', color: '#b91c1c', fontWeight: 'bold' }}>{record.dischargeDate || 'N/A'}</td>
+                              <td style={{ padding: '1rem' }}>{record.income || 'N/A'}</td>
+                              <td style={{ padding: '1rem', maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis' }} title={record.address}>{record.address || 'N/A'}</td>
+                            </tr>
+                          ))
+                        )}
                       </tbody>
                     </table>
                   </div>
