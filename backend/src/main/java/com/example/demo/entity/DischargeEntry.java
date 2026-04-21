@@ -58,6 +58,12 @@ public class DischargeEntry {
     @Column(name = "caretaker_name")
     private String caretakerName;
 
+    @Transient
+    private Long destinationTableId;
+
+    public DischargeEntry() {
+    }
+
     private String address;
 
     @Column(name = "admission_ward")
@@ -135,4 +141,7 @@ public class DischargeEntry {
 
     public String getIncome() { return income; }
     public void setIncome(String income) { this.income = income; }
+
+    public Long getDestinationTableId() { return destinationTableId; }
+    public void setDestinationTableId(Long destinationTableId) { this.destinationTableId = destinationTableId; }
 }

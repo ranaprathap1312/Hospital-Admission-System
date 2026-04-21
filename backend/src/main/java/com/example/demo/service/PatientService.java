@@ -168,6 +168,11 @@ public class PatientService {
         String sql = "SELECT * FROM " + tableName + " ORDER BY id DESC";
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
             DischargeEntry entry = new DischargeEntry();
+            try {
+                entry.setDestinationTableId(rs.getLong(tableName + "_id"));
+            } catch (Exception e) {
+                // Ignore if column doesn't exist (e.g. x6, x7)
+            }
             entry.setCustomPatientId(rs.getString("custom_patient_id"));
             entry.setPatientName(rs.getString("patient_name"));
             entry.setAge(rs.getInt("age"));

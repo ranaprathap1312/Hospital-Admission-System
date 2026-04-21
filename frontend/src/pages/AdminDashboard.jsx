@@ -33,7 +33,21 @@ const AdminDashboard = () => {
 
     // Define the headers
     const headers = [
-      'Patient ID', 'Name', 'Age', 'Gender', 'Case Type', 'AR No', 
+      'ID', 'Patient Name', 'Mother Name', 'Admission Date', 'Discharge Date', 'Income', 'Village Name'
+    ];
+
+    const rows = filteredDestinationRecords.map(p => [
+      p.destinationTableId || p.customPatientId || '',
+      p.patientName || '',
+      p.motherName || '',
+      p.admissionDate || '',
+      p.dischargeDate || '',
+      p.income || '',
+      p.address ? `"${p.address.replace(/"/g, '""')}"` : ''
+    ]);*/
+
+
+    /* 'Gender', 'Case Type', 'AR No', 
       'Aadhar No', 'Mobile', 'Ward', 'Admission Date', 'Admission Time', 
       'Occupation', 'Income', 'Mother Name', 'Caretaker Name', 'Address', 'Status'
     ];
@@ -81,7 +95,21 @@ const AdminDashboard = () => {
 
     // Define the headers for discharge records
     const headers = [
-      'Patient ID', 'Name', 'Age', 'Gender', 'Case Type', 'AR No', 
+      'ID', 'Patient Name', 'Mother Name', 'Admission Date', 'Discharge Date', 'Income', 'Village Name'
+    ];
+
+    const rows = filteredDestinationRecords.map(p => [
+      p.destinationTableId || p.customPatientId || '',
+      p.patientName || '',
+      p.motherName || '',
+      p.admissionDate || '',
+      p.dischargeDate || '',
+      p.income || '',
+      p.address ? `"${p.address.replace(/"/g, '""')}"` : ''
+    ]);*/
+
+
+    /* 'Gender', 'Case Type', 'AR No', 
       'Aadhar No', 'Mobile', 'Admission Ward', 'Admission Date', 'Admission Time', 
       'Discharge Ward', 'Discharge Date', 'Discharge Time', 'Discharge Type',
       'Occupation', 'Income', 'Mother Name', 'Caretaker Name', 'Address'
@@ -109,7 +137,8 @@ const AdminDashboard = () => {
       p.motherName || '',
       p.caretakerName || '',
       p.address ? `"${p.address.replace(/"/g, '""')}"` : ''
-    ]);
+    ]);*/
+
 
     const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -128,7 +157,21 @@ const AdminDashboard = () => {
 
     // Define the headers for discharge records
     const headers = [
-      'Patient ID', 'Name', 'Age', 'Gender', 'Case Type', 'AR No', 
+      'ID', 'Patient Name', 'Mother Name', 'Admission Date', 'Discharge Date', 'Income', 'Village Name'
+    ];
+
+    const rows = filteredDestinationRecords.map(p => [
+      p.destinationTableId || p.customPatientId || '',
+      p.patientName || '',
+      p.motherName || '',
+      p.admissionDate || '',
+      p.dischargeDate || '',
+      p.income || '',
+      p.address ? `"${p.address.replace(/"/g, '""')}"` : ''
+    ]);*/
+
+
+    /* 'Gender', 'Case Type', 'AR No', 
       'Aadhar No', 'Mobile', 'Admission Ward', 'Admission Date', 'Admission Time', 
       'Discharge Ward', 'Discharge Date', 'Discharge Time', 'Discharge Type',
       'Occupation', 'Income', 'Mother Name', 'Caretaker Name', 'Address'
@@ -156,7 +199,8 @@ const AdminDashboard = () => {
       p.motherName || '',
       p.caretakerName || '',
       p.address ? `"${p.address.replace(/"/g, '""')}"` : ''
-    ]);
+    ]);*/
+
 
     // Construct the CSV string
     const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
@@ -1112,22 +1156,36 @@ const AdminDashboard = () => {
                     <table className="records-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', whiteSpace: 'nowrap' }}>
                       <thead>
                         <tr style={{ backgroundColor: '#f0fdf4', borderBottom: '2px solid #86efac' }}>
-                          <th style={{ padding: '1rem' }}>Patient ID</th>
-                          <th style={{ padding: '1rem' }}>Name</th>
-                          <th style={{ padding: '1rem' }}>Age</th>
-                          <th style={{ padding: '1rem' }}>Gender</th>
-                          <th style={{ padding: '1rem' }}>Case Type</th>
-                          <th style={{ padding: '1rem' }}>AR No</th>
-                          <th style={{ padding: '1rem' }}>Aadhar No</th>
-                          <th style={{ padding: '1rem' }}>Mobile</th>
-                          <th style={{ padding: '1rem' }}>Ward</th>
-                          <th style={{ padding: '1rem' }}>Admission Date</th>
-                          <th style={{ padding: '1rem' }}>Admission Time</th>
-                          <th style={{ padding: '1rem' }}>Occupation</th>
-                        <th style={{ padding: '1rem' }}>Income</th>
-                          <th style={{ padding: '1rem' }}>Mother's Name</th>
-                          <th style={{ padding: '1rem' }}>Caretaker Name</th>
-                          <th style={{ padding: '1rem' }}>Address</th>
+                          {activeTab === 'DESTINATION_RECORDS' ? (
+                          <>
+                            <th style={{ padding: '1rem' }}>ID</th>
+                            <th style={{ padding: '1rem' }}>Patient Name</th>
+                            <th style={{ padding: '1rem' }}>Mother Name</th>
+                            <th style={{ padding: '1rem' }}>Admission Date</th>
+                            <th style={{ padding: '1rem' }}>Discharge Date</th>
+                            <th style={{ padding: '1rem' }}>Income</th>
+                            <th style={{ padding: '1rem' }}>Village Name</th>
+                          </>
+                        ) : (
+                          <>
+                            <th style={{ padding: '1rem' }}>Patient ID</th>
+                            <th style={{ padding: '1rem' }}>Name</th>
+                            <th style={{ padding: '1rem' }}>Age</th>
+                            <th style={{ padding: '1rem' }}>Gender</th>
+                            <th style={{ padding: '1rem' }}>Case Type</th>
+                            <th style={{ padding: '1rem' }}>AR No</th>
+                            <th style={{ padding: '1rem' }}>Aadhar No</th>
+                            <th style={{ padding: '1rem' }}>Mobile</th>
+                            <th style={{ padding: '1rem' }}>Ward</th>
+                            <th style={{ padding: '1rem' }}>Admission Date</th>
+                            <th style={{ padding: '1rem' }}>Admission Time</th>
+                            <th style={{ padding: '1rem' }}>Occupation</th>
+                            <th style={{ padding: '1rem' }}>Income</th>
+                            <th style={{ padding: '1rem' }}>Mother's Name</th>
+                            <th style={{ padding: '1rem' }}>Caretaker Name</th>
+                            <th style={{ padding: '1rem' }}>Address</th>
+                          </>
+                        )}
                         </tr>
                       </thead>
                       <tbody>
