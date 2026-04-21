@@ -518,41 +518,54 @@ const AdminDashboard = () => {
 
   const filteredDestinationRecords = destinationRecords.filter(record => {
     return filters.every(filter => {
-      if (!filter.column) return true;
-      
+      const searchColumn = filter.column;
+      if (!searchColumn) return true;
+
+      const checkMatch = (val, strict = false) => {
+        if (val == null) return false;
+        const strVal = val.toString().toLowerCase();
+        const query = filter.value.toLowerCase();
+        if (!query) return true;
+        if (filter.matchType === 'Exact' || strict) {
+          return strVal === query || strVal.startsWith(query);
+        }
+        return strVal.includes(query);
+      };
+
+      if (searchColumn === 'All Columns') {
+        if (!filter.value) return true;
+        return (
+          checkMatch(record.destinationTableId || record.customPatientId) ||
+          checkMatch(record.patientName) ||
+          checkMatch(record.motherName) ||
+          checkMatch(record.admissionDate) ||
+          checkMatch(record.dischargeDate) ||
+          checkMatch(record.income) ||
+          checkMatch(record.address)
+        );
+      }
+
       let columnValue = '';
-      switch (filter.column) {
-        case 'Patient ID': columnValue = record.customPatientId || record.patientId; break;
+      switch (searchColumn) {
+        case 'Patient ID': columnValue = record.destinationTableId || record.customPatientId; break;
         case 'Name': columnValue = record.patientName; break;
-        case 'Admission Ward': columnValue = record.admissionWard; break;
-        case 'Discharge Ward': columnValue = record.dischargeWard; break;
+        case 'Admission Date': columnValue = record.admissionDate; break;
         case 'Discharge Date': columnValue = record.dischargeDate; break;
-        case 'Occupation': columnValue = record.occupation; break;
         case 'Income': columnValue = record.income; break;
-        case 'Case Type': columnValue = record.caseType; break;
         default: columnValue = '';
       }
 
-      if (!columnValue) return false;
-
-      const checkMatch = (val) => {
-        if (!val) return false;
-        if (filter.matchType === 'Exact') {
-          return val.toString().toLowerCase() === filter.value.toLowerCase();
-        } else {
-          return val.toString().toLowerCase().includes(filter.value.toLowerCase());
-        }
-      };
-
-      if (filter.subType === 'Equals') {
-        return checkMatch(columnValue);
-      } else if (filter.subType === 'Between') {
+      if (filter.subType === 'Between') {
         if (!filter.rangeStart || !filter.rangeEnd) return true;
+        if (!columnValue) return false;
         const val = columnValue.toString().toLowerCase();
         return val >= filter.rangeStart.toLowerCase() && val <= filter.rangeEnd.toLowerCase();
       }
 
-      return true;
+      if (!filter.value) return true;
+      if (!columnValue) return false;
+
+      return checkMatch(columnValue);
     });
   });
 
