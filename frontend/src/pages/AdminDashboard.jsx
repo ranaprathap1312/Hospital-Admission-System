@@ -1278,7 +1278,7 @@ const AdminDashboard = () => {
                     <table className="records-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', whiteSpace: 'nowrap' }}>
                       <thead>
                         <tr style={{ backgroundColor: '#f8fafc', borderBottom: '2px solid var(--border-color)' }}>
-                          <th style={{ padding: '1rem' }}>ID</th>
+                          <th style={{ padding: '1rem' }}>patient_{selectedDestinationTable}_id</th>
                           <th style={{ padding: '1rem' }}>Patient Name</th>
                           <th style={{ padding: '1rem' }}>Mother Name</th>
                           <th style={{ padding: '1rem' }}>Admission Date</th>
