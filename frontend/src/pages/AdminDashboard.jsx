@@ -256,7 +256,23 @@ const AdminDashboard = () => {
       setPredictedNextId('Unknown');
     }
   };
+  const fetchDestinationRecords = async (tableName) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/patients/destination/${tableName}`);
+      if (response.ok) {
+        const data = await response.json();
+        setDestinationRecords(data);
+      }
+    } catch (err) {
+      console.error("Error fetching destination records", err);
+    }
+  };
 
+  React.useEffect(() => {
+    if (activeTab === 'DESTINATION_RECORDS' && selectedDestinationTable) {
+      fetchDestinationRecords(selectedDestinationTable);
+    }
+  }, [activeTab, selectedDestinationTable]);
   const fetchPatients = async () => {
     setLoadingRecords(true);
     try {
@@ -1093,18 +1109,6 @@ const AdminDashboard = () => {
                     <table className="records-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', whiteSpace: 'nowrap' }}>
                       <thead>
                         <tr style={{ backgroundColor: '#f0fdf4', borderBottom: '2px solid #86efac' }}>
-                          {activeTab === 'DESTINATION_RECORDS' ? (
-                          <>
-                            <th style={{ padding: '1rem' }}>ID</th>
-                            <th style={{ padding: '1rem' }}>Patient Name</th>
-                            <th style={{ padding: '1rem' }}>Mother Name</th>
-                            <th style={{ padding: '1rem' }}>Admission Date</th>
-                            <th style={{ padding: '1rem' }}>Discharge Date</th>
-                            <th style={{ padding: '1rem' }}>Income</th>
-                            <th style={{ padding: '1rem' }}>Village Name</th>
-                          </>
-                        ) : (
-                          <>
                             <th style={{ padding: '1rem' }}>Patient ID</th>
                             <th style={{ padding: '1rem' }}>Name</th>
                             <th style={{ padding: '1rem' }}>Age</th>
@@ -1121,8 +1125,6 @@ const AdminDashboard = () => {
                             <th style={{ padding: '1rem' }}>Mother's Name</th>
                             <th style={{ padding: '1rem' }}>Caretaker Name</th>
                             <th style={{ padding: '1rem' }}>Address</th>
-                          </>
-                        )}
                         </tr>
                       </thead>
                       <tbody>
@@ -1251,6 +1253,67 @@ const AdminDashboard = () => {
                 <button className="btn btn-primary" onClick={() => setViewMode('PRINT')}>View Patient Details / Print</button>
               </div>
             </div>
+          )}
+
+          {activeTab === 'DESTINATION_RECORDS' && (
+            <>
+              {destinationRecords.length === 0 ? (
+                <p>No destination records found.</p>
+              ) : (
+                <>
+                  <div style={{ overflowX: 'auto' }}>
+                    <table className="records-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', whiteSpace: 'nowrap' }}>
+                      <thead>
+                        <tr style={{ backgroundColor: '#f8fafc', borderBottom: '2px solid var(--border-color)' }}>
+                          <th style={{ padding: '1rem' }}>ID</th>
+                          <th style={{ padding: '1rem' }}>Patient Name</th>
+                          <th style={{ padding: '1rem' }}>Mother Name</th>
+                          <th style={{ padding: '1rem' }}>Admission Date</th>
+                          <th style={{ padding: '1rem' }}>Discharge Date</th>
+                          <th style={{ padding: '1rem' }}>Income</th>
+                          <th style={{ padding: '1rem' }}>Village Name</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredDestinationRecords.map((record, i) => (
+                          <tr key={i} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                            <td style={{ padding: '1rem', fontWeight: '500' }}>{record.destinationTableId || record.customPatientId || 'N/A'}</td>
+                            <td style={{ padding: '1rem', fontWeight: '600' }}>{record.patientName || 'N/A'}</td>
+                            <td style={{ padding: '1rem' }}>{record.motherName || 'N/A'}</td>
+                            <td style={{ padding: '1rem' }}>{record.admissionDate || 'N/A'}</td>
+                            <td style={{ padding: '1rem', color: '#b91c1c', fontWeight: 'bold' }}>{record.dischargeDate || 'N/A'}</td>
+                            <td style={{ padding: '1rem' }}>{record.income || 'N/A'}</td>
+                            <td style={{ padding: '1rem', maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis' }} title={record.address}>{record.address || 'N/A'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
+                    <button 
+                      onClick={downloadDestinationAsExcel}
+                      disabled={filteredDestinationRecords.length === 0}
+                      className="btn btn-primary"
+                      style={{ 
+                        backgroundColor: '#107c41', // Excel Green
+                        borderColor: '#107c41',
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '0.5rem',
+                        opacity: filteredDestinationRecords.length === 0 ? 0.6 : 1
+                      }}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                      </svg>
+                      Download Excel
+                    </button>
+                  </div>
+                </>
+              )}
+            </>
           )}
 
           {viewMode === 'PRINT' && submittedData && (
