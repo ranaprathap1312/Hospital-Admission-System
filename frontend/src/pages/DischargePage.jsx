@@ -38,15 +38,13 @@ const DischargePage = () => {
       const response = await fetch(`${API_BASE_URL}/api/patients/id/${patientId}`);
       if (response.ok) {
         const data = await response.json();
-        if (data.status === 'DISCHARGED') {
-          setError(`Patient ${data.patientName} is already discharged.`);
-        } else {
-          setPatientData(data);
-          setDischargeWard('');
-          setDischargeDate(getCurrentDateTime());
-        }
+        setPatientData(data);
+        setDischargeWard('');
+        setDischargeDate(getCurrentDateTime());
+      } else if (response.status === 404) {
+        setError(`No active patient found with ID "${patientId}". They may already be discharged.`);
       } else {
-        setError('Patient not found with that ID.');
+        setError('Could not find patient. Please try again.');
       }
     } catch (err) {
       setError('Could not connect to the server.');
