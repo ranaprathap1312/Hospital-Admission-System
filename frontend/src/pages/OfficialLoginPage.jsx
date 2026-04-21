@@ -111,7 +111,7 @@ const OfficialLoginPage = () => {
       <div className="login-container glass-panel official-panel">
         <div className="login-header">
           <div className="logo-circle danger-circle">
-            <img src="/tn_logo.png" alt="TN Logo" className="logo-icon-large" style={{ width: '64px', height: 'auto' }} />
+            <img src="/new_logo.jpg" alt="TN Logo" className="logo-icon-large" style={{ width: '64px', height: 'auto' }} />
           </div>
           <h2>Higher Official Portal</h2>
           <p>Super Admin access requires 2-Factor Authentication</p>

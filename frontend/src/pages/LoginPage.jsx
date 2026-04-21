@@ -59,7 +59,7 @@ const LoginPage = () => {
       <div className="login-container glass-panel">
         <div className="login-header">
           <div className="logo-circle">
-            <img src="/tn_logo.png" alt="TN Logo" className="logo-icon-large" style={{ width: '64px', height: 'auto' }} />
+            <img src="/new_logo.jpg" alt="TN Logo" className="logo-icon-large" style={{ width: '64px', height: 'auto' }} />
           </div>
           <h2>Admin Portal</h2>
           <p>Sign in to manage admissions</p>

@@ -13,7 +13,7 @@ function App() {
     <Router>
       <div className="app-container">
         <div className="global-print-header" style={{ display: 'none', flexDirection: 'column', alignItems: 'center' }}>
-          <img src="/tn_logo.png" alt="Tamil Nadu Logo" style={{ width: '80px', height: 'auto', marginBottom: '10px' }} />
+          <img src="/new_logo.jpg" alt="Tamil Nadu Logo" style={{ width: '80px', height: 'auto', marginBottom: '10px' }} />
           <div>WELCOME TO GOVT HOSPITAL VIRUDHACHALAM</div>
         </div>
         <Routes>
