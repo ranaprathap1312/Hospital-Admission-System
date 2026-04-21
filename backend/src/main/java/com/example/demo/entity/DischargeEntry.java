@@ -53,6 +53,7 @@ public class DischargeEntry {
     private String aadharNo;
 
     private String occupation;
+    private String income;
 
     @Column(name = "caretaker_name")
     private String caretakerName;
@@ -131,4 +132,7 @@ public class DischargeEntry {
 
     public LocalTime getAdmissionTime() { return admissionTime; }
     public void setAdmissionTime(LocalTime admissionTime) { this.admissionTime = admissionTime; }
+
+    public String getIncome() { return income; }
+    public void setIncome(String income) { this.income = income; }
 }

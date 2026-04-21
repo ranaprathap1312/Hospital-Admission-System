@@ -40,6 +40,7 @@ public class Patient {
     private String aadharNo;
 
     private String occupation;
+    private String income;
 
     @Column(name = "caretaker_name")
     private String caretakerName;
@@ -114,4 +115,7 @@ public class Patient {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public String getIncome() { return income; }
+    public void setIncome(String income) { this.income = income; }
 }

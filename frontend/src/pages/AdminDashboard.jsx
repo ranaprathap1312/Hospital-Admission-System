@@ -35,7 +35,7 @@ const AdminDashboard = () => {
     const headers = [
       'Patient ID', 'Name', 'Age', 'Gender', 'Case Type', 'AR No', 
       'Aadhar No', 'Mobile', 'Ward', 'Admission Date', 'Admission Time', 
-      'Occupation', 'Mother Name', 'Caretaker Name', 'Address', 'Status'
+      'Occupation', 'Income', 'Mother Name', 'Caretaker Name', 'Address', 'Status'
     ];
 
     // Map the filtered patients to rows
@@ -52,6 +52,7 @@ const AdminDashboard = () => {
       p.admissionDate || '',
       formatTime12Hour(p.admissionTime),
       p.occupation || '',
+      p.income || '',
       p.motherName || '',
       p.caretakerName || '',
       p.address ? `"${p.address.replace(/"/g, '""')}"` : '', // Escape commas
@@ -270,6 +271,7 @@ const AdminDashboard = () => {
           checkMatch(patient.admissionDate) ||
           checkMatch(patient.admissionTime) ||
           checkMatch(patient.occupation) ||
+          checkMatch(patient.income) ||
           checkMatch(patient.motherName) ||
           checkMatch(patient.caretakerName) ||
           checkMatch(patient.address) ||
@@ -305,6 +307,7 @@ const AdminDashboard = () => {
             if (filter.subType === 'Minute') return tParts[1];
             return formatTime12Hour(patient.admissionTime);
           case 'Occupation': return patient.occupation;
+          case 'Income': return patient.income;
           case "Mother's Name": return patient.motherName;
           case 'Caretaker Name': return patient.caretakerName;
           case 'Address': 
@@ -361,6 +364,7 @@ const AdminDashboard = () => {
           checkMatch(patient.gender, true) || checkMatch(patient.caseType, true) || checkMatch(patient.arNo) ||
           checkMatch(patient.aadharNo) || checkMatch(patient.mobileNo) || checkMatch(patient.wardName) ||
           checkMatch(patient.admissionDate) || checkMatch(patient.admissionTime) || checkMatch(patient.occupation) ||
+          checkMatch(patient.income) ||
           checkMatch(patient.motherName) || checkMatch(patient.caretakerName) || checkMatch(patient.address)
         );
       }
@@ -390,6 +394,7 @@ const AdminDashboard = () => {
             if (filter.subType === 'Minute') return tParts[1];
             return formatTime12Hour(patient.admissionTime);
           case 'Occupation': return patient.occupation;
+          case 'Income': return patient.income;
           case "Mother's Name": return patient.motherName;
           case 'Caretaker Name': return patient.caretakerName;
           case 'Address':
@@ -493,6 +498,7 @@ const AdminDashboard = () => {
           checkMatch(record.dischargeTime) ||
           checkMatch(record.dischargeType) ||
           checkMatch(record.occupation) ||
+          checkMatch(record.income) ||
           checkMatch(record.motherName) ||
           checkMatch(record.caretakerName) ||
           checkMatch(record.address)
@@ -541,6 +547,7 @@ const AdminDashboard = () => {
             if (filter.subType === 'Minute') return dtParts[1];
             return record.dischargeTime;
           case 'Occupation': return record.occupation;
+          case 'Income': return record.income;
           case "Mother's Name": return record.motherName;
           case 'Caretaker Name': return record.caretakerName;
           case 'Address': 
@@ -630,7 +637,7 @@ const AdminDashboard = () => {
     setFormData({
       patientName: '', age: '', motherName: '', patientId: '',
       admissionDate: getCurrentDate(), admissionTime: getCurrentTime(), wardName: '', mobileNo: '', aadharNo: '',
-      occupation: '', caretakerName: '', street: '', village: '',
+      occupation: '', income: '', caretakerName: '', street: '', village: '',
       taluk: 'Vridhachalam', district: 'Cuddalore', caseType: 'NON MLC', arNo: '', gender: ''
     });
     setManualPatientId(false);
@@ -760,6 +767,7 @@ const AdminDashboard = () => {
                       <option value="Admission Date">Admission Date</option>
                       <option value="Admission Time">Admission Time</option>
                       <option value="Occupation">Occupation</option>
+                      <option value="Income">Income</option>
                       <option value="Mother's Name">Mother's Name</option>
                       <option value="Caretaker Name">Caretaker Name</option>
                       <option value="Address">Address</option>
@@ -857,6 +865,7 @@ const AdminDashboard = () => {
                         <th style={{ padding: '1rem' }}>Admission Date</th>
                         <th style={{ padding: '1rem' }}>Admission Time</th>
                         <th style={{ padding: '1rem' }}>Occupation</th>
+                        <th style={{ padding: '1rem' }}>Income</th>
                         <th style={{ padding: '1rem' }}>Mother's Name</th>
                         <th style={{ padding: '1rem' }}>Caretaker Name</th>
                         <th style={{ padding: '1rem' }}>Address</th>
@@ -878,6 +887,7 @@ const AdminDashboard = () => {
                           <td style={{ padding: '1rem' }}>{patient.admissionDate}</td>
                           <td style={{ padding: '1rem' }}>{formatTime12Hour(patient.admissionTime)}</td>
                           <td style={{ padding: '1rem' }}>{patient.occupation || 'N/A'}</td>
+                          <td style={{ padding: '1rem' }}>{patient.income || 'N/A'}</td>
                           <td style={{ padding: '1rem' }}>{patient.motherName || 'N/A'}</td>
                           <td style={{ padding: '1rem' }}>{patient.caretakerName || 'N/A'}</td>
                           <td style={{ padding: '1rem', maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis' }} title={patient.address}>{patient.address || 'N/A'}</td>
@@ -953,6 +963,7 @@ const AdminDashboard = () => {
                           <th style={{ padding: '1rem' }}>Admission Date</th>
                           <th style={{ padding: '1rem' }}>Admission Time</th>
                           <th style={{ padding: '1rem' }}>Occupation</th>
+                        <th style={{ padding: '1rem' }}>Income</th>
                           <th style={{ padding: '1rem' }}>Mother's Name</th>
                           <th style={{ padding: '1rem' }}>Caretaker Name</th>
                           <th style={{ padding: '1rem' }}>Address</th>
@@ -973,6 +984,7 @@ const AdminDashboard = () => {
                             <td style={{ padding: '1rem' }}>{patient.admissionDate}</td>
                             <td style={{ padding: '1rem' }}>{formatTime12Hour(patient.admissionTime)}</td>
                             <td style={{ padding: '1rem' }}>{patient.occupation || 'N/A'}</td>
+                          <td style={{ padding: '1rem' }}>{patient.income || 'N/A'}</td>
                             <td style={{ padding: '1rem' }}>{patient.motherName || 'N/A'}</td>
                             <td style={{ padding: '1rem' }}>{patient.caretakerName || 'N/A'}</td>
                             <td style={{ padding: '1rem', maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis' }} title={patient.address}>{patient.address || 'N/A'}</td>
@@ -1012,6 +1024,7 @@ const AdminDashboard = () => {
                         <th style={{ padding: '1rem' }}>Mobile</th>
                         <th style={{ padding: '1rem' }}>Aadhar No</th>
                         <th style={{ padding: '1rem' }}>Occupation</th>
+                        <th style={{ padding: '1rem' }}>Income</th>
                         <th style={{ padding: '1rem' }}>Address</th>
                       </tr>
                     </thead>
@@ -1036,6 +1049,7 @@ const AdminDashboard = () => {
                           <td style={{ padding: '1rem' }}>{record.mobileNo || 'N/A'}</td>
                           <td style={{ padding: '1rem' }}>{record.aadharNo || 'N/A'}</td>
                           <td style={{ padding: '1rem' }}>{record.occupation || 'N/A'}</td>
+                          <td style={{ padding: '1rem' }}>{record.income || 'N/A'}</td>
                           <td style={{ padding: '1rem', maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis' }} title={record.address}>{record.address || 'N/A'}</td>
                         </tr>
                       ))}
@@ -1100,6 +1114,7 @@ const AdminDashboard = () => {
                     <p><strong>Gender:</strong> {submittedData.gender}</p>
                     <p><strong>Mother's Name:</strong> {submittedData.motherName || 'N/A'}</p>
                     <p><strong>Occupation:</strong> {submittedData.occupation || 'N/A'}</p>
+              <p><strong>Income:</strong> {submittedData.income || 'N/A'}</p>
                     <p><strong>Caretaker:</strong> {submittedData.caretakerName || 'N/A'}</p>
                     <p><strong>Address:</strong> {submittedData.address}</p>
                   </div>
@@ -1165,6 +1180,10 @@ const AdminDashboard = () => {
                     <div className="form-group">
                       <label>Occupation</label>
                       <input type="text" name="occupation" value={formData.occupation} onChange={handleChange} />
+                    </div>
+                    <div className="form-group">
+                      <label>Income *</label>
+                      <input type="text" name="income" value={formData.income} onChange={handleChange} required />
                     </div>
                   </div>
 
