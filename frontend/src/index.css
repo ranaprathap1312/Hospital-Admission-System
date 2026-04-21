@@ -219,7 +219,7 @@ button:active::after {
   }
   
   .global-print-header {
-    display: block !important;
+    display: flex !important; flex-direction: column; align-items: center;
     text-align: center;
     font-size: 24px;
     font-weight: 800;

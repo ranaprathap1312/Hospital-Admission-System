@@ -1378,7 +1378,7 @@ const AdminDashboard = () => {
           {viewMode === 'PRINT' && submittedData && (
             <div className="print-view">
               <div className="print-header">
-                <Activity size={32} className="print-logo" />
+
                 <h2>TN GH - Official Admission Record</h2>
                 <p>Date: {new Date().toLocaleDateString()}</p>
               </div>

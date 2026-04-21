@@ -163,7 +163,7 @@ const RegisterPage = () => {
       <div className="register-container glass-panel">
         <div className="register-header">
           <div className="logo-circle">
-            <Activity className="logo-icon-large" />
+            <img src="/tn_logo.png" alt="TN Logo" className="logo-icon-large" style={{ width: '64px', height: 'auto' }} />
           </div>
           <h2>Admin Registration</h2>
           <p>Create a new hospital administrator account</p>
