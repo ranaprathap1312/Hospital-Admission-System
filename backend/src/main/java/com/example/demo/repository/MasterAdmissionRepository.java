@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface MasterAdmissionRepository extends JpaRepository<MasterAdmission, Long> {
+    java.util.Optional<MasterAdmission> findByPatientId(String patientId);
 }

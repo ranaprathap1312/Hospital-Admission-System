@@ -84,78 +84,80 @@ public class PatientService {
     }
 
     @Transactional
-    public Patient dischargePatient(String patientId, String dischargeType, String dischargeWard, String dischargeDateStr, String destinationTable) {
-        java.util.Optional<Patient> optionalPatient = patientRepository.findByPatientId(patientId);
-        if (optionalPatient.isPresent()) {
-            Patient patient = optionalPatient.get();
-            patient.setStatus("DISCHARGED");
-            patientRepository.save(patient);
+    public void dischargePatient(String patientId, String dischargeType, String dischargeWard, String dischargeDateStr, String destinationTable) {
+        Patient patient = patientRepository.findByPatientId(patientId)
+            .orElseThrow(() -> new RuntimeException("Patient not found with ID: " + patientId));
 
-            // Check if a discharge entry already exists for this patient to avoid unique constraint violations
-            DischargeEntry entry = dischargeEntryRepository.findByPatient_Id(patient.getId())
-                .orElse(new DischargeEntry());
+        // Build or update the discharge entry
+        DischargeEntry entry = dischargeEntryRepository.findByPatientDbId(patient.getId())
+            .orElse(new DischargeEntry());
 
-            entry.setPatient(patient);
-            entry.setCustomPatientId(patient.getPatientId());
-            entry.setCaseType(patient.getCaseType());
-            entry.setArNo(patient.getArNo());
-            entry.setPatientName(patient.getPatientName());
-            entry.setAge(patient.getAge());
-            entry.setGender(patient.getGender());
-            entry.setMotherName(patient.getMotherName());
-            entry.setMobileNo(patient.getMobileNo());
-            entry.setAadharNo(patient.getAadharNo());
-            entry.setOccupation(patient.getOccupation());
-            entry.setCaretakerName(patient.getCaretakerName());
-            entry.setAddress(patient.getAddress());
-            entry.setAdmissionWard(patient.getWardName());
-            entry.setAdmissionDate(patient.getAdmissionDate());
-            entry.setAdmissionTime(patient.getAdmissionTime());
-            entry.setDischargeType(dischargeType);
-            entry.setDischargeWard(dischargeWard);
+        entry.setPatientDbId(patient.getId());
+        entry.setCustomPatientId(patient.getPatientId());
+        entry.setCaseType(patient.getCaseType());
+        entry.setArNo(patient.getArNo());
+        entry.setPatientName(patient.getPatientName());
+        entry.setAge(patient.getAge());
+        entry.setGender(patient.getGender());
+        entry.setMotherName(patient.getMotherName());
+        entry.setMobileNo(patient.getMobileNo());
+        entry.setAadharNo(patient.getAadharNo());
+        entry.setOccupation(patient.getOccupation());
+        entry.setCaretakerName(patient.getCaretakerName());
+        entry.setAddress(patient.getAddress());
+        entry.setAdmissionWard(patient.getWardName());
+        entry.setAdmissionDate(patient.getAdmissionDate());
+        entry.setAdmissionTime(patient.getAdmissionTime());
+        entry.setDischargeType(dischargeType);
+        entry.setDischargeWard(dischargeWard);
 
-            if (dischargeDateStr != null && !dischargeDateStr.isEmpty()) {
-                try {
-                    LocalDateTime dt = LocalDateTime.parse(dischargeDateStr);
-                    entry.setDischargeDate(dt.toLocalDate());
-                    entry.setDischargeTime(dt.toLocalTime());
-                } catch (Exception e) {
-                    LocalDateTime now = LocalDateTime.now();
-                    entry.setDischargeDate(now.toLocalDate());
-                    entry.setDischargeTime(now.toLocalTime());
-                }
-            } else {
-                LocalDateTime now = LocalDateTime.now();
+        if (dischargeDateStr != null && !dischargeDateStr.isEmpty()) {
+            try {
+                java.time.LocalDateTime dt = java.time.LocalDateTime.parse(dischargeDateStr);
+                entry.setDischargeDate(dt.toLocalDate());
+                entry.setDischargeTime(dt.toLocalTime());
+            } catch (Exception e) {
+                java.time.LocalDateTime now = java.time.LocalDateTime.now();
                 entry.setDischargeDate(now.toLocalDate());
                 entry.setDischargeTime(now.toLocalTime());
             }
-
-            dischargeEntryRepository.save(entry);
-
-            try {
-                // Replicate to x1-x7 table if requested
-                if (destinationTable != null && destinationTable.matches("x[1-7]")) {
-                    String sql = "INSERT INTO " + destinationTable + " (" +
-                        "custom_patient_id, discharge_type, patient_db_id, discharge_ward, " +
-                        "ar_no, case_type, patient_name, age, gender, mother_name, mobile_no, " +
-                        "aadhar_no, occupation, caretaker_name, address, admission_ward, " +
-                        "admission_date, admission_time, discharge_date, discharge_time" +
-                        ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                    
-                    jdbcTemplate.update(sql, 
-                        entry.getCustomPatientId(), entry.getDischargeType(), patient.getId(), entry.getDischargeWard(),
-                        entry.getArNo(), entry.getCaseType(), entry.getPatientName(), entry.getAge(), entry.getGender(), entry.getMotherName(), entry.getMobileNo(),
-                        entry.getAadharNo(), entry.getOccupation(), entry.getCaretakerName(), entry.getAddress(), entry.getAdmissionWard(),
-                        entry.getAdmissionDate(), entry.getAdmissionTime(), entry.getDischargeDate(), entry.getDischargeTime()
-                    );
-                }
-            } catch (Exception e) {
-                // Log the error but don't fail the discharge
-                System.err.println("Failed to replicate discharge entry to " + destinationTable + ": " + e.getMessage());
-            }
-
-            return patient;
+        } else {
+            java.time.LocalDateTime now = java.time.LocalDateTime.now();
+            entry.setDischargeDate(now.toLocalDate());
+            entry.setDischargeTime(now.toLocalTime());
         }
-        throw new RuntimeException("Patient not found with ID: " + patientId);
+
+        // Save discharge record
+        dischargeEntryRepository.save(entry);
+
+        // Update master_admission status to DISCHARGED (keep the record)
+        masterAdmissionRepository.findByPatientId(patientId).ifPresent(master -> {
+            master.setStatus("DISCHARGED");
+            masterAdmissionRepository.save(master);
+        });
+
+        // Replicate to x1-x7 table if requested (best effort)
+        try {
+            if (destinationTable != null && destinationTable.matches("x[1-7]")) {
+                String sql = "INSERT INTO " + destinationTable + " (" +
+                    "custom_patient_id, discharge_type, patient_db_id, discharge_ward, " +
+                    "ar_no, case_type, patient_name, age, gender, mother_name, mobile_no, " +
+                    "aadhar_no, occupation, caretaker_name, address, admission_ward, " +
+                    "admission_date, admission_time, discharge_date, discharge_time" +
+                    ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                jdbcTemplate.update(sql,
+                    entry.getCustomPatientId(), entry.getDischargeType(), entry.getPatientDbId(), entry.getDischargeWard(),
+                    entry.getArNo(), entry.getCaseType(), entry.getPatientName(), entry.getAge(), entry.getGender(), entry.getMotherName(), entry.getMobileNo(),
+                    entry.getAadharNo(), entry.getOccupation(), entry.getCaretakerName(), entry.getAddress(), entry.getAdmissionWard(),
+                    entry.getAdmissionDate(), entry.getAdmissionTime(), entry.getDischargeDate(), entry.getDischargeTime()
+                );
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to replicate to " + destinationTable + ": " + e.getMessage());
+        }
+
+        // DELETE patient from active patients table (master_admission keeps the full history)
+        patientRepository.delete(patient);
     }
 }
+

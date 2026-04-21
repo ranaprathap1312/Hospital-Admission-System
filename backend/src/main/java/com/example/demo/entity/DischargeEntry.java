@@ -2,7 +2,6 @@ package com.example.demo.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Entity
@@ -13,9 +12,8 @@ public class DischargeEntry {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
-    @JoinColumn(name = "patient_db_id", referencedColumnName = "id")
-    private Patient patient;
+    @Column(name = "patient_db_id")
+    private Long patientDbId;
 
     @Column(name = "custom_patient_id")
     private String customPatientId;
@@ -74,8 +72,8 @@ public class DischargeEntry {
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public Patient getPatient() { return patient; }
-    public void setPatient(Patient patient) { this.patient = patient; }
+    public Long getPatientDbId() { return patientDbId; }
+    public void setPatientDbId(Long patientDbId) { this.patientDbId = patientDbId; }
 
     public String getCustomPatientId() { return customPatientId; }
     public void setCustomPatientId(String customPatientId) { this.customPatientId = customPatientId; }
