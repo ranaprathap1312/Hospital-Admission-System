@@ -75,6 +75,54 @@ const AdminDashboard = () => {
   };
 
 
+  
+  const downloadDestinationAsExcel = () => {
+    if (filteredDestinationRecords.length === 0) return;
+
+    // Define the headers for discharge records
+    const headers = [
+      'Patient ID', 'Name', 'Age', 'Gender', 'Case Type', 'AR No', 
+      'Aadhar No', 'Mobile', 'Admission Ward', 'Admission Date', 'Admission Time', 
+      'Discharge Ward', 'Discharge Date', 'Discharge Time', 'Discharge Type',
+      'Occupation', 'Income', 'Mother Name', 'Caretaker Name', 'Address'
+    ];
+
+    // Map the filtered discharge records to rows
+    const rows = filteredDestinationRecords.map(p => [
+      p.customPatientId || p.patientId || '',
+      p.patientName || '',
+      p.age || '',
+      p.gender || '',
+      p.caseType || '',
+      p.arNo || '',
+      p.aadharNo || '',
+      p.mobileNo || '',
+      p.admissionWard || '',
+      p.admissionDate || '',
+      formatTime12Hour(p.admissionTime),
+      p.dischargeWard || '',
+      p.dischargeDate || '',
+      formatTime12Hour(p.dischargeTime),
+      p.dischargeType || '',
+      p.occupation || '',
+      p.income || '',
+      p.motherName || '',
+      p.caretakerName || '',
+      p.address ? `"${p.address.replace(/"/g, '""')}"` : ''
+    ]);
+
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const dateStr = new Date().toISOString().split('T')[0];
+    link.setAttribute('download', `${selectedDestinationTable}_${dateStr}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const downloadDischargeAsExcel = () => {
     if (filteredDischargeRecords.length === 0) return;
 
@@ -149,6 +197,9 @@ const AdminDashboard = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [viewMode, setViewMode] = useState('FORM'); // 'FORM', 'SUCCESS', 'PRINT'
   const [activeTab, setActiveTab] = useState('ADMISSION'); // 'ADMISSION', 'RECORDS'
+  const [isDestinationDropdownOpen, setIsDestinationDropdownOpen] = useState(false);
+  const [destinationRecords, setDestinationRecords] = useState([]);
+  const [selectedDestinationTable, setSelectedDestinationTable] = useState('');
   const [submittedData, setSubmittedData] = useState(null);
   const [error, setError] = useState('');
   const [manualPatientId, setManualPatientId] = useState(false);
@@ -468,6 +519,46 @@ const AdminDashboard = () => {
     });
   });
 
+  const filteredDestinationRecords = destinationRecords.filter(record => {
+    return filters.every(filter => {
+      if (!filter.column) return true;
+      
+      let columnValue = '';
+      switch (filter.column) {
+        case 'Patient ID': columnValue = record.customPatientId || record.patientId; break;
+        case 'Name': columnValue = record.patientName; break;
+        case 'Admission Ward': columnValue = record.admissionWard; break;
+        case 'Discharge Ward': columnValue = record.dischargeWard; break;
+        case 'Discharge Date': columnValue = record.dischargeDate; break;
+        case 'Occupation': columnValue = record.occupation; break;
+        case 'Income': columnValue = record.income; break;
+        case 'Case Type': columnValue = record.caseType; break;
+        default: columnValue = '';
+      }
+
+      if (!columnValue) return false;
+
+      const checkMatch = (val) => {
+        if (!val) return false;
+        if (filter.matchType === 'Exact') {
+          return val.toString().toLowerCase() === filter.value.toLowerCase();
+        } else {
+          return val.toString().toLowerCase().includes(filter.value.toLowerCase());
+        }
+      };
+
+      if (filter.subType === 'Equals') {
+        return checkMatch(columnValue);
+      } else if (filter.subType === 'Between') {
+        if (!filter.rangeStart || !filter.rangeEnd) return true;
+        const val = columnValue.toString().toLowerCase();
+        return val >= filter.rangeStart.toLowerCase() && val <= filter.rangeEnd.toLowerCase();
+      }
+
+      return true;
+    });
+  });
+
   const filteredDischargeRecords = dischargeRecords.filter(record => {
     return filters.every(filter => {
       const searchColumn = filter.column;
@@ -721,6 +812,20 @@ const AdminDashboard = () => {
           <a href="#" className={`nav-item ${activeTab === 'DISCHARGE_RECORDS' ? 'active' : ''}`} onClick={(e) => { e.preventDefault(); setActiveTab('DISCHARGE_RECORDS'); }}>
             <Activity size={20} /> Discharge Records
           </a>
+          <div className="nav-item-group">
+            <a href="#" className="nav-item" onClick={(e) => { e.preventDefault(); setIsDestinationDropdownOpen(!isDestinationDropdownOpen); }}>
+              <Activity size={20} /> Destination Tables {isDestinationDropdownOpen ? '▼' : '▶'}
+            </a>
+            {isDestinationDropdownOpen && (
+              <div className="nav-dropdown" style={{ paddingLeft: '2.5rem', display: 'flex', flexDirection: 'column', gap: '0.25rem', marginTop: '0.25rem' }}>
+                {['mlc_discharge', 'death_discharge', 'maternity_block_discharge', 'insurance_block_discharge', 'general_side_discharge', 'x6', 'x7'].map(table => (
+                  <a key={table} href="#" className={`nav-item ${activeTab === 'DESTINATION_RECORDS' && selectedDestinationTable === table ? 'active' : ''}`} style={{ padding: '0.5rem', fontSize: '0.85rem' }} onClick={(e) => { e.preventDefault(); setSelectedDestinationTable(table); setActiveTab('DESTINATION_RECORDS'); }}>
+                    • {table.replace(/_/g, ' ')}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
         </nav>
         <div className="sidebar-footer">
           <Link to="/" className="nav-item text-danger">
@@ -742,6 +847,11 @@ const AdminDashboard = () => {
               <h1>Discharge Records</h1>
               <p className="subtitle">View all discharged patient entries.</p>
             </div>
+          ) : activeTab === 'DESTINATION_RECORDS' ? (
+            <div>
+              <h1 style={{ textTransform: 'capitalize' }}>{selectedDestinationTable.replace(/_/g, ' ')} Records</h1>
+              <p className="subtitle">View all entries in the {selectedDestinationTable.replace(/_/g, ' ')} table.</p>
+            </div>
           ) : activeTab === 'ACTIVE_PATIENTS' ? (
             <div>
               <h1>Active Patients</h1>
@@ -756,7 +866,7 @@ const AdminDashboard = () => {
         </header>
 
         <div className="form-container glass-panel">
-          {(activeTab === 'RECORDS' || activeTab === 'DISCHARGE_RECORDS' || activeTab === 'ACTIVE_PATIENTS') && (
+          {(activeTab === 'RECORDS' || activeTab === 'DISCHARGE_RECORDS' || activeTab === 'ACTIVE_PATIENTS' || activeTab === 'DESTINATION_RECORDS') && (
             <div className="records-view">
               <div className="records-controls" style={{ marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 {filters.map((filter, index) => (
@@ -1109,8 +1219,8 @@ const AdminDashboard = () => {
                 </div>
                 <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
                   <button 
-                    onClick={downloadDischargeAsExcel}
-                    disabled={filteredDischargeRecords.length === 0}
+                    onClick={activeTab === 'DISCHARGE_RECORDS' ? downloadDischargeAsExcel : (activeTab === 'DESTINATION_RECORDS' ? downloadDestinationAsExcel : downloadAsExcel)}
+                    disabled={(activeTab === 'DISCHARGE_RECORDS' && filteredDischargeRecords.length === 0) || (activeTab === 'DESTINATION_RECORDS' && filteredDestinationRecords.length === 0)}
                     className="btn btn-primary"
                     style={{ 
                       backgroundColor: '#107c41', // Excel Green

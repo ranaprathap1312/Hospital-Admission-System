@@ -160,5 +160,46 @@ public class PatientService {
         // DELETE patient from active patients table (master_admission keeps the full history)
         patientRepository.delete(patient);
     }
+
+    public java.util.List<DischargeEntry> getDestinationTableRecords(String tableName) {
+        if (tableName == null || !tableName.matches("x[6-7]|mlc_discharge|death_discharge|maternity_block_discharge|insurance_block_discharge|general_side_discharge")) {
+            return java.util.Collections.emptyList();
+        }
+        String sql = "SELECT * FROM " + tableName + " ORDER BY id DESC";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
+            DischargeEntry entry = new DischargeEntry();
+            entry.setCustomPatientId(rs.getString("custom_patient_id"));
+            entry.setPatientName(rs.getString("patient_name"));
+            entry.setAge(rs.getInt("age"));
+            entry.setGender(rs.getString("gender"));
+            entry.setCaseType(rs.getString("case_type"));
+            entry.setArNo(rs.getString("ar_no"));
+            entry.setAadharNo(rs.getString("aadhar_no"));
+            entry.setMobileNo(rs.getString("mobile_no"));
+            entry.setAdmissionWard(rs.getString("admission_ward"));
+            
+            java.sql.Date admDate = rs.getDate("admission_date");
+            if (admDate != null) entry.setAdmissionDate(admDate.toLocalDate());
+            
+            java.sql.Time admTime = rs.getTime("admission_time");
+            if (admTime != null) entry.setAdmissionTime(admTime.toLocalTime());
+            
+            entry.setDischargeWard(rs.getString("discharge_ward"));
+            
+            java.sql.Date disDate = rs.getDate("discharge_date");
+            if (disDate != null) entry.setDischargeDate(disDate.toLocalDate());
+            
+            java.sql.Time disTime = rs.getTime("discharge_time");
+            if (disTime != null) entry.setDischargeTime(disTime.toLocalTime());
+            
+            entry.setDischargeType(rs.getString("discharge_type"));
+            entry.setOccupation(rs.getString("occupation"));
+            entry.setIncome(rs.getString("income"));
+            entry.setMotherName(rs.getString("mother_name"));
+            entry.setCaretakerName(rs.getString("caretaker_name"));
+            entry.setAddress(rs.getString("address"));
+            return entry;
+        });
+    }
 }
 

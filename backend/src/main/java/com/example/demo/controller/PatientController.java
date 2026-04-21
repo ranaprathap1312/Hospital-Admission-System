@@ -45,6 +45,16 @@ public class PatientController {
         }
     }
 
+    @GetMapping("/destination/{tableName}")
+    public ResponseEntity<java.util.List<com.example.demo.entity.DischargeEntry>> getDestinationRecords(@org.springframework.web.bind.annotation.PathVariable String tableName) {
+        try {
+            java.util.List<com.example.demo.entity.DischargeEntry> entries = patientService.getDestinationTableRecords(tableName);
+            return new ResponseEntity<>(entries, HttpStatus.OK);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     @GetMapping("/master-admissions")
     public ResponseEntity<java.util.List<MasterAdmission>> getAllMasterAdmissions() {
         try {
