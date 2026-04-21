@@ -12,6 +12,9 @@ function App() {
   return (
     <Router>
       <div className="app-container">
+        <div className="global-print-header">
+          WELCOME TO GOVT HOSPITAL VIRUDHACHALAM
+        </div>
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
