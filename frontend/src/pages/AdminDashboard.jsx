@@ -1404,7 +1404,40 @@ const AdminDashboard = () => {
                       <input type="text" name="patientName" value={formData.patientName} onChange={handleChange} required />
                     </div>
                     <div className="form-group">
-                      {/* Empty slot for balance */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <label>
+                          IP No
+                          {!manualPatientId && <span style={{ marginLeft: '0.5rem', fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 'normal' }}>(Auto-Generated patient ID)</span>}
+                        </label>
+                        <label style={{ fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                          <input
+                            type="checkbox"
+                            checked={manualPatientId}
+                            onChange={(e) => {
+                              setManualPatientId(e.target.checked);
+                              if (!e.target.checked) setFormData({ ...formData, patientId: '' });
+                            }}
+                            style={{ width: 'auto' }}
+                          />
+                          Manual Entry
+                        </label>
+                      </div>
+                      <input
+                        type="text"
+                        name="patientId"
+                        value={manualPatientId ? formData.patientId : predictedNextId}
+                        readOnly={!manualPatientId}
+                        onChange={(e) => {
+                          if (manualPatientId) handleChange(e);
+                        }}
+                        placeholder={manualPatientId ? "Enter year and IP id (patient ID)" : ""}
+                        style={{
+                          fontSize: '1.25rem',
+                          padding: '0.75rem',
+                          fontWeight: 'bold',
+                          ...(!manualPatientId ? { backgroundColor: '#e2e8f0', cursor: 'not-allowed' } : {})
+                        }}
+                      />
                     </div>
                   </div>
 
@@ -1456,35 +1489,7 @@ const AdminDashboard = () => {
 
                   <div className="form-row">
                     <div className="form-group">
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <label>
-                          IP No
-                          {!manualPatientId && <span style={{ marginLeft: '0.5rem', fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 'normal' }}>(Auto-Generated patient ID)</span>}
-                        </label>
-                        <label style={{ fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                          <input
-                            type="checkbox"
-                            checked={manualPatientId}
-                            onChange={(e) => {
-                              setManualPatientId(e.target.checked);
-                              if (!e.target.checked) setFormData({ ...formData, patientId: '' });
-                            }}
-                            style={{ width: 'auto' }}
-                          />
-                          Manual Entry
-                        </label>
-                      </div>
-                      <input
-                        type="text"
-                        name="patientId"
-                        value={manualPatientId ? formData.patientId : predictedNextId}
-                        readOnly={!manualPatientId}
-                        onChange={(e) => {
-                          if (manualPatientId) handleChange(e);
-                        }}
-                        placeholder={manualPatientId ? "Enter year and IP id (patient ID)" : ""}
-                        style={!manualPatientId ? { backgroundColor: '#e2e8f0', cursor: 'not-allowed', fontWeight: 'bold' } : {}}
-                      />
+                      {/* Empty slot for balance */}
                     </div>
                     <div className="form-group">
                       <label>Aadhar No *</label>
