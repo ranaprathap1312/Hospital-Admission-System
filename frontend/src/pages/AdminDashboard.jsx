@@ -590,6 +590,7 @@ const AdminDashboard = () => {
     try {
       const payload = {
         ...formData,
+        patientId: manualPatientId ? formData.patientId : predictedNextId,
         address: `${formData.street}, ${formData.village}, ${formData.taluk}, ${formData.district}`
       };
 
@@ -1205,7 +1206,9 @@ const AdminDashboard = () => {
                         name="patientId"
                         value={manualPatientId ? formData.patientId : predictedNextId} 
                         readOnly={!manualPatientId}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                          if (manualPatientId) handleChange(e);
+                        }}
                         placeholder={manualPatientId ? "Enter custom Patient ID" : ""}
                         style={!manualPatientId ? { backgroundColor: '#e2e8f0', cursor: 'not-allowed', fontWeight: 'bold' } : {}} 
                       />
