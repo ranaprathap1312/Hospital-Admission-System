@@ -28,6 +28,27 @@ public class PatientService {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    public String generateNextPatientId() {
+        int currentYear = java.time.Year.now().getValue();
+        String prefix = currentYear + "-";
+        java.util.List<String> existingIds = patientRepository.findPatientIdsWithPrefix(prefix);
+        
+        int maxSequence = 0;
+        for (String id : existingIds) {
+            try {
+                String sequencePart = id.substring(prefix.length());
+                int sequence = Integer.parseInt(sequencePart);
+                if (sequence > maxSequence) {
+                    maxSequence = sequence;
+                }
+            } catch (NumberFormatException e) {
+                // Ignore IDs that don't perfectly match the YYYY-N format
+            }
+        }
+        
+        return prefix + (maxSequence + 1);
+    }
+
     public Patient admitPatient(Patient patient) {
         // Set creation timestamp
         patient.setCreatedAt(LocalDateTime.now());

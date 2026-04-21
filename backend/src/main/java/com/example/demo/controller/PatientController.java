@@ -25,6 +25,16 @@ public class PatientController {
         }
     }
 
+    @GetMapping("/next-id")
+    public ResponseEntity<String> getNextPatientId() {
+        try {
+            String nextId = patientService.generateNextPatientId();
+            return new ResponseEntity<>(nextId, HttpStatus.OK);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     @GetMapping
     public ResponseEntity<java.util.List<Patient>> getAllPatients() {
         try {

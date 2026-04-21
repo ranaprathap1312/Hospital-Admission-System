@@ -33,8 +33,8 @@ const AdminDashboard = () => {
 
     // Define the headers
     const headers = [
-      'Patient ID', 'Name', 'Age', 'Gender', 'Case Type', 'AR No', 
-      'Aadhar No', 'Mobile', 'Ward', 'Admission Date', 'Admission Time', 
+      'Patient ID', 'Name', 'Age', 'Gender', 'Case Type', 'AR No',
+      'Aadhar No', 'Mobile', 'Ward', 'Admission Date', 'Admission Time',
       'Occupation', 'Income', 'Mother Name', 'Caretaker Name', 'Address', 'Status'
     ];
 
@@ -75,7 +75,7 @@ const AdminDashboard = () => {
   };
 
 
-  
+
   const downloadDestinationAsExcel = () => {
     if (filteredDestinationRecords.length === 0) return;
 
@@ -110,8 +110,8 @@ const AdminDashboard = () => {
 
     // Define the headers for discharge records
     const headers = [
-      'Patient ID', 'Name', 'Age', 'Gender', 'Case Type', 'AR No', 
-      'Aadhar No', 'Mobile', 'Admission Ward', 'Admission Date', 'Admission Time', 
+      'Patient ID', 'Name', 'Age', 'Gender', 'Case Type', 'AR No',
+      'Aadhar No', 'Mobile', 'Admission Ward', 'Admission Date', 'Admission Time',
       'Discharge Ward', 'Discharge Date', 'Discharge Time', 'Discharge Type',
       'Occupation', 'Income', 'Mother Name', 'Caretaker Name', 'Address'
     ];
@@ -186,7 +186,7 @@ const AdminDashboard = () => {
   const [manualPatientId, setManualPatientId] = useState(false);
   const [manualAdmissionDate, setManualAdmissionDate] = useState(false);
   const [predictedNextId, setPredictedNextId] = useState('Loading...');
-  
+
   // Patient Records State
   const [patients, setPatients] = useState([]);
   const [loadingRecords, setLoadingRecords] = useState(false);
@@ -242,15 +242,12 @@ const AdminDashboard = () => {
 
   const fetchNextId = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/patients/master-admissions`);
-      const data = await response.json();
-      if (data && data.length > 0) {
-        // Sort by internal id descending to get the last inserted record
-        const sorted = [...data].sort((a, b) => (b.id || 0) - (a.id || 0));
-        const lastId = parseInt(sorted[0].patientId, 10) || 0;
-        setPredictedNextId(`${lastId + 1}`);
+      const response = await fetch(`${API_BASE_URL}/api/patients/next-id`);
+      if (response.ok) {
+        const data = await response.text();
+        setPredictedNextId(data);
       } else {
-        setPredictedNextId('1');
+        setPredictedNextId('Unknown');
       }
     } catch (err) {
       setPredictedNextId('Unknown');
@@ -389,19 +386,19 @@ const AdminDashboard = () => {
           case 'Aadhar No': return patient.aadharNo;
           case 'Mobile': return patient.mobileNo;
           case 'Ward': return patient.wardName;
-          case 'Admission Date': 
+          case 'Admission Date':
             if (!patient.admissionDate) return '';
             const dParts = patient.admissionDate.split('-'); // YYYY-MM-DD
             if (filter.subType === 'Year') return dParts[0];
             if (filter.subType === 'Month') return dParts[1];
             if (filter.subType === 'Date') return dParts[2];
             return patient.admissionDate;
-          case 'Admission Time': 
+          case 'Admission Time':
             if (!patient.admissionTime) return '';
             const tParts = patient.admissionTime.split(':'); // HH:MM:SS
             const hh = parseInt(tParts[0], 10);
             if (filter.subType === 'Hour') {
-                return (hh % 12 || 12).toString(); // Return 12-hour integer string for easy match
+              return (hh % 12 || 12).toString(); // Return 12-hour integer string for easy match
             }
             if (filter.subType === 'Minute') return tParts[1];
             return formatTime12Hour(patient.admissionTime);
@@ -409,7 +406,7 @@ const AdminDashboard = () => {
           case 'Income': return patient.income;
           case "Mother's Name": return patient.motherName;
           case 'Caretaker Name': return patient.caretakerName;
-          case 'Address': 
+          case 'Address':
             if (!filter.addressType || filter.addressType === 'All') return patient.address;
             if (!patient.address) return '';
             const parts = patient.address.split(',').map(s => s.trim());
@@ -670,28 +667,28 @@ const AdminDashboard = () => {
           case 'Ward': return record.admissionWard;
           case 'Discharge Ward': return record.dischargeWard;
           case 'Discharge Type': return record.dischargeType;
-          case 'Admission Date': 
+          case 'Admission Date':
             if (!record.admissionDate) return '';
             const dParts = record.admissionDate.split('-');
             if (filter.subType === 'Year') return dParts[0];
             if (filter.subType === 'Month') return dParts[1];
             if (filter.subType === 'Date') return dParts[2];
             return record.admissionDate;
-          case 'Discharge Date': 
+          case 'Discharge Date':
             if (!record.dischargeDate) return '';
             const ddParts = record.dischargeDate.split('-');
             if (filter.subType === 'Year') return ddParts[0];
             if (filter.subType === 'Month') return ddParts[1];
             if (filter.subType === 'Date') return ddParts[2];
             return record.dischargeDate;
-          case 'Admission Time': 
+          case 'Admission Time':
             if (!record.admissionTime) return '';
             const tParts = record.admissionTime.split(':');
             const hh = parseInt(tParts[0], 10);
             if (filter.subType === 'Hour') return (hh % 12 || 12).toString();
             if (filter.subType === 'Minute') return tParts[1];
             return record.admissionTime;
-          case 'Discharge Time': 
+          case 'Discharge Time':
             if (!record.dischargeTime) return '';
             const dtParts = record.dischargeTime.split(':');
             const dhh = parseInt(dtParts[0], 10);
@@ -702,7 +699,7 @@ const AdminDashboard = () => {
           case 'Income': return record.income;
           case "Mother's Name": return record.motherName;
           case 'Caretaker Name': return record.caretakerName;
-          case 'Address': 
+          case 'Address':
             if (!filter.addressType || filter.addressType === 'All') return record.address;
             if (!record.address) return '';
             const parts = record.address.split(',').map(s => s.trim());
@@ -721,13 +718,13 @@ const AdminDashboard = () => {
 
   const handleChange = (e) => {
     let { name, value } = e.target;
-    
+
     if (name === 'mobileNo') {
       // Allow only numbers and restrict to 10 digits
       value = value.replace(/\D/g, '');
       if (value.length > 10) value = value.slice(0, 10);
     }
-    
+
     if (name === 'aadharNo') {
       // Allow only numbers, restrict to 12 digits, and format as XXXX XXXX XXXX
       value = value.replace(/\D/g, '');
@@ -751,7 +748,7 @@ const AdminDashboard = () => {
     e.preventDefault();
     setIsSubmitting(true);
     setError('');
-    
+
     try {
       const payload = {
         ...formData,
@@ -764,7 +761,7 @@ const AdminDashboard = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      
+
       if (response.ok) {
         const savedPatient = await response.json();
         setIsSubmitting(false);
@@ -887,7 +884,7 @@ const AdminDashboard = () => {
                   <div key={index} style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                     {filter.subType === 'Between' ? (
                       <div style={{ display: 'flex', gap: '0.5rem', flexGrow: 1 }}>
-                        <input 
+                        <input
                           type={filter.column === 'Admission Date' ? 'date' : 'time'}
                           value={filter.rangeStart || ''}
                           onChange={(e) => updateFilter(index, 'rangeStart', e.target.value)}
@@ -895,7 +892,7 @@ const AdminDashboard = () => {
                           style={{ width: '50%', padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem' }}
                         />
                         <span style={{ alignSelf: 'center' }}>to</span>
-                        <input 
+                        <input
                           type={filter.column === 'Admission Date' ? 'date' : 'time'}
                           value={filter.rangeEnd || ''}
                           onChange={(e) => updateFilter(index, 'rangeEnd', e.target.value)}
@@ -908,15 +905,15 @@ const AdminDashboard = () => {
                         Showing {filter.subType} Patients Only
                       </div>
                     ) : (
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         placeholder={
-                           filter.column === 'Admission Date' && filter.subType === 'Year' ? 'e.g. 2026' :
-                           filter.column === 'Admission Date' && filter.subType === 'Month' ? 'e.g. 04' :
-                           filter.column === 'Admission Date' && filter.subType === 'Date' ? 'e.g. 19' :
-                           filter.column === 'Admission Time' && filter.subType === 'Hour' ? 'e.g. 05 or 5' :
-                           filter.column === 'Admission Time' && filter.subType === 'Minute' ? 'e.g. 30' :
-                           `Search by ${filter.column}...`
+                          filter.column === 'Admission Date' && filter.subType === 'Year' ? 'e.g. 2026' :
+                            filter.column === 'Admission Date' && filter.subType === 'Month' ? 'e.g. 04' :
+                              filter.column === 'Admission Date' && filter.subType === 'Date' ? 'e.g. 19' :
+                                filter.column === 'Admission Time' && filter.subType === 'Hour' ? 'e.g. 05 or 5' :
+                                  filter.column === 'Admission Time' && filter.subType === 'Minute' ? 'e.g. 30' :
+                                    `Search by ${filter.column}...`
                         }
                         value={filter.value}
                         onChange={(e) => updateFilter(index, 'value', e.target.value)}
@@ -924,8 +921,8 @@ const AdminDashboard = () => {
                         style={{ flexGrow: 1, padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem' }}
                       />
                     )}
-                    <select 
-                      value={filter.column} 
+                    <select
+                      value={filter.column}
                       onChange={(e) => updateFilter(index, 'column', e.target.value)}
                       style={{ padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white', minWidth: '180px' }}
                     >
@@ -957,8 +954,8 @@ const AdminDashboard = () => {
                       )}
                     </select>
                     {filter.column === 'Address' && (
-                      <select 
-                        value={filter.addressType || 'All'} 
+                      <select
+                        value={filter.addressType || 'All'}
                         onChange={(e) => updateFilter(index, 'addressType', e.target.value)}
                         style={{ padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white', minWidth: '150px' }}
                       >
@@ -969,8 +966,8 @@ const AdminDashboard = () => {
                       </select>
                     )}
                     {(filter.column === 'Admission Date' || filter.column === 'Discharge Date') && (
-                      <select 
-                        value={filter.subType || 'All'} 
+                      <select
+                        value={filter.subType || 'All'}
                         onChange={(e) => updateFilter(index, 'subType', e.target.value)}
                         style={{ padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white', minWidth: '130px' }}
                       >
@@ -982,8 +979,8 @@ const AdminDashboard = () => {
                       </select>
                     )}
                     {(filter.column === 'Admission Time' || filter.column === 'Discharge Time') && (
-                      <select 
-                        value={filter.subType || 'All'} 
+                      <select
+                        value={filter.subType || 'All'}
                         onChange={(e) => updateFilter(index, 'subType', e.target.value)}
                         style={{ padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white', minWidth: '130px' }}
                       >
@@ -996,7 +993,7 @@ const AdminDashboard = () => {
                       </select>
                     )}
                     {filters.length > 1 && (
-                      <button 
+                      <button
                         onClick={() => removeFilter(index)}
                         style={{ padding: '0.75rem', borderRadius: '0.5rem', border: 'none', backgroundColor: '#fee2e2', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold' }}
                         title="Remove Filter"
@@ -1007,7 +1004,7 @@ const AdminDashboard = () => {
                   </div>
                 ))}
                 <div>
-                  <button 
+                  <button
                     onClick={addFilter}
                     style={{ padding: '0.5rem 1rem', borderRadius: '0.5rem', border: '1px dashed var(--primary)', backgroundColor: 'transparent', color: 'var(--primary)', cursor: 'pointer', fontWeight: '500', fontSize: '0.9rem' }}
                   >
@@ -1015,166 +1012,166 @@ const AdminDashboard = () => {
                   </button>
                 </div>
               </div>
-              
+
               {activeTab === 'RECORDS' && (
                 <>
                   {loadingRecords ? (
                     <p>Loading patient records...</p>
                   ) : filteredPatients.length === 0 ? (
                     <p>No patient records found.</p>
-              ) : (
-                <>
-                  <div style={{ overflowX: 'auto' }}>
-                  <table className="records-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', whiteSpace: 'nowrap' }}>
-                    <thead>
-                      <tr style={{ backgroundColor: '#f8fafc', borderBottom: '2px solid var(--border-color)' }}>
-                        <th style={{ padding: '1rem' }}>Patient ID</th>
-                        <th style={{ padding: '1rem' }}>Name</th>
-                        <th style={{ padding: '1rem' }}>Age</th>
-                        <th style={{ padding: '1rem' }}>Gender</th>
-                        <th style={{ padding: '1rem' }}>Case Type</th>
-                        <th style={{ padding: '1rem' }}>AR No</th>
-                        <th style={{ padding: '1rem' }}>Aadhar No</th>
-                        <th style={{ padding: '1rem' }}>Mobile</th>
-                        <th style={{ padding: '1rem' }}>Ward</th>
-                        <th style={{ padding: '1rem' }}>Admission Date</th>
-                        <th style={{ padding: '1rem' }}>Admission Time</th>
-                        <th style={{ padding: '1rem' }}>Occupation</th>
-                        <th style={{ padding: '1rem' }}>Income</th>
-                        <th style={{ padding: '1rem' }}>Mother's Name</th>
-                        <th style={{ padding: '1rem' }}>Caretaker Name</th>
-                        <th style={{ padding: '1rem' }}>Address</th>
-                        <th style={{ padding: '1rem' }}>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredPatients.map(patient => (
-                        <tr key={patient.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                          <td style={{ padding: '1rem' }}>{patient.patientId || 'N/A'}</td>
-                          <td style={{ padding: '1rem', fontWeight: '500' }}>{patient.patientName}</td>
-                          <td style={{ padding: '1rem' }}>{patient.age}</td>
-                          <td style={{ padding: '1rem' }}>{patient.gender || 'N/A'}</td>
-                          <td style={{ padding: '1rem' }}>{patient.caseType || 'N/A'}</td>
-                          <td style={{ padding: '1rem' }}>{patient.arNo || 'N/A'}</td>
-                          <td style={{ padding: '1rem' }}>{patient.aadharNo || 'N/A'}</td>
-                          <td style={{ padding: '1rem' }}>{patient.mobileNo}</td>
-                          <td style={{ padding: '1rem' }}>{patient.wardName}</td>
-                          <td style={{ padding: '1rem' }}>{patient.admissionDate}</td>
-                          <td style={{ padding: '1rem' }}>{formatTime12Hour(patient.admissionTime)}</td>
-                          <td style={{ padding: '1rem' }}>{patient.occupation || 'N/A'}</td>
-                          <td style={{ padding: '1rem' }}>{patient.income || 'N/A'}</td>
-                          <td style={{ padding: '1rem' }}>{patient.motherName || 'N/A'}</td>
-                          <td style={{ padding: '1rem' }}>{patient.caretakerName || 'N/A'}</td>
-                          <td style={{ padding: '1rem', maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis' }} title={patient.address}>{patient.address || 'N/A'}</td>
-                          <td style={{ padding: '1rem' }}>
-                            <span style={{ 
-                              padding: '0.25rem 0.5rem', 
-                              borderRadius: '999px', 
-                              fontSize: '0.85rem',
-                              fontWeight: '500',
-                              backgroundColor: patient.status === 'ADMITTED' ? '#dcfce7' : '#f1f5f9',
-                              color: patient.status === 'ADMITTED' ? '#166534' : '#475569'
-                            }}>
-                              {patient.status || 'N/A'}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  ) : (
+                    <>
+                      <div style={{ overflowX: 'auto' }}>
+                        <table className="records-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', whiteSpace: 'nowrap' }}>
+                          <thead>
+                            <tr style={{ backgroundColor: '#f8fafc', borderBottom: '2px solid var(--border-color)' }}>
+                              <th style={{ padding: '1rem' }}>Patient ID</th>
+                              <th style={{ padding: '1rem' }}>Name</th>
+                              <th style={{ padding: '1rem' }}>Age</th>
+                              <th style={{ padding: '1rem' }}>Gender</th>
+                              <th style={{ padding: '1rem' }}>Case Type</th>
+                              <th style={{ padding: '1rem' }}>AR No</th>
+                              <th style={{ padding: '1rem' }}>Aadhar No</th>
+                              <th style={{ padding: '1rem' }}>Mobile</th>
+                              <th style={{ padding: '1rem' }}>Ward</th>
+                              <th style={{ padding: '1rem' }}>Admission Date</th>
+                              <th style={{ padding: '1rem' }}>Admission Time</th>
+                              <th style={{ padding: '1rem' }}>Occupation</th>
+                              <th style={{ padding: '1rem' }}>Income</th>
+                              <th style={{ padding: '1rem' }}>Mother's Name</th>
+                              <th style={{ padding: '1rem' }}>Caretaker Name</th>
+                              <th style={{ padding: '1rem' }}>Address</th>
+                              <th style={{ padding: '1rem' }}>Status</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {filteredPatients.map(patient => (
+                              <tr key={patient.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                <td style={{ padding: '1rem' }}>{patient.patientId || 'N/A'}</td>
+                                <td style={{ padding: '1rem', fontWeight: '500' }}>{patient.patientName}</td>
+                                <td style={{ padding: '1rem' }}>{patient.age}</td>
+                                <td style={{ padding: '1rem' }}>{patient.gender || 'N/A'}</td>
+                                <td style={{ padding: '1rem' }}>{patient.caseType || 'N/A'}</td>
+                                <td style={{ padding: '1rem' }}>{patient.arNo || 'N/A'}</td>
+                                <td style={{ padding: '1rem' }}>{patient.aadharNo || 'N/A'}</td>
+                                <td style={{ padding: '1rem' }}>{patient.mobileNo}</td>
+                                <td style={{ padding: '1rem' }}>{patient.wardName}</td>
+                                <td style={{ padding: '1rem' }}>{patient.admissionDate}</td>
+                                <td style={{ padding: '1rem' }}>{formatTime12Hour(patient.admissionTime)}</td>
+                                <td style={{ padding: '1rem' }}>{patient.occupation || 'N/A'}</td>
+                                <td style={{ padding: '1rem' }}>{patient.income || 'N/A'}</td>
+                                <td style={{ padding: '1rem' }}>{patient.motherName || 'N/A'}</td>
+                                <td style={{ padding: '1rem' }}>{patient.caretakerName || 'N/A'}</td>
+                                <td style={{ padding: '1rem', maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis' }} title={patient.address}>{patient.address || 'N/A'}</td>
+                                <td style={{ padding: '1rem' }}>
+                                  <span style={{
+                                    padding: '0.25rem 0.5rem',
+                                    borderRadius: '999px',
+                                    fontSize: '0.85rem',
+                                    fontWeight: '500',
+                                    backgroundColor: patient.status === 'ADMITTED' ? '#dcfce7' : '#f1f5f9',
+                                    color: patient.status === 'ADMITTED' ? '#166534' : '#475569'
+                                  }}>
+                                    {patient.status || 'N/A'}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
 
-                  <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
-                    <button 
-                      onClick={downloadAsExcel}
-                      disabled={activeTab === 'RECORDS' ? filteredPatients.length === 0 : filteredDischargeRecords.length === 0}
-                      className="btn btn-primary"
-                      style={{ 
-                        backgroundColor: '#107c41', // Excel Green
-                        borderColor: '#107c41',
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: '0.5rem',
-                        opacity: (activeTab === 'RECORDS' ? filteredPatients.length === 0 : filteredDischargeRecords.length === 0) ? 0.6 : 1
-                      }}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="7 10 12 15 17 10"></polyline>
-                        <line x1="12" y1="15" x2="12" y2="3"></line>
-                      </svg>
-                      Download Excel
-                    </button>
-                  </div>
+                      <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
+                        <button
+                          onClick={downloadAsExcel}
+                          disabled={activeTab === 'RECORDS' ? filteredPatients.length === 0 : filteredDischargeRecords.length === 0}
+                          className="btn btn-primary"
+                          style={{
+                            backgroundColor: '#107c41', // Excel Green
+                            borderColor: '#107c41',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            opacity: (activeTab === 'RECORDS' ? filteredPatients.length === 0 : filteredDischargeRecords.length === 0) ? 0.6 : 1
+                          }}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                          </svg>
+                          Download Excel
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </>
               )}
-            </>
-          )}
 
-          {activeTab === 'ACTIVE_PATIENTS' && (
-            <>
-              {loadingActivePatients ? (
-                <p>Loading active patients...</p>
-              ) : filteredActivePatients.length === 0 ? (
-                <p>No active patients found.</p>
-              ) : (
+              {activeTab === 'ACTIVE_PATIENTS' && (
                 <>
-                  <div style={{ marginBottom: '0.75rem', fontWeight: '600', color: '#16a34a' }}>
-                    {filteredActivePatients.length} active patient{filteredActivePatients.length !== 1 ? 's' : ''} currently admitted
-                  </div>
-                  <div style={{ overflowX: 'auto' }}>
-                    <table className="records-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', whiteSpace: 'nowrap' }}>
-                      <thead>
-                        <tr style={{ backgroundColor: '#f0fdf4', borderBottom: '2px solid #86efac' }}>
-                            <th style={{ padding: '1rem' }}>Patient ID</th>
-                            <th style={{ padding: '1rem' }}>Name</th>
-                            <th style={{ padding: '1rem' }}>Age</th>
-                            <th style={{ padding: '1rem' }}>Gender</th>
-                            <th style={{ padding: '1rem' }}>Case Type</th>
-                            <th style={{ padding: '1rem' }}>AR No</th>
-                            <th style={{ padding: '1rem' }}>Aadhar No</th>
-                            <th style={{ padding: '1rem' }}>Mobile</th>
-                            <th style={{ padding: '1rem' }}>Ward</th>
-                            <th style={{ padding: '1rem' }}>Admission Date</th>
-                            <th style={{ padding: '1rem' }}>Admission Time</th>
-                            <th style={{ padding: '1rem' }}>Occupation</th>
-                            <th style={{ padding: '1rem' }}>Income</th>
-                            <th style={{ padding: '1rem' }}>Mother's Name</th>
-                            <th style={{ padding: '1rem' }}>Caretaker Name</th>
-                            <th style={{ padding: '1rem' }}>Address</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredActivePatients.map(patient => (
-                          <tr key={patient.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                            <td style={{ padding: '1rem', fontWeight: '600', color: '#16a34a' }}>{patient.patientId || 'N/A'}</td>
-                            <td style={{ padding: '1rem', fontWeight: '500' }}>{patient.patientName}</td>
-                            <td style={{ padding: '1rem' }}>{patient.age}</td>
-                            <td style={{ padding: '1rem' }}>{patient.gender || 'N/A'}</td>
-                            <td style={{ padding: '1rem' }}>{patient.caseType || 'N/A'}</td>
-                            <td style={{ padding: '1rem' }}>{patient.arNo || 'N/A'}</td>
-                            <td style={{ padding: '1rem' }}>{patient.aadharNo || 'N/A'}</td>
-                            <td style={{ padding: '1rem' }}>{patient.mobileNo}</td>
-                            <td style={{ padding: '1rem' }}>{patient.wardName}</td>
-                            <td style={{ padding: '1rem' }}>{patient.admissionDate}</td>
-                            <td style={{ padding: '1rem' }}>{formatTime12Hour(patient.admissionTime)}</td>
-                            <td style={{ padding: '1rem' }}>{patient.occupation || 'N/A'}</td>
-                          <td style={{ padding: '1rem' }}>{patient.income || 'N/A'}</td>
-                            <td style={{ padding: '1rem' }}>{patient.motherName || 'N/A'}</td>
-                            <td style={{ padding: '1rem' }}>{patient.caretakerName || 'N/A'}</td>
-                            <td style={{ padding: '1rem', maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis' }} title={patient.address}>{patient.address || 'N/A'}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  {loadingActivePatients ? (
+                    <p>Loading active patients...</p>
+                  ) : filteredActivePatients.length === 0 ? (
+                    <p>No active patients found.</p>
+                  ) : (
+                    <>
+                      <div style={{ marginBottom: '0.75rem', fontWeight: '600', color: '#16a34a' }}>
+                        {filteredActivePatients.length} active patient{filteredActivePatients.length !== 1 ? 's' : ''} currently admitted
+                      </div>
+                      <div style={{ overflowX: 'auto' }}>
+                        <table className="records-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', whiteSpace: 'nowrap' }}>
+                          <thead>
+                            <tr style={{ backgroundColor: '#f0fdf4', borderBottom: '2px solid #86efac' }}>
+                              <th style={{ padding: '1rem' }}>Patient ID</th>
+                              <th style={{ padding: '1rem' }}>Name</th>
+                              <th style={{ padding: '1rem' }}>Age</th>
+                              <th style={{ padding: '1rem' }}>Gender</th>
+                              <th style={{ padding: '1rem' }}>Case Type</th>
+                              <th style={{ padding: '1rem' }}>AR No</th>
+                              <th style={{ padding: '1rem' }}>Aadhar No</th>
+                              <th style={{ padding: '1rem' }}>Mobile</th>
+                              <th style={{ padding: '1rem' }}>Ward</th>
+                              <th style={{ padding: '1rem' }}>Admission Date</th>
+                              <th style={{ padding: '1rem' }}>Admission Time</th>
+                              <th style={{ padding: '1rem' }}>Occupation</th>
+                              <th style={{ padding: '1rem' }}>Income</th>
+                              <th style={{ padding: '1rem' }}>Mother's Name</th>
+                              <th style={{ padding: '1rem' }}>Caretaker Name</th>
+                              <th style={{ padding: '1rem' }}>Address</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {filteredActivePatients.map(patient => (
+                              <tr key={patient.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                <td style={{ padding: '1rem', fontWeight: '600', color: '#16a34a' }}>{patient.patientId || 'N/A'}</td>
+                                <td style={{ padding: '1rem', fontWeight: '500' }}>{patient.patientName}</td>
+                                <td style={{ padding: '1rem' }}>{patient.age}</td>
+                                <td style={{ padding: '1rem' }}>{patient.gender || 'N/A'}</td>
+                                <td style={{ padding: '1rem' }}>{patient.caseType || 'N/A'}</td>
+                                <td style={{ padding: '1rem' }}>{patient.arNo || 'N/A'}</td>
+                                <td style={{ padding: '1rem' }}>{patient.aadharNo || 'N/A'}</td>
+                                <td style={{ padding: '1rem' }}>{patient.mobileNo}</td>
+                                <td style={{ padding: '1rem' }}>{patient.wardName}</td>
+                                <td style={{ padding: '1rem' }}>{patient.admissionDate}</td>
+                                <td style={{ padding: '1rem' }}>{formatTime12Hour(patient.admissionTime)}</td>
+                                <td style={{ padding: '1rem' }}>{patient.occupation || 'N/A'}</td>
+                                <td style={{ padding: '1rem' }}>{patient.income || 'N/A'}</td>
+                                <td style={{ padding: '1rem' }}>{patient.motherName || 'N/A'}</td>
+                                <td style={{ padding: '1rem' }}>{patient.caretakerName || 'N/A'}</td>
+                                <td style={{ padding: '1rem', maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis' }} title={patient.address}>{patient.address || 'N/A'}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </>
+                  )}
                 </>
               )}
-            </>
-          )}
 
-          {activeTab === 'DISCHARGE_RECORDS' && (
-            <>
+              {activeTab === 'DISCHARGE_RECORDS' && (
+                <>
                   {loadingDischarges ? (
                     <p>Loading discharge records...</p>
                   ) : filteredDischargeRecords.length === 0 ? (
@@ -1182,90 +1179,90 @@ const AdminDashboard = () => {
                   ) : (
                     <>
                       <div style={{ overflowX: 'auto' }}>
-                  <table className="records-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', whiteSpace: 'nowrap' }}>
-                    <thead>
-                      <tr style={{ backgroundColor: '#f8fafc', borderBottom: '2px solid var(--border-color)' }}>
-                        <th style={{ padding: '1rem' }}>Patient ID</th>
-                        <th style={{ padding: '1rem' }}>Name</th>
-                        <th style={{ padding: '1rem' }}>Age</th>
-                        <th style={{ padding: '1rem' }}>Gender</th>
-                        <th style={{ padding: '1rem' }}>Case Type</th>
-                        <th style={{ padding: '1rem' }}>AR No</th>
-                        <th style={{ padding: '1rem' }}>Admission Date</th>
-                        <th style={{ padding: '1rem' }}>Discharge Date</th>
-                        <th style={{ padding: '1rem' }}>Discharge Time</th>
-                        <th style={{ padding: '1rem' }}>Discharge Type</th>
-                        <th style={{ padding: '1rem' }}>Discharge Ward</th>
-                        <th style={{ padding: '1rem' }}>Mobile</th>
-                        <th style={{ padding: '1rem' }}>Aadhar No</th>
-                        <th style={{ padding: '1rem' }}>Occupation</th>
-                        <th style={{ padding: '1rem' }}>Income</th>
-                        <th style={{ padding: '1rem' }}>Address</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredDischargeRecords.map((record, i) => (
-                        <tr key={i} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                          <td style={{ padding: '1rem' }}>{record.customPatientId || record.patient?.patientId}</td>
-                          <td style={{ padding: '1rem', fontWeight: '500' }}>{record.patientName || 'N/A'}</td>
-                          <td style={{ padding: '1rem' }}>{record.age || 'N/A'}</td>
-                          <td style={{ padding: '1rem' }}>{record.gender || 'N/A'}</td>
-                          <td style={{ padding: '1rem' }}>{record.caseType || 'N/A'}</td>
-                          <td style={{ padding: '1rem' }}>{record.arNo || 'N/A'}</td>
-                          <td style={{ padding: '1rem' }}>{record.admissionDate ? `${record.admissionDate} ${formatTime12Hour(record.admissionTime)}` : 'N/A'}</td>
-                          <td style={{ padding: '1rem', color: 'var(--primary)', fontWeight: 'bold' }}>{record.dischargeDate || 'N/A'}</td>
-                          <td style={{ padding: '1rem', color: 'var(--primary)', fontWeight: 'bold' }}>{formatTime12Hour(record.dischargeTime)}</td>
-                          <td style={{ padding: '1rem' }}>
-                            <span style={{ padding: '0.25rem 0.5rem', borderRadius: '0.25rem', fontSize: '0.875rem', fontWeight: 'bold', backgroundColor: record.dischargeType === 'Death' ? '#fee2e2' : '#dcfce3', color: record.dischargeType === 'Death' ? '#ef4444' : '#16a34a' }}>
-                              {record.dischargeType}
-                            </span>
-                          </td>
-                          <td style={{ padding: '1rem' }}>{record.dischargeWard}</td>
-                          <td style={{ padding: '1rem' }}>{record.mobileNo || 'N/A'}</td>
-                          <td style={{ padding: '1rem' }}>{record.aadharNo || 'N/A'}</td>
-                          <td style={{ padding: '1rem' }}>{record.occupation || 'N/A'}</td>
-                          <td style={{ padding: '1rem' }}>{record.income || 'N/A'}</td>
-                          <td style={{ padding: '1rem', maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis' }} title={record.address}>{record.address || 'N/A'}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
-                  <button 
-                    onClick={activeTab === 'DISCHARGE_RECORDS' ? downloadDischargeAsExcel : (activeTab === 'DESTINATION_RECORDS' ? downloadDestinationAsExcel : downloadAsExcel)}
-                    disabled={(activeTab === 'DISCHARGE_RECORDS' && filteredDischargeRecords.length === 0) || (activeTab === 'DESTINATION_RECORDS' && filteredDestinationRecords.length === 0)}
-                    className="btn btn-primary"
-                    style={{ 
-                      backgroundColor: '#107c41', // Excel Green
-                      borderColor: '#107c41',
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      gap: '0.5rem',
-                      opacity: filteredDischargeRecords.length === 0 ? 0.6 : 1
-                    }}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                      <polyline points="7 10 12 15 17 10"></polyline>
-                      <line x1="12" y1="15" x2="12" y2="3"></line>
-                    </svg>
-                    Download Excel
-                  </button>
-                </div>
-              </>
-            )}
-          </>
-        )}
-      </div>
-    )}
+                        <table className="records-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', whiteSpace: 'nowrap' }}>
+                          <thead>
+                            <tr style={{ backgroundColor: '#f8fafc', borderBottom: '2px solid var(--border-color)' }}>
+                              <th style={{ padding: '1rem' }}>Patient ID</th>
+                              <th style={{ padding: '1rem' }}>Name</th>
+                              <th style={{ padding: '1rem' }}>Age</th>
+                              <th style={{ padding: '1rem' }}>Gender</th>
+                              <th style={{ padding: '1rem' }}>Case Type</th>
+                              <th style={{ padding: '1rem' }}>AR No</th>
+                              <th style={{ padding: '1rem' }}>Admission Date</th>
+                              <th style={{ padding: '1rem' }}>Discharge Date</th>
+                              <th style={{ padding: '1rem' }}>Discharge Time</th>
+                              <th style={{ padding: '1rem' }}>Discharge Type</th>
+                              <th style={{ padding: '1rem' }}>Discharge Ward</th>
+                              <th style={{ padding: '1rem' }}>Mobile</th>
+                              <th style={{ padding: '1rem' }}>Aadhar No</th>
+                              <th style={{ padding: '1rem' }}>Occupation</th>
+                              <th style={{ padding: '1rem' }}>Income</th>
+                              <th style={{ padding: '1rem' }}>Address</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {filteredDischargeRecords.map((record, i) => (
+                              <tr key={i} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                <td style={{ padding: '1rem' }}>{record.customPatientId || record.patient?.patientId}</td>
+                                <td style={{ padding: '1rem', fontWeight: '500' }}>{record.patientName || 'N/A'}</td>
+                                <td style={{ padding: '1rem' }}>{record.age || 'N/A'}</td>
+                                <td style={{ padding: '1rem' }}>{record.gender || 'N/A'}</td>
+                                <td style={{ padding: '1rem' }}>{record.caseType || 'N/A'}</td>
+                                <td style={{ padding: '1rem' }}>{record.arNo || 'N/A'}</td>
+                                <td style={{ padding: '1rem' }}>{record.admissionDate ? `${record.admissionDate} ${formatTime12Hour(record.admissionTime)}` : 'N/A'}</td>
+                                <td style={{ padding: '1rem', color: 'var(--primary)', fontWeight: 'bold' }}>{record.dischargeDate || 'N/A'}</td>
+                                <td style={{ padding: '1rem', color: 'var(--primary)', fontWeight: 'bold' }}>{formatTime12Hour(record.dischargeTime)}</td>
+                                <td style={{ padding: '1rem' }}>
+                                  <span style={{ padding: '0.25rem 0.5rem', borderRadius: '0.25rem', fontSize: '0.875rem', fontWeight: 'bold', backgroundColor: record.dischargeType === 'Death' ? '#fee2e2' : '#dcfce3', color: record.dischargeType === 'Death' ? '#ef4444' : '#16a34a' }}>
+                                    {record.dischargeType}
+                                  </span>
+                                </td>
+                                <td style={{ padding: '1rem' }}>{record.dischargeWard}</td>
+                                <td style={{ padding: '1rem' }}>{record.mobileNo || 'N/A'}</td>
+                                <td style={{ padding: '1rem' }}>{record.aadharNo || 'N/A'}</td>
+                                <td style={{ padding: '1rem' }}>{record.occupation || 'N/A'}</td>
+                                <td style={{ padding: '1rem' }}>{record.income || 'N/A'}</td>
+                                <td style={{ padding: '1rem', maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis' }} title={record.address}>{record.address || 'N/A'}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
+                        <button
+                          onClick={activeTab === 'DISCHARGE_RECORDS' ? downloadDischargeAsExcel : (activeTab === 'DESTINATION_RECORDS' ? downloadDestinationAsExcel : downloadAsExcel)}
+                          disabled={(activeTab === 'DISCHARGE_RECORDS' && filteredDischargeRecords.length === 0) || (activeTab === 'DESTINATION_RECORDS' && filteredDestinationRecords.length === 0)}
+                          className="btn btn-primary"
+                          style={{
+                            backgroundColor: '#107c41', // Excel Green
+                            borderColor: '#107c41',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            opacity: filteredDischargeRecords.length === 0 ? 0.6 : 1
+                          }}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                          </svg>
+                          Download Excel
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
+            </div>
+          )}
 
           {activeTab === 'ADMISSION' && viewMode === 'SUCCESS' && (
             <div className="success-message">
               <CheckCircle2 size={48} className="success-icon" />
               <h3>Admission Successful!</h3>
               <p>Patient {submittedData?.patientName} has been securely registered to {submittedData?.wardName}.</p>
-              <div className="success-actions" style={{marginTop: '2rem', display: 'flex', gap: '1rem'}}>
+              <div className="success-actions" style={{ marginTop: '2rem', display: 'flex', gap: '1rem' }}>
                 <button className="btn btn-outline" onClick={handleNewAdmission}>Start New Admission</button>
                 <button className="btn btn-primary" onClick={() => setViewMode('PRINT')}>View Patient Details / Print</button>
               </div>
@@ -1313,15 +1310,15 @@ const AdminDashboard = () => {
                     </table>
                   </div>
                   <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
-                    <button 
+                    <button
                       onClick={downloadDestinationAsExcel}
                       disabled={filteredDestinationRecords.length === 0}
                       className="btn btn-primary"
-                      style={{ 
+                      style={{
                         backgroundColor: '#107c41', // Excel Green
                         borderColor: '#107c41',
-                        display: 'flex', 
-                        alignItems: 'center', 
+                        display: 'flex',
+                        alignItems: 'center',
                         gap: '0.5rem',
                         opacity: filteredDestinationRecords.length === 0 ? 0.6 : 1
                       }}
@@ -1346,7 +1343,7 @@ const AdminDashboard = () => {
                 <h2>TN GH - Official Admission Record</h2>
                 <p>Date: {new Date().toLocaleDateString()}</p>
               </div>
-              
+
               <div className="print-body">
                 <div className="print-section">
                   <h3>Patient Information</h3>
@@ -1356,7 +1353,7 @@ const AdminDashboard = () => {
                     <p><strong>Gender:</strong> {submittedData.gender}</p>
                     <p><strong>Mother's Name:</strong> {submittedData.motherName || 'N/A'}</p>
                     <p><strong>Occupation:</strong> {submittedData.occupation || 'N/A'}</p>
-              <p><strong>Income:</strong> {submittedData.income || 'N/A'}</p>
+                    <p><strong>Income:</strong> {submittedData.income || 'N/A'}</p>
                     <p><strong>Caretaker:</strong> {submittedData.caretakerName || 'N/A'}</p>
                     <p><strong>Address:</strong> {submittedData.address}</p>
                   </div>
@@ -1386,13 +1383,13 @@ const AdminDashboard = () => {
 
           {activeTab === 'ADMISSION' && viewMode === 'FORM' && (
             <form onSubmit={handleSubmit} className="admission-form">
-              {error && <div className="error-message" style={{marginBottom: '2rem'}}>{error}</div>}
+              {error && <div className="error-message" style={{ marginBottom: '2rem' }}>{error}</div>}
               <div className="form-grid">
-                
+
                 {/* Personal Details */}
                 <div className="form-section">
                   <h3 className="section-title">Personal Details</h3>
-                  
+
                   <div className="form-row">
                     <div className="form-group">
                       <label>Patient Name *</label>
@@ -1402,7 +1399,7 @@ const AdminDashboard = () => {
                       {/* Empty slot for balance */}
                     </div>
                   </div>
-                  
+
                   <div className="form-row">
                     <div className="form-group">
                       <label>Age *</label>
@@ -1414,6 +1411,7 @@ const AdminDashboard = () => {
                         <option value="">Select Gender</option>
                         <option value="MALE">MALE</option>
                         <option value="FEMALE">FEMALE</option>
+                        <option value="TRANSGENDER">TRANSGENDER</option>
                       </select>
                     </div>
                   </div>
@@ -1447,37 +1445,37 @@ const AdminDashboard = () => {
                 {/* Admission & Contact Details */}
                 <div className="form-section">
                   <h3 className="section-title">Admission & Contact Info</h3>
-                  
+
                   <div className="form-row">
                     <div className="form-group">
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <label>
-                          Patient ID 
+                          IP No
                           {!manualPatientId && <span style={{ marginLeft: '0.5rem', fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 'normal' }}>(Auto-Generated patient ID)</span>}
                         </label>
                         <label style={{ fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                          <input 
-                            type="checkbox" 
-                            checked={manualPatientId} 
+                          <input
+                            type="checkbox"
+                            checked={manualPatientId}
                             onChange={(e) => {
                               setManualPatientId(e.target.checked);
-                              if (!e.target.checked) setFormData({...formData, patientId: ''});
-                            }} 
+                              if (!e.target.checked) setFormData({ ...formData, patientId: '' });
+                            }}
                             style={{ width: 'auto' }}
                           />
                           Manual Entry
                         </label>
                       </div>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         name="patientId"
-                        value={manualPatientId ? formData.patientId : predictedNextId} 
+                        value={manualPatientId ? formData.patientId : predictedNextId}
                         readOnly={!manualPatientId}
                         onChange={(e) => {
                           if (manualPatientId) handleChange(e);
                         }}
                         placeholder={manualPatientId ? "Enter custom Patient ID" : ""}
-                        style={!manualPatientId ? { backgroundColor: '#e2e8f0', cursor: 'not-allowed', fontWeight: 'bold' } : {}} 
+                        style={!manualPatientId ? { backgroundColor: '#e2e8f0', cursor: 'not-allowed', fontWeight: 'bold' } : {}}
                       />
                     </div>
                     <div className="form-group">
@@ -1505,20 +1503,20 @@ const AdminDashboard = () => {
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <label>Admission Date & Time *</label>
                         <label style={{ fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                          <input 
-                            type="checkbox" 
-                            checked={manualAdmissionDate} 
+                          <input
+                            type="checkbox"
+                            checked={manualAdmissionDate}
                             onChange={(e) => {
                               setManualAdmissionDate(e.target.checked);
-                              if (!e.target.checked) setFormData({...formData, admissionDate: getCurrentDate(), admissionTime: getCurrentTime()});
-                            }} 
+                              if (!e.target.checked) setFormData({ ...formData, admissionDate: getCurrentDate(), admissionTime: getCurrentTime() });
+                            }}
                             style={{ width: 'auto' }}
                           />
                           Edit
                         </label>
                       </div>
                       <div style={{ width: '100%', display: 'flex', gap: '0.5rem' }}>
-                        <input 
+                        <input
                           type="date"
                           name="admissionDate"
                           value={formData.admissionDate}
@@ -1527,7 +1525,7 @@ const AdminDashboard = () => {
                           className="search-input"
                           style={{ width: '50%', padding: '0.6rem 0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }}
                         />
-                        <input 
+                        <input
                           type="time"
                           name="admissionTime"
                           value={formData.admissionTime}
@@ -1541,11 +1539,19 @@ const AdminDashboard = () => {
                     <div className="form-group">
                       <label>Ward Name *</label>
                       <select name="wardName" value={formData.wardName} onChange={handleChange} required>
-                        <option value="">Select Ward</option>
-                        <option value="General">General Ward</option>
-                        <option value="ICU">ICU</option>
-                        <option value="Maternity">Maternity</option>
-                        <option value="Pediatrics">Pediatrics</option>
+                        <option value="">Select</option>
+                        <option value="Children Ward">CH-Children Ward</option>
+                        <option value="CMCHIS Female Ward">CMCHIS Female Ward</option>
+                        <option value="CMCHIS Male Ward">CMCHIS Male Ward</option>
+                        <option value="Eye Ward">Eye Ward</option>
+                        <option value="Female Ward 1">F1-Female Ward-1</option>
+                        <option value="Female Ward 2">F2-Female Ward-2</option>
+                        <option value="Dialysis Ward">HD-Dialysis ward</option>
+                        <option value="Labour Ward">Labour Ward</option>
+                        <option value="Male Ward 1">M1-Male Ward-1</option>
+                        <option value="Male Ward 2">M2-Male Ward-2</option>
+                        <option value="PS Ward">PS Ward</option>
+                        <option value="SNCU">SNCU</option>
                       </select>
                     </div>
                   </div>
@@ -1556,7 +1562,7 @@ const AdminDashboard = () => {
                       <input type="tel" name="mobileNo" value={formData.mobileNo} onChange={handleChange} required />
                     </div>
                   </div>
-                  
+
                   <h3 className="section-title" style={{ marginTop: '1.5rem' }}>Address Details</h3>
                   <div className="form-row">
                     <div className="form-group">
