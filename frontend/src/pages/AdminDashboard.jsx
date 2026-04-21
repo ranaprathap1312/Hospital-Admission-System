@@ -1482,7 +1482,7 @@ const AdminDashboard = () => {
                         onChange={(e) => {
                           if (manualPatientId) handleChange(e);
                         }}
-                        placeholder={manualPatientId ? "Enter custom Patient ID" : ""}
+                        placeholder={manualPatientId ? "enter year and IP id (patient no)" : ""}
                         style={!manualPatientId ? { backgroundColor: '#e2e8f0', cursor: 'not-allowed', fontWeight: 'bold' } : {}}
                       />
                     </div>
