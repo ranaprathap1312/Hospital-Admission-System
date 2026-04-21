@@ -285,13 +285,12 @@
   /* Hide unnecessary UI elements */
   .sidebar, 
   .content-header, 
-  .no-print,
-  .dashboard-wrapper {
-    background-color: white !important;
+  .no-print {
+    display: none !important;
   }
   
-  .sidebar {
-    display: none !important;
+  .dashboard-wrapper {
+    background-color: white !important;
   }
 
   .main-content {

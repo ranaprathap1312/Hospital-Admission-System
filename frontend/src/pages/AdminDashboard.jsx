@@ -844,7 +844,7 @@ const AdminDashboard = () => {
       {/* Sidebar */}
       <aside className="sidebar">
         <div className="sidebar-header">
-          <h2>TN GH Admin</h2>
+          <h2>GOVERNMENT HOSPITAL VIRUDHACHALAM Admin</h2>
         </div>
         <nav className="sidebar-nav">
           <a href="#" className={`nav-item ${activeTab === 'ADMISSION' ? 'active' : ''}`} onClick={(e) => { e.preventDefault(); setActiveTab('ADMISSION'); }}>
@@ -1378,8 +1378,7 @@ const AdminDashboard = () => {
           {viewMode === 'PRINT' && submittedData && (
             <div className="print-view">
               <div className="print-header">
-
-                <h2>TN GH - Official Admission Record</h2>
+                <h2>GOVERNMENT HOSPITAL VIRUDHACHALAM - Official Admission Record</h2>
                 <p>Date: {new Date().toLocaleDateString()}</p>
               </div>
 
