@@ -68,7 +68,7 @@ public class PatientService {
     }
 
     public java.util.List<Patient> getAllPatients() {
-        return patientRepository.findAll();
+        return patientRepository.findByStatus("ADMITTED");
     }
 
     public java.util.List<DischargeEntry> getAllDischargeEntries() {
