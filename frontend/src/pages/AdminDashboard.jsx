@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { UserPlus, LayoutDashboard, Settings, LogOut, CheckCircle2, Activity, Users } from 'lucide-react';
+import indiaData from '../utils/states-and-districts.json';
 import { Link } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -1590,7 +1591,7 @@ const AdminDashboard = () => {
                       <label>District *</label>
                       <select name="district" value={formData.district} onChange={handleChange} required>
                         <option value="">Select District</option>
-                        {formData.state && indiaData.states.find(s => s.state === formData.state)?.districts.map(d => (
+                        {formData.state && (indiaData.states.find(s => s.state === formData.state)?.districts || []).map(d => (
                           <option key={d} value={d}>{d}</option>
                         ))}
                       </select>
