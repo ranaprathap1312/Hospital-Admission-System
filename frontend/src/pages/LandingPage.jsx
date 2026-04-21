@@ -12,7 +12,7 @@ const LandingPage = () => {
         <div className="container flex-between">
           <div className="logo">
             <Activity className="logo-icon" />
-            <span className="logo-text">TN GH</span>
+            <span className="logo-text">GOVT HOSPITAL VIRUDHACHALAM</span>
           </div>
           <div className="nav-actions">
             <div className="dropdown-container">
@@ -42,7 +42,7 @@ const LandingPage = () => {
         <div className="container hero-content">
           <div className="hero-text-area">
             <div className="badge">Modern Healthcare</div>
-            <h1 className="hero-title">Welcome to TN GH</h1>
+            <h1 className="hero-title">WELCOME TO GOVT HOSPITAL VIRUDHACHALAM</h1>
             <p className="hero-subtitle">
               Streamlining patient admissions, optimizing hospital workflows, and delivering the best care possible with our state-of-the-art management system.
             </p>
@@ -74,7 +74,7 @@ const LandingPage = () => {
       {/* Footer */}
       <footer className="footer">
         <div className="container">
-          <p>&copy; {new Date().getFullYear()} TN GH - Hospital Admission System. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} GOVT HOSPITAL VIRUDHACHALAM - Hospital Admission System. All rights reserved.</p>
         </div>
       </footer>
     </div>

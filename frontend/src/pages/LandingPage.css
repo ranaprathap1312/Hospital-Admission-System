@@ -2,6 +2,25 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background-image: url('/new_logo.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  position: relative;
+}
+
+.landing-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(244, 247, 251, 0.85); /* Light overlay to keep UI legible */
+  z-index: 0;
+}
+
+.landing-wrapper > * {
+  z-index: 1;
+  position: relative;
 }
 
 /* Navbar */
