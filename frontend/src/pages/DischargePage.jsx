@@ -12,14 +12,20 @@ const DischargePage = () => {
   const patientId = `${new Date().getFullYear()}-${patientNumber}`;
   const [patientData, setPatientData] = useState(null);
 
-  const getCurrentDateTime = () => {
+  const getCurrentDate = () => {
     const now = new Date();
-    return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+    return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+  };
+
+  const getCurrentTime = () => {
+    const now = new Date();
+    return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(11, 16);
   };
 
   const [dischargeType, setDischargeType] = useState('Normal Discharge');
   const [dischargeWard, setDischargeWard] = useState('');
-  const [dischargeDate, setDischargeDate] = useState(getCurrentDateTime());
+  const [dischargeDate, setDischargeDate] = useState(getCurrentDate());
+  const [dischargeTime, setDischargeTime] = useState(getCurrentTime());
   const [manualDischargeDate, setManualDischargeDate] = useState(false);
   const [destinationTable, setDestinationTable] = useState('mlc_discharge');
 
@@ -43,7 +49,8 @@ const DischargePage = () => {
         const data = await response.json();
         setPatientData(data);
         setDischargeWard('');
-        setDischargeDate(getCurrentDateTime());
+        setDischargeDate(getCurrentDate());
+        setDischargeTime(getCurrentTime());
       } else if (response.status === 404) {
         setError(`No active patient found with ID "${patientId}". They may already be discharged.`);
       } else {
@@ -65,7 +72,7 @@ const DischargePage = () => {
       const response = await fetch(`${API_BASE_URL}/api/patients/${patientId}/discharge`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dischargeType, dischargeWard, dischargeDate, destinationTable })
+        body: JSON.stringify({ dischargeType, dischargeWard, dischargeDate: `${dischargeDate}T${dischargeTime}`, destinationTable })
       });
 
       if (response.ok) {
@@ -152,29 +159,47 @@ const DischargePage = () => {
 
                     <div className="form-row" style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
                       <div className="form-group" style={{ flex: 1 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                          <label style={{ marginBottom: 0 }}>Discharge Date & Time *</label>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.5rem' }}>
                           <label style={{ fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: 0, fontWeight: 'normal' }}>
                             <input
                               type="checkbox"
                               checked={manualDischargeDate}
                               onChange={(e) => {
                                 setManualDischargeDate(e.target.checked);
-                                if (!e.target.checked) setDischargeDate(getCurrentDateTime());
+                                if (!e.target.checked) {
+                                  setDischargeDate(getCurrentDate());
+                                  setDischargeTime(getCurrentTime());
+                                }
                               }}
                               style={{ width: 'auto' }}
                             />
-                            Edit
+                            Manual Edit
                           </label>
                         </div>
-                        <input
-                          type="datetime-local"
-                          value={dischargeDate}
-                          onChange={(e) => setDischargeDate(e.target.value)}
-                          disabled={!manualDischargeDate}
-                          required
-                          style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white' }}
-                        />
+                        <div style={{ display: 'flex', gap: '1rem' }}>
+                          <div style={{ flex: 1 }}>
+                            <label>Discharge Date *</label>
+                            <input
+                              type="date"
+                              value={dischargeDate}
+                              onChange={(e) => setDischargeDate(e.target.value)}
+                              disabled={!manualDischargeDate}
+                              required
+                              style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white' }}
+                            />
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            <label>Discharge Time *</label>
+                            <input
+                              type="time"
+                              value={dischargeTime}
+                              onChange={(e) => setDischargeTime(e.target.value)}
+                              disabled={!manualDischargeDate}
+                              required
+                              style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white' }}
+                            />
+                          </div>
+                        </div>
                       </div>
                       <div className="form-group" style={{ flex: 1 }}>
                         <label style={{ color: 'red' }}>Discharge Ward *</label>
@@ -286,7 +311,7 @@ const DischargePage = () => {
                   <p><strong>AR No:</strong> {patientData?.arNo || 'N/A'}</p>
                   <p><strong>Admission Date:</strong> {new Date(patientData?.admissionDate).toLocaleString()}</p>
                   <p><strong>Admission Ward:</strong> {patientData?.wardName}</p>
-                  <p><strong>Discharge Date:</strong> {new Date(dischargeDate).toLocaleString()}</p>
+                  <p><strong>Discharge Date:</strong> {new Date(`${dischargeDate}T${dischargeTime}`).toLocaleString()}</p>
                   <p><strong>Discharge Ward:</strong> {dischargeWard}</p>
                   <p><strong>Discharge Type:</strong> <span style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>{dischargeType}</span></p>
                 </div>
