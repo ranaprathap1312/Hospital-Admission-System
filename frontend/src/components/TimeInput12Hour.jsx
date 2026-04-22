@@ -17,16 +17,24 @@ const TimeInput12Hour = ({ value, onChange, disabled, style }) => {
   const h12Str = h12.toString().padStart(2, '0');
 
   const handleHour = (e) => {
-    const newH12 = parseInt(e.target.value, 10);
+    let rawVal = e.target.value.replace(/[^0-9]/g, '');
+    if (rawVal === '') rawVal = '0';
+    let newH12 = parseInt(rawVal, 10);
+    if (newH12 > 12) newH12 = 12;
     let newH24 = ampm === 'PM' ? (newH12 === 12 ? 12 : newH12 + 12) : (newH12 === 12 ? 0 : newH12);
     onChange(`${newH24.toString().padStart(2, '0')}:${min}`);
   };
 
   const handleMin = (e) => {
+    let rawVal = e.target.value.replace(/[^0-9]/g, '');
+    if (rawVal === '') rawVal = '0';
+    let newMin = parseInt(rawVal, 10);
+    if (newMin > 59) newMin = 59;
+    
     let newH24Str = h24.toString().padStart(2, '0');
     // Handle midnight edge case correctly
     if (h24 === 0) newH24Str = '00';
-    onChange(`${newH24Str}:${e.target.value}`);
+    onChange(`${newH24Str}:${newMin.toString().padStart(2, '0')}`);
   };
 
   const handleAmpm = (e) => {
@@ -42,31 +50,31 @@ const TimeInput12Hour = ({ value, onChange, disabled, style }) => {
   };
 
   return (
-    <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center', backgroundColor: disabled ? '#f3f4f6' : 'white', ...style }}>
+    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', backgroundColor: disabled ? '#f3f4f6' : 'white', ...style }}>
       <input 
-        type="number"
+        type="text"
+        inputMode="numeric"
+        maxLength="2"
         disabled={disabled} 
         value={h12Str} 
         onChange={handleHour} 
-        min="1"
-        max="12"
-        style={{ width: '50px', padding: '0.5rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', backgroundColor: 'transparent', outline: 'none', textAlign: 'center', fontSize: '1rem' }}
+        style={{ width: '45px', padding: '0.5rem 0.25rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', backgroundColor: 'transparent', outline: 'none', textAlign: 'center', fontSize: '1rem' }}
       />
       <span style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>:</span>
       <input 
-        type="number"
+        type="text"
+        inputMode="numeric"
+        maxLength="2"
         disabled={disabled} 
         value={min} 
         onChange={handleMin} 
-        min="0"
-        max="59"
-        style={{ width: '50px', padding: '0.5rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', backgroundColor: 'transparent', outline: 'none', textAlign: 'center', fontSize: '1rem' }}
+        style={{ width: '45px', padding: '0.5rem 0.25rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', backgroundColor: 'transparent', outline: 'none', textAlign: 'center', fontSize: '1rem' }}
       />
       <select 
         disabled={disabled} 
         value={ampm} 
         onChange={handleAmpm} 
-        style={{ padding: '0.5rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', backgroundColor: 'transparent', outline: 'none', marginLeft: '0.25rem', fontWeight: 'bold', color: 'var(--primary)' }}
+        style={{ width: '75px', padding: '0.5rem 0.25rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', backgroundColor: 'transparent', outline: 'none', marginLeft: '0.5rem', fontWeight: 'bold', color: 'var(--primary)' }}
       >
         <option value="AM">AM</option>
         <option value="PM">PM</option>

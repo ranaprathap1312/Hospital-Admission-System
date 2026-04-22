@@ -23,12 +23,12 @@ const DischargePage = () => {
     return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(11, 16);
   };
 
-  const [dischargeType, setDischargeType] = useState('Normal Discharge');
+  const [dischargeType, setDischargeType] = useState('');
   const [dischargeWard, setDischargeWard] = useState('');
   const [dischargeDate, setDischargeDate] = useState(getCurrentDate());
   const [dischargeTime, setDischargeTime] = useState(getCurrentTime());
   const [manualDischargeDate, setManualDischargeDate] = useState(false);
-  const [destinationTable, setDestinationTable] = useState('mlc_discharge');
+  const [destinationTable, setDestinationTable] = useState('');
 
   const [isSearching, setIsSearching] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -228,7 +228,8 @@ const DischargePage = () => {
                           onChange={(e) => setDischargeType(e.target.value)}
                           required
                           style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white' }}
-                        > <option value="">select</option>
+                        >
+                          <option value="">Select</option>
                           <option value="Normal Discharge">Normal Discharge</option>
                           <option value="Abscond">Abscond</option>
                           <option value="Death">Death</option>
@@ -242,7 +243,8 @@ const DischargePage = () => {
                           onChange={(e) => setDestinationTable(e.target.value)}
                           required
                           style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white' }}
-                        >  <option value="">select</option>
+                        >
+                          <option value="">Select</option>
                           <option value="mlc_discharge">mlc_discharge</option>
                           <option value="death_discharge">death_discharge</option>
                           <option value="maternity_block_discharge">maternity_block_discharge</option>
@@ -273,7 +275,8 @@ const DischargePage = () => {
                     setSuccess(false);
                     setPatientData(null);
                     setPatientNumber('');
-                    setDischargeType('Normal Discharge');
+                    setDischargeType('');
+                    setDestinationTable('');
                   }}>
                     Process Another Discharge
                   </button>
