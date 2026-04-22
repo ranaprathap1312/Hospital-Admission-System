@@ -14,10 +14,7 @@ function App() {
   return (
     <Router>
       <div className="app-container">
-        <div className="global-print-header" style={{ display: 'none', flexDirection: 'column', alignItems: 'center' }}>
-          <img src={tnLogo} alt="Tamil Nadu Logo" style={{ width: '80px', height: 'auto', marginBottom: '10px' }} />
-          <div>WELCOME TO GOVT HOSPITAL VIRUDHACHALAM</div>
-        </div>
+
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
