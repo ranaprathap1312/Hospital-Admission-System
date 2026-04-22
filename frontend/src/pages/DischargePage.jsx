@@ -157,7 +157,7 @@ const DischargePage = () => {
                     <p><strong>Address:</strong> {patientData.address || 'N/A'}</p>
                     <p><strong>Admission Ward:</strong> {patientData.wardName}</p>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                      <strong>Case Type:</strong> 
+                      <strong>Case Type:</strong>
                       {isEditingCaseType ? (
                         <>
                           <select
@@ -167,7 +167,7 @@ const DischargePage = () => {
                           >
                             <option value="Non-MLC">Non-MLC</option>
                             <option value="MLC">MLC</option>
-                            <option value="RTX">RTX</option>
+
                           </select>
                           <button type="button" onClick={() => setIsEditingCaseType(false)} className="btn btn-primary" style={{ padding: '0.1rem 0.5rem', fontSize: '0.8rem' }}>Done</button>
                         </>
