@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, CheckCircle2, Activity, Search } from 'lucide-react';
 import './AdminDashboard.css';
 import tnLogo from '../../asserts/tn_logo.jpg';
+import TimeInput12Hour from '../components/TimeInput12Hour';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
@@ -186,13 +187,11 @@ const DischargePage = () => {
                             required
                             style={{ flex: 1, padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white' }}
                           />
-                          <input
-                            type="time"
+                          <TimeInput12Hour
                             value={dischargeTime}
-                            onChange={(e) => setDischargeTime(e.target.value)}
+                            onChange={setDischargeTime}
                             disabled={!manualDischargeDate}
-                            required
-                            style={{ flex: 1, padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white' }}
+                            style={{ flex: 1, padding: '0.25rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }}
                           />
                         </div>
                       </div>
@@ -237,7 +236,7 @@ const DischargePage = () => {
                         </select>
                       </div>
                       <div className="form-group" style={{ flex: 1 }}>
-                        <label>Destination Table *</label>
+                        <label>File transfer to *</label>
                         <select
                           value={destinationTable}
                           onChange={(e) => setDestinationTable(e.target.value)}

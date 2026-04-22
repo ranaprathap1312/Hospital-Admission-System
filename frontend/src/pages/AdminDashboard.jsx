@@ -6,6 +6,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import './AdminDashboard.css';
 import tnLogo from '../../asserts/tn_logo.jpg';
+import TimeInput12Hour from '../components/TimeInput12Hour';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
@@ -1580,14 +1581,11 @@ const AdminDashboard = () => {
                           className="search-input"
                           style={{ width: '50%', padding: '0.6rem 0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }}
                         />
-                        <input
-                          type="time"
-                          name="admissionTime"
+                        <TimeInput12Hour
                           value={formData.admissionTime}
-                          onChange={handleChange}
+                          onChange={(val) => setFormData({ ...formData, admissionTime: val })}
                           disabled={!manualAdmissionDate}
-                          className="search-input"
-                          style={{ width: '50%', padding: '0.6rem 0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }}
+                          style={{ width: '50%', padding: '0.1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }}
                         />
                       </div>
                     </div>
