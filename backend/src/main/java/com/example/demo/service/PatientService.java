@@ -160,6 +160,9 @@ public class PatientService {
         // Update master_admission status to DISCHARGED (keep the record)
         masterAdmissionRepository.findByPatientId(patientId).ifPresent(master -> {
             master.setStatus("DISCHARGED");
+            if (updatedCaseType != null && !updatedCaseType.trim().isEmpty()) {
+                master.setCaseType(updatedCaseType);
+            }
             masterAdmissionRepository.save(master);
         });
 
