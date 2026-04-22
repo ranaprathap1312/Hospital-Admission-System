@@ -50,7 +50,7 @@ const TimeInput12Hour = ({ value, onChange, disabled, style }) => {
   };
 
   return (
-    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', backgroundColor: disabled ? '#f3f4f6' : 'white', ...style }}>
+    <div style={{ display: 'flex', alignItems: 'center', backgroundColor: disabled ? '#f3f4f6' : 'white', ...style }}>
       <input 
         type="text"
         inputMode="numeric"
@@ -58,9 +58,9 @@ const TimeInput12Hour = ({ value, onChange, disabled, style }) => {
         disabled={disabled} 
         value={h12Str} 
         onChange={handleHour} 
-        style={{ width: '45px', padding: '0.5rem 0.25rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', backgroundColor: 'transparent', outline: 'none', textAlign: 'center', fontSize: '1rem' }}
+        style={{ width: '45px', padding: '0.25rem', border: 'none', backgroundColor: 'transparent', outline: 'none', textAlign: 'center', fontSize: '1rem' }}
       />
-      <span style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>:</span>
+      <span style={{ fontWeight: 'bold', fontSize: '1.2rem', paddingBottom: '2px' }}>:</span>
       <input 
         type="text"
         inputMode="numeric"
@@ -68,13 +68,13 @@ const TimeInput12Hour = ({ value, onChange, disabled, style }) => {
         disabled={disabled} 
         value={min} 
         onChange={handleMin} 
-        style={{ width: '45px', padding: '0.5rem 0.25rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', backgroundColor: 'transparent', outline: 'none', textAlign: 'center', fontSize: '1rem' }}
+        style={{ width: '45px', padding: '0.25rem', border: 'none', backgroundColor: 'transparent', outline: 'none', textAlign: 'center', fontSize: '1rem' }}
       />
       <select 
         disabled={disabled} 
         value={ampm} 
         onChange={handleAmpm} 
-        style={{ width: '75px', padding: '0.5rem 0.25rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', backgroundColor: 'transparent', outline: 'none', marginLeft: '0.5rem', fontWeight: 'bold', color: 'var(--primary)' }}
+        style={{ width: '75px', padding: '0.25rem', border: 'none', backgroundColor: 'transparent', outline: 'none', marginLeft: 'auto', fontWeight: 'bold', color: 'var(--primary)', cursor: 'pointer' }}
       >
         <option value="AM">AM</option>
         <option value="PM">PM</option>
