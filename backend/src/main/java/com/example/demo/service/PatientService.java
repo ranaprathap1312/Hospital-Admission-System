@@ -31,7 +31,7 @@ public class PatientService {
     public String generateNextPatientId() {
         int currentYear = java.time.Year.now().getValue();
         String prefix = currentYear + "-";
-        java.util.List<String> existingIds = patientRepository.findPatientIdsWithPrefix(prefix);
+        java.util.List<String> existingIds = masterAdmissionRepository.findPatientIdsWithPrefix(prefix);
         
         int maxSequence = 0;
         for (String id : existingIds) {

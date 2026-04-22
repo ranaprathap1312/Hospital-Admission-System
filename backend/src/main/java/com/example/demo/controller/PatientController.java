@@ -105,4 +105,16 @@ public class PatientController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @Autowired
+    private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+
+    @GetMapping("/fix-db")
+    public ResponseEntity<String> fixDb() {
+        jdbcTemplate.update("UPDATE patient SET patient_id = '2026-4' WHERE id = 62");
+        jdbcTemplate.update("UPDATE master_admission SET patient_id = '2026-4' WHERE id = 57");
+        jdbcTemplate.update("UPDATE patient SET patient_id = '2026-5' WHERE id = 63");
+        jdbcTemplate.update("UPDATE master_admission SET patient_id = '2026-5' WHERE id = 58");
+        return ResponseEntity.ok("Database fixed! You can remove this endpoint now.");
+    }
 }
