@@ -848,7 +848,7 @@ const AdminDashboard = () => {
     if (!confirmUndo) return;
     
     try {
-      const response = await fetch(`/api/patients/${submittedData.patientId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/patients/${submittedData.patientId}`, {
         method: 'DELETE',
       });
       
