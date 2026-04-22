@@ -20,6 +20,7 @@ const DischargePage = () => {
   const [dischargeType, setDischargeType] = useState('Normal Discharge');
   const [dischargeWard, setDischargeWard] = useState('');
   const [dischargeDate, setDischargeDate] = useState(getCurrentDateTime());
+  const [manualDischargeDate, setManualDischargeDate] = useState(false);
   const [destinationTable, setDestinationTable] = useState('mlc_discharge');
 
   const [isSearching, setIsSearching] = useState(false);
@@ -151,11 +152,26 @@ const DischargePage = () => {
 
                     <div className="form-row" style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
                       <div className="form-group" style={{ flex: 1 }}>
-                        <label>Discharge Date & Time *</label>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                          <label style={{ marginBottom: 0 }}>Discharge Date & Time *</label>
+                          <label style={{ fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: 0, fontWeight: 'normal' }}>
+                            <input
+                              type="checkbox"
+                              checked={manualDischargeDate}
+                              onChange={(e) => {
+                                setManualDischargeDate(e.target.checked);
+                                if (!e.target.checked) setDischargeDate(getCurrentDateTime());
+                              }}
+                              style={{ width: 'auto' }}
+                            />
+                            Edit
+                          </label>
+                        </div>
                         <input
                           type="datetime-local"
                           value={dischargeDate}
                           onChange={(e) => setDischargeDate(e.target.value)}
+                          disabled={!manualDischargeDate}
                           required
                           style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white' }}
                         />
