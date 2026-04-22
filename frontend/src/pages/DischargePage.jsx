@@ -29,6 +29,8 @@ const DischargePage = () => {
   const [dischargeTime, setDischargeTime] = useState(getCurrentTime());
   const [manualDischargeDate, setManualDischargeDate] = useState(false);
   const [destinationTable, setDestinationTable] = useState('');
+  const [caseType, setCaseType] = useState('');
+  const [summaryText, setSummaryText] = useState('');
 
   const [isSearching, setIsSearching] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -49,6 +51,8 @@ const DischargePage = () => {
       if (response.ok) {
         const data = await response.json();
         setPatientData(data);
+        setCaseType(data.caseType || '');
+        setSummaryText('');
         setDischargeWard('');
         setDischargeDate(getCurrentDate());
         setDischargeTime(getCurrentTime());
@@ -73,7 +77,7 @@ const DischargePage = () => {
       const response = await fetch(`${API_BASE_URL}/api/patients/${patientId}/discharge`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dischargeType, dischargeWard, dischargeDate: `${dischargeDate}T${dischargeTime}`, destinationTable })
+        body: JSON.stringify({ dischargeType, dischargeWard, dischargeDate: `${dischargeDate}T${dischargeTime}`, destinationTable, caseType })
       });
 
       if (response.ok) {
@@ -237,7 +241,7 @@ const DischargePage = () => {
                         </select>
                       </div>
                       <div className="form-group" style={{ flex: 1 }}>
-                        <label>File transfer to *</label>
+                        <label style={{ color: 'red' }}>File transfer to *</label>
                         <select
                           value={destinationTable}
                           onChange={(e) => setDestinationTable(e.target.value)}
@@ -253,6 +257,33 @@ const DischargePage = () => {
                           <option value="x6">x6</option>
                           <option value="x7">x7</option>
                         </select>
+                      </div>
+                    </div>
+
+                    <div className="form-row" style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
+                      <div className="form-group" style={{ flex: 1 }}>
+                        <label>Case Type *</label>
+                        <select
+                          value={caseType}
+                          onChange={(e) => setCaseType(e.target.value)}
+                          required
+                          style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white' }}
+                        >
+                          <option value="">Select</option>
+                          <option value="Non-MLC">Non-MLC</option>
+                          <option value="MLC">MLC</option>
+                          <option value="RTX">RTX</option>
+                        </select>
+                      </div>
+                      <div className="form-group" style={{ flex: 1 }}>
+                        <label>Summary / Remarks</label>
+                        <textarea
+                          value={summaryText}
+                          onChange={(e) => setSummaryText(e.target.value)}
+                          placeholder="Enter summary or remarks"
+                          rows="2"
+                          style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', resize: 'vertical' }}
+                        />
                       </div>
                     </div>
                     <button type="submit" className="btn btn-primary" disabled={isSubmitting} style={{ width: '100%' }}>
@@ -304,13 +335,16 @@ const DischargePage = () => {
 
                 <h3 style={{ marginBottom: '1rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>Admission & Discharge Details</h3>
                 <div className="print-grid">
-                  <p><strong>Case Type:</strong> {patientData?.caseType}</p>
+                  <p><strong>Case Type:</strong> {caseType}</p>
                   <p><strong>AR No:</strong> {patientData?.arNo || 'N/A'}</p>
                   <p><strong>Admission Date:</strong> {new Date(patientData?.admissionDate).toLocaleString()}</p>
                   <p><strong>Admission Ward:</strong> {patientData?.wardName}</p>
                   <p><strong>Discharge Date:</strong> {new Date(`${dischargeDate}T${dischargeTime}`).toLocaleString()}</p>
                   <p><strong>Discharge Ward:</strong> {dischargeWard}</p>
                   <p><strong>Discharge Type:</strong> <span style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>{dischargeType}</span></p>
+                  {summaryText && (
+                    <p style={{ gridColumn: '1 / -1', marginTop: '1rem' }}><strong>Summary / Remarks:</strong><br />{summaryText}</p>
+                  )}
                 </div>
               </div>
             </div>

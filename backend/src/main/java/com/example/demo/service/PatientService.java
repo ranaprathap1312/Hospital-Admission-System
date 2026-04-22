@@ -106,9 +106,14 @@ public class PatientService {
     }
 
     @Transactional
-    public void dischargePatient(String patientId, String dischargeType, String dischargeWard, String dischargeDateStr, String destinationTable) {
+    public void dischargePatient(String patientId, String dischargeType, String dischargeWard, String dischargeDateStr, String destinationTable, String updatedCaseType) {
         Patient patient = patientRepository.findByPatientId(patientId)
             .orElseThrow(() -> new RuntimeException("Patient not found with ID: " + patientId));
+
+        if (updatedCaseType != null && !updatedCaseType.trim().isEmpty()) {
+            patient.setCaseType(updatedCaseType);
+            patientRepository.save(patient);
+        }
 
         // Build or update the discharge entry
         DischargeEntry entry = dischargeEntryRepository.findByPatientDbId(patient.getId())
