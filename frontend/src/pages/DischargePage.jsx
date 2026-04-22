@@ -169,12 +169,12 @@ const DischargePage = () => {
                             <option value="MLC">MLC</option>
 
                           </select>
-                          <button type="button" onClick={() => setIsEditingCaseType(false)} className="btn btn-primary" style={{ padding: '0.1rem 0.5rem', fontSize: '0.8rem' }}>Done</button>
+                          <button type="button" onClick={() => setIsEditingCaseType(false)} className="btn btn-primary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem', borderRadius: '0.25rem', height: 'auto' }}>Done</button>
                         </>
                       ) : (
                         <>
                           {caseType}
-                          <button type="button" onClick={() => setIsEditingCaseType(true)} className="btn btn-outline" style={{ padding: '0.1rem 0.5rem', fontSize: '0.8rem' }}>Edit</button>
+                          <button type="button" onClick={() => setIsEditingCaseType(true)} className="btn btn-outline" style={{ padding: '0.25rem 0.75rem', fontSize: '0.85rem', borderRadius: '0.25rem', height: 'auto' }}>Edit</button>
                         </>
                       )}
                     </div>
