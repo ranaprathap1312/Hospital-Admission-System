@@ -228,7 +228,7 @@ const DischargePage = () => {
                           onChange={(e) => setDischargeType(e.target.value)}
                           required
                           style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white' }}
-                        >
+                        > <option value="">select</option>
                           <option value="Normal Discharge">Normal Discharge</option>
                           <option value="Abscond">Abscond</option>
                           <option value="Death">Death</option>
@@ -242,7 +242,7 @@ const DischargePage = () => {
                           onChange={(e) => setDestinationTable(e.target.value)}
                           required
                           style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white' }}
-                        >
+                        >  <option value="">select</option>
                           <option value="mlc_discharge">mlc_discharge</option>
                           <option value="death_discharge">death_discharge</option>
                           <option value="maternity_block_discharge">maternity_block_discharge</option>

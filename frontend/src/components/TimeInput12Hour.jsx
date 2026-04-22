@@ -43,29 +43,25 @@ const TimeInput12Hour = ({ value, onChange, disabled, style }) => {
 
   return (
     <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center', backgroundColor: disabled ? '#f3f4f6' : 'white', ...style }}>
-      <select 
+      <input 
+        type="number"
         disabled={disabled} 
         value={h12Str} 
         onChange={handleHour} 
-        style={{ padding: '0.5rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', backgroundColor: 'transparent', outline: 'none' }}
-      >
-        {Array.from({length: 12}, (_, i) => {
-          const h = (i + 1).toString().padStart(2, '0');
-          return <option key={h} value={h}>{h}</option>;
-        })}
-      </select>
-      <span style={{ fontWeight: 'bold' }}>:</span>
-      <select 
+        min="1"
+        max="12"
+        style={{ width: '50px', padding: '0.5rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', backgroundColor: 'transparent', outline: 'none', textAlign: 'center', fontSize: '1rem' }}
+      />
+      <span style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>:</span>
+      <input 
+        type="number"
         disabled={disabled} 
         value={min} 
         onChange={handleMin} 
-        style={{ padding: '0.5rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', backgroundColor: 'transparent', outline: 'none' }}
-      >
-        {Array.from({length: 60}, (_, i) => {
-          const m = i.toString().padStart(2, '0');
-          return <option key={m} value={m}>{m}</option>;
-        })}
-      </select>
+        min="0"
+        max="59"
+        style={{ width: '50px', padding: '0.5rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', backgroundColor: 'transparent', outline: 'none', textAlign: 'center', fontSize: '1rem' }}
+      />
       <select 
         disabled={disabled} 
         value={ampm} 
