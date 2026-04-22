@@ -275,16 +275,17 @@ const DischargePage = () => {
                           <option value="RTX">RTX</option>
                         </select>
                       </div>
-                      <div className="form-group" style={{ flex: 1 }}>
-                        <label>Summary / Remarks</label>
-                        <textarea
-                          value={summaryText}
-                          onChange={(e) => setSummaryText(e.target.value)}
-                          placeholder="Enter summary or remarks"
-                          rows="2"
-                          style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', resize: 'vertical' }}
-                        />
-                      </div>
+                    </div>
+
+                    <div className="form-group" style={{ marginBottom: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      <label style={{ width: '100%', textAlign: 'center' }}>Summary / Remarks</label>
+                      <textarea
+                        value={summaryText}
+                        onChange={(e) => setSummaryText(e.target.value)}
+                        placeholder="Enter summary or remarks"
+                        rows="4"
+                        style={{ width: '100%', padding: '1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', resize: 'none', textAlign: 'center' }}
+                      />
                     </div>
                     <button type="submit" className="btn btn-primary" disabled={isSubmitting} style={{ width: '100%' }}>
                       {isSubmitting ? 'Processing...' : 'Confirm Discharge'}
