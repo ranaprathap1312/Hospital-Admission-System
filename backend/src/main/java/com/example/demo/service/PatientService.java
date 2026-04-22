@@ -210,7 +210,14 @@ public class PatientService {
                 }, keyHolder);
 
                 if (keyHolder.getKeys() != null && !keyHolder.getKeys().isEmpty()) {
-                    generatedId = ((Number) keyHolder.getKeys().values().iterator().next()).longValue();
+                    String idColumnName = destinationTable + "_id";
+                    if (keyHolder.getKeys().containsKey(idColumnName)) {
+                        generatedId = ((Number) keyHolder.getKeys().get(idColumnName)).longValue();
+                    } else if (keyHolder.getKeys().containsKey("id")) {
+                        generatedId = ((Number) keyHolder.getKeys().get("id")).longValue();
+                    } else {
+                        generatedId = ((Number) keyHolder.getKeys().values().iterator().next()).longValue();
+                    }
                 }
             }
         } catch (Exception e) {
