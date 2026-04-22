@@ -93,6 +93,12 @@ public class PatientService {
         return savedPatient;
     }
 
+    @Transactional
+    public void deletePatient(String patientId) {
+        patientRepository.findByPatientId(patientId).ifPresent(patientRepository::delete);
+        masterAdmissionRepository.findByPatientId(patientId).ifPresent(masterAdmissionRepository::delete);
+    }
+
     public java.util.List<Patient> getAllPatients() {
         return patientRepository.findByStatus("ADMITTED");
     }
@@ -228,6 +234,52 @@ public class PatientService {
         patientRepository.delete(patient);
 
         return generatedId;
+    }
+
+    @Transactional
+    public void undoDischarge(String patientId, String destinationTable, Long destinationId) {
+        // 1. Delete from destination table if it was created
+        if (destinationTable != null && !destinationTable.isEmpty() && destinationId != null) {
+            try {
+                String sql = "DELETE FROM " + destinationTable + " WHERE " + destinationTable + "_id = ?";
+                jdbcTemplate.update(sql, destinationId);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        // 2. Delete the discharge entry
+        dischargeEntryRepository.findByCustomPatientId(patientId).ifPresent(dischargeEntryRepository::delete);
+
+        // 3. Re-activate the patient in the master table
+        MasterAdmission master = masterAdmissionRepository.findByPatientId(patientId).orElse(null);
+        if (master != null) {
+            master.setStatus("ADMITTED");
+            masterAdmissionRepository.save(master);
+
+            // 4. Re-insert the patient into the active patients table
+            Patient restoredPatient = new Patient();
+            restoredPatient.setPatientId(master.getPatientId());
+            restoredPatient.setPatientName(master.getPatientName());
+            restoredPatient.setAge(master.getAge());
+            restoredPatient.setGender(master.getGender());
+            restoredPatient.setCaseType(master.getCaseType());
+            restoredPatient.setArNo(master.getArNo());
+            restoredPatient.setAadharNo(master.getAadharNo());
+            restoredPatient.setMobileNo(master.getMobileNo());
+            restoredPatient.setWardName(master.getWardName());
+            restoredPatient.setAdmissionDate(master.getAdmissionDate());
+            restoredPatient.setAdmissionTime(master.getAdmissionTime());
+            restoredPatient.setOccupation(master.getOccupation());
+            restoredPatient.setIncome(master.getIncome());
+            restoredPatient.setMotherName(master.getMotherName());
+            restoredPatient.setCaretakerName(master.getCaretakerName());
+            restoredPatient.setAddress(master.getAddress());
+            restoredPatient.setCreatedAt(LocalDateTime.now());
+            restoredPatient.setStatus("ADMITTED");
+            
+            patientRepository.save(restoredPatient);
+        }
     }
 
     public java.util.List<DischargeEntry> getDestinationTableRecords(String tableName) {

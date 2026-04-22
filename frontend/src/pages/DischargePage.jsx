@@ -97,6 +97,32 @@ const DischargePage = () => {
     }
   };
 
+  const handleUndoDischarge = async () => {
+    if (!patientId) return;
+    
+    const confirmUndo = window.confirm("Are you sure you want to undo this discharge? This will permanently delete the discharge record and restore the patient.");
+    if (!confirmUndo) return;
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/patients/${patientId}/undo-discharge`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ destinationTable, destinationId })
+      });
+      
+      if (response.ok) {
+        // Keep form states intact (dischargeType, destinationTable, etc) to pre-fill
+        setSuccess(false);
+        setDestinationId(null);
+        alert("Discharge successfully undone! The patient has been restored and you can now edit the details and resubmit.");
+      } else {
+        alert("Failed to undo discharge.");
+      }
+    } catch (err) {
+      alert("Error connecting to server to undo discharge.");
+    }
+  };
+
   return (
     <div className="dashboard-wrapper">
       <main className="main-content" style={{ marginLeft: 0, padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
@@ -308,7 +334,10 @@ const DischargePage = () => {
               <div className="success-message no-print" style={{ textAlign: 'center', padding: '2rem 1rem 1rem' }}>
                 <CheckCircle2 size={64} className="success-icon" style={{ margin: '0 auto 1rem auto' }} />
                 <h2 style={{ marginBottom: '1rem' }}>Discharge Successful!</h2>
-                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '1.5rem' }}>
+                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '1.5rem', flexWrap: 'wrap' }}>
+                  <button className="btn btn-outline" onClick={handleUndoDischarge} style={{ borderColor: 'var(--danger-color)', color: 'var(--danger-color)' }}>
+                    Undo Discharge
+                  </button>
                   <button className="btn btn-primary" onClick={() => window.print()} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                     Print Discharge Form
                   </button>

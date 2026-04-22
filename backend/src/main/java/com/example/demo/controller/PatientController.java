@@ -25,6 +25,16 @@ public class PatientController {
         }
     }
 
+    @DeleteMapping("/{patientId}")
+    public ResponseEntity<Void> undoAdmission(@PathVariable String patientId) {
+        try {
+            patientService.deletePatient(patientId);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     @GetMapping("/next-id")
     public ResponseEntity<String> getNextPatientId() {
         try {
@@ -104,6 +114,19 @@ public class PatientController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping("/{patientId}/undo-discharge")
+    public ResponseEntity<Void> undoDischarge(@PathVariable String patientId, @RequestBody java.util.Map<String, String> payload) {
+        try {
+            String destinationTable = payload.get("destinationTable");
+            String destinationIdStr = payload.get("destinationId");
+            Long destinationId = destinationIdStr != null ? Long.parseLong(destinationIdStr) : null;
+            patientService.undoDischarge(patientId, destinationTable, destinationId);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 

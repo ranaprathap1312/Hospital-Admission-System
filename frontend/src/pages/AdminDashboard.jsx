@@ -841,6 +841,30 @@ const AdminDashboard = () => {
     setViewMode('FORM');
   };
 
+  const handleUndoAdmission = async () => {
+    if (!submittedData?.patientId) return;
+    
+    const confirmUndo = window.confirm("Are you sure you want to undo this admission? This will permanently delete the record.");
+    if (!confirmUndo) return;
+    
+    try {
+      const response = await fetch(`/api/patients/${submittedData.patientId}`, {
+        method: 'DELETE',
+      });
+      
+      if (response.ok) {
+        // Keep formData as is, so it is pre-filled when returning to the form
+        setSubmittedData(null);
+        setViewMode('FORM');
+        alert("Admission successfully undone! You can now edit the details and resubmit.");
+      } else {
+        alert("Failed to undo admission.");
+      }
+    } catch (err) {
+      alert("Error connecting to server to undo admission.");
+    }
+  };
+
   return (
     <div className="dashboard-wrapper">
       {/* Sidebar */}
@@ -1303,7 +1327,8 @@ const AdminDashboard = () => {
               <CheckCircle2 size={48} className="success-icon" />
               <h3>Admission Successful!</h3>
               <p>Patient {submittedData?.patientName} has been securely registered to {submittedData?.wardName}.</p>
-              <div className="success-actions" style={{ marginTop: '2rem', display: 'flex', gap: '1rem' }}>
+              <div className="success-actions" style={{ marginTop: '2rem', display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                <button className="btn btn-outline" onClick={handleUndoAdmission} style={{ borderColor: 'var(--danger-color)', color: 'var(--danger-color)' }}>Undo Admission</button>
                 <button className="btn btn-outline" onClick={handleNewAdmission}>Start New Admission</button>
                 <button className="btn btn-primary" onClick={() => setViewMode('PRINT')}>View Patient Details / Print</button>
               </div>

@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface DischargeEntryRepository extends JpaRepository<DischargeEntry, Long> {
     java.util.Optional<DischargeEntry> findByPatientDbId(Long patientDbId);
+    java.util.Optional<DischargeEntry> findByCustomPatientId(String customPatientId);
 }
