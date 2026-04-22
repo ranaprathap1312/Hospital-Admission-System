@@ -181,7 +181,6 @@ const DischargePage = () => {
                           <option value="M2-Male Ward-2">M2-Male Ward-2</option>
                           <option value="PS Ward">PS Ward</option>
                           <option value="SNCU">SNCU</option>
-                          <option value="DEATH">DEATH</option>
                         </select>
                       </div>
                     </div>
