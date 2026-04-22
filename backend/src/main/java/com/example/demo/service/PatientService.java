@@ -12,6 +12,10 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
 
 @Service
 public class PatientService {
@@ -106,7 +110,7 @@ public class PatientService {
     }
 
     @Transactional
-    public void dischargePatient(String patientId, String dischargeType, String dischargeWard, String dischargeDateStr, String destinationTable, String updatedCaseType) {
+    public Long dischargePatient(String patientId, String dischargeType, String dischargeWard, String dischargeDateStr, String destinationTable, String updatedCaseType) {
         Patient patient = patientRepository.findByPatientId(patientId)
             .orElseThrow(() -> new RuntimeException("Patient not found with ID: " + patientId));
 
@@ -166,6 +170,8 @@ public class PatientService {
             masterAdmissionRepository.save(master);
         });
 
+        Long generatedId = null;
+
         // Replicate to x1-x7 table if requested (best effort)
         try {
             if (destinationTable != null && destinationTable.matches("x[6-7]|mlc_discharge|death_discharge|maternity_block_discharge|insurance_block_discharge|general_side_discharge")) {
@@ -175,12 +181,37 @@ public class PatientService {
                     "aadhar_no, occupation, income, caretaker_name, address, admission_ward, " +
                     "admission_date, admission_time, discharge_date, discharge_time" +
                     ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                jdbcTemplate.update(sql,
-                    entry.getCustomPatientId(), entry.getDischargeType(), entry.getPatientDbId(), entry.getDischargeWard(),
-                    entry.getArNo(), entry.getCaseType(), entry.getPatientName(), entry.getAge(), entry.getGender(), entry.getMotherName(), entry.getMobileNo(),
-                    entry.getAadharNo(), entry.getOccupation(), entry.getIncome(), entry.getCaretakerName(), entry.getAddress(), entry.getAdmissionWard(),
-                    entry.getAdmissionDate(), entry.getAdmissionTime(), entry.getDischargeDate(), entry.getDischargeTime()
-                );
+                
+                KeyHolder keyHolder = new GeneratedKeyHolder();
+                jdbcTemplate.update(connection -> {
+                    PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                    ps.setObject(1, entry.getCustomPatientId());
+                    ps.setObject(2, entry.getDischargeType());
+                    ps.setObject(3, entry.getPatientDbId());
+                    ps.setObject(4, entry.getDischargeWard());
+                    ps.setObject(5, entry.getArNo());
+                    ps.setObject(6, entry.getCaseType());
+                    ps.setObject(7, entry.getPatientName());
+                    ps.setObject(8, entry.getAge());
+                    ps.setObject(9, entry.getGender());
+                    ps.setObject(10, entry.getMotherName());
+                    ps.setObject(11, entry.getMobileNo());
+                    ps.setObject(12, entry.getAadharNo());
+                    ps.setObject(13, entry.getOccupation());
+                    ps.setObject(14, entry.getIncome());
+                    ps.setObject(15, entry.getCaretakerName());
+                    ps.setObject(16, entry.getAddress());
+                    ps.setObject(17, entry.getAdmissionWard());
+                    ps.setObject(18, entry.getAdmissionDate());
+                    ps.setObject(19, entry.getAdmissionTime());
+                    ps.setObject(20, entry.getDischargeDate());
+                    ps.setObject(21, entry.getDischargeTime());
+                    return ps;
+                }, keyHolder);
+
+                if (keyHolder.getKeys() != null && !keyHolder.getKeys().isEmpty()) {
+                    generatedId = ((Number) keyHolder.getKeys().values().iterator().next()).longValue();
+                }
             }
         } catch (Exception e) {
             System.err.println("Failed to replicate to " + destinationTable + ": " + e.getMessage());
@@ -188,6 +219,8 @@ public class PatientService {
 
         // DELETE patient from active patients table (master_admission keeps the full history)
         patientRepository.delete(patient);
+
+        return generatedId;
     }
 
     public java.util.List<DischargeEntry> getDestinationTableRecords(String tableName) {

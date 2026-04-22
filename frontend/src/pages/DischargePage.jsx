@@ -29,6 +29,7 @@ const DischargePage = () => {
   const [dischargeTime, setDischargeTime] = useState(getCurrentTime());
   const [manualDischargeDate, setManualDischargeDate] = useState(false);
   const [destinationTable, setDestinationTable] = useState('');
+  const [destinationId, setDestinationId] = useState(null);
   const [caseType, setCaseType] = useState('');
   const [isEditingCaseType, setIsEditingCaseType] = useState(false);
   const [summaryText, setSummaryText] = useState('');
@@ -83,6 +84,8 @@ const DischargePage = () => {
       });
 
       if (response.ok) {
+        const result = await response.json();
+        setDestinationId(result.destinationId);
         setSuccess(true);
       } else {
         setError('Failed to discharge patient.');
@@ -315,6 +318,7 @@ const DischargePage = () => {
                     setPatientNumber('');
                     setDischargeType('');
                     setDestinationTable('');
+                    setDestinationId(null);
                   }}>
                     Process Another Discharge
                   </button>
@@ -326,7 +330,12 @@ const DischargePage = () => {
                 <div className="print-header" style={{ textAlign: 'center', marginBottom: '2rem', borderBottom: '2px solid #000', paddingBottom: '1rem' }}>
                   <img src={tnLogo} alt="TN Logo" style={{ width: '80px', height: 'auto', marginBottom: '1rem' }} />
                   <h2 style={{ margin: '0 0 0.5rem 0', textTransform: 'uppercase', letterSpacing: '1px' }}>DIET SHEET - DISCHARGE FORM</h2>
-                  <h3 style={{ margin: 0, fontWeight: 'normal' }}>GOVERNMENT HOSPITAL VRIDHACHALAM</h3>
+                  <h3 style={{ margin: '0 0 0.5rem 0', fontWeight: 'normal' }}>GOVERNMENT HOSPITAL VRIDHACHALAM</h3>
+                  {destinationId && destinationTable && (
+                    <h4 style={{ margin: 0, color: '#333' }}>
+                      patient_{destinationTable}_id: {destinationId}
+                    </h4>
+                  )}
                 </div>
 
                 <div className="print-grid" style={{ marginBottom: '2rem' }}>

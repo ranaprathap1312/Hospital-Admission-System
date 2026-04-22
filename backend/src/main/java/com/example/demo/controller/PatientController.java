@@ -91,15 +91,15 @@ public class PatientController {
     }
 
     @PutMapping("/{patientId}/discharge")
-    public ResponseEntity<Void> dischargePatient(@PathVariable String patientId, @RequestBody java.util.Map<String, String> payload) {
+    public ResponseEntity<Object> dischargePatient(@PathVariable String patientId, @RequestBody java.util.Map<String, String> payload) {
         try {
             String dischargeType = payload.get("dischargeType");
             String dischargeWard = payload.get("dischargeWard");
             String dischargeDate = payload.get("dischargeDate");
             String destinationTable = payload.get("destinationTable");
             String caseType = payload.get("caseType");
-            patientService.dischargePatient(patientId, dischargeType, dischargeWard, dischargeDate, destinationTable, caseType);
-            return ResponseEntity.ok().build();
+            Long destinationId = patientService.dischargePatient(patientId, dischargeType, dischargeWard, dischargeDate, destinationTable, caseType);
+            return ResponseEntity.ok(java.util.Collections.singletonMap("destinationId", destinationId));
         } catch (RuntimeException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } catch (Exception e) {
