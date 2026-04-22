@@ -159,7 +159,8 @@ const DischargePage = () => {
 
                     <div className="form-row" style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
                       <div className="form-group" style={{ flex: 1 }}>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.5rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                          <label style={{ marginBottom: 0 }}>Discharge Date and time *</label>
                           <label style={{ fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: 0, fontWeight: 'normal' }}>
                             <input
                               type="checkbox"
@@ -176,29 +177,23 @@ const DischargePage = () => {
                             Manual Edit
                           </label>
                         </div>
-                        <div style={{ display: 'flex', gap: '1rem' }}>
-                          <div style={{ flex: 1 }}>
-                            <label>Discharge Date *</label>
-                            <input
-                              type="date"
-                              value={dischargeDate}
-                              onChange={(e) => setDischargeDate(e.target.value)}
-                              disabled={!manualDischargeDate}
-                              required
-                              style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white' }}
-                            />
-                          </div>
-                          <div style={{ flex: 1 }}>
-                            <label>Discharge Time *</label>
-                            <input
-                              type="time"
-                              value={dischargeTime}
-                              onChange={(e) => setDischargeTime(e.target.value)}
-                              disabled={!manualDischargeDate}
-                              required
-                              style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white' }}
-                            />
-                          </div>
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <input
+                            type="date"
+                            value={dischargeDate}
+                            onChange={(e) => setDischargeDate(e.target.value)}
+                            disabled={!manualDischargeDate}
+                            required
+                            style={{ flex: 1, padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white' }}
+                          />
+                          <input
+                            type="time"
+                            value={dischargeTime}
+                            onChange={(e) => setDischargeTime(e.target.value)}
+                            disabled={!manualDischargeDate}
+                            required
+                            style={{ flex: 1, padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white' }}
+                          />
                         </div>
                       </div>
                       <div className="form-group" style={{ flex: 1 }}>
