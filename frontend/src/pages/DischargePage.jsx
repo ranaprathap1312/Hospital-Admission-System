@@ -161,7 +161,7 @@ const DischargePage = () => {
                         />
                       </div>
                       <div className="form-group" style={{ flex: 1 }}>
-                        <label>Discharge Ward *</label>
+                        <label style={{ color: 'red' }}>Discharge Ward *</label>
                         <select
                           value={dischargeWard}
                           onChange={(e) => setDischargeWard(e.target.value)}
