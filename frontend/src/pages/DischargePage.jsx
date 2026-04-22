@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, CheckCircle2, Activity, Search } from 'lucide-react';
 import './AdminDashboard.css';
+import tnLogo from '../../asserts/tn_logo.jpg';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
@@ -248,6 +249,7 @@ const DischargePage = () => {
               {/* Printable Discharge Summary */}
               <div className="print-section" style={{ border: '1px solid var(--border-color)', borderRadius: '0.5rem', padding: '2rem', marginTop: '2rem' }}>
                 <div className="print-header" style={{ textAlign: 'center', marginBottom: '2rem', borderBottom: '2px solid #000', paddingBottom: '1rem' }}>
+                  <img src={tnLogo} alt="TN Logo" style={{ width: '80px', height: 'auto', marginBottom: '1rem' }} />
                   <h2 style={{ margin: '0 0 0.5rem 0', textTransform: 'uppercase', letterSpacing: '1px' }}>DIET SHEET - DISCHARGE FORM</h2>
                   <h3 style={{ margin: 0, fontWeight: 'normal' }}>GOVERNMENT HOSPITAL VRIDHACHALAM</h3>
                 </div>

@@ -7,13 +7,15 @@ import OfficialLoginPage from './pages/OfficialLoginPage';
 import OfficialDashboard from './pages/OfficialDashboard';
 import DischargePage from './pages/DischargePage';
 import './App.css';
+import tnLogo from '../asserts/tn_logo.jpg';
+
 
 function App() {
   return (
     <Router>
       <div className="app-container">
         <div className="global-print-header" style={{ display: 'none', flexDirection: 'column', alignItems: 'center' }}>
-          <img src="/tn_logo.png" alt="Tamil Nadu Logo" style={{ width: '80px', height: 'auto', marginBottom: '10px' }} />
+          <img src={tnLogo} alt="Tamil Nadu Logo" style={{ width: '80px', height: 'auto', marginBottom: '10px' }} />
           <div>WELCOME TO GOVT HOSPITAL VIRUDHACHALAM</div>
         </div>
         <Routes>

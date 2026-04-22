@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import './AdminDashboard.css';
+import tnLogo from '../../asserts/tn_logo.jpg';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
@@ -844,7 +845,7 @@ const AdminDashboard = () => {
       {/* Sidebar */}
       <aside className="sidebar">
         <div className="sidebar-header">
-          <h2>GOVERNMENT HOSPITAL VIRUDHACHALAM Admin</h2>
+          <h2>Admin Dashboard</h2>
         </div>
         <nav className="sidebar-nav">
           <a href="#" className={`nav-item ${activeTab === 'ADMISSION' ? 'active' : ''}`} onClick={(e) => { e.preventDefault(); setActiveTab('ADMISSION'); }}>
@@ -1377,7 +1378,8 @@ const AdminDashboard = () => {
 
           {viewMode === 'PRINT' && submittedData && (
             <div className="print-view">
-              <div className="print-header">
+              <div className="print-header" style={{ textAlign: 'center', marginBottom: '2rem', borderBottom: '2px solid #000', paddingBottom: '1rem' }}>
+                <img src={tnLogo} alt="TN Logo" style={{ width: '80px', height: 'auto', marginBottom: '1rem' }} />
                 <h2>GOVERNMENT HOSPITAL VIRUDHACHALAM - Official Admission Record</h2>
                 <p>Date: {new Date().toLocaleDateString()}</p>
               </div>
