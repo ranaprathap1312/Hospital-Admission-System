@@ -844,9 +844,6 @@ const AdminDashboard = () => {
   const handleUndoAdmission = async () => {
     if (!submittedData?.patientId) return;
     
-    const confirmUndo = window.confirm("Are you sure you want to undo this admission? This will permanently delete the record.");
-    if (!confirmUndo) return;
-    
     try {
       const response = await fetch(`${API_BASE_URL}/api/patients/${submittedData.patientId}`, {
         method: 'DELETE',
@@ -856,12 +853,11 @@ const AdminDashboard = () => {
         // Keep formData as is, so it is pre-filled when returning to the form
         setSubmittedData(null);
         setViewMode('FORM');
-        alert("Admission successfully undone! You can now edit the details and resubmit.");
       } else {
-        alert("Failed to undo admission.");
+        console.error("Failed to undo admission.");
       }
     } catch (err) {
-      alert("Error connecting to server to undo admission.");
+      console.error("Error connecting to server to undo admission.");
     }
   };
 

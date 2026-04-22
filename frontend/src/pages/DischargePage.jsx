@@ -100,9 +100,6 @@ const DischargePage = () => {
   const handleUndoDischarge = async () => {
     if (!patientId) return;
     
-    const confirmUndo = window.confirm("Are you sure you want to undo this discharge? This will permanently delete the discharge record and restore the patient.");
-    if (!confirmUndo) return;
-    
     try {
       const response = await fetch(`${API_BASE_URL}/api/patients/${patientId}/undo-discharge`, {
         method: 'POST',
@@ -114,12 +111,11 @@ const DischargePage = () => {
         // Keep form states intact (dischargeType, destinationTable, etc) to pre-fill
         setSuccess(false);
         setDestinationId(null);
-        alert("Discharge successfully undone! The patient has been restored and you can now edit the details and resubmit.");
       } else {
-        alert("Failed to undo discharge.");
+        console.error("Failed to undo discharge.");
       }
     } catch (err) {
-      alert("Error connecting to server to undo discharge.");
+      console.error("Error connecting to server to undo discharge.");
     }
   };
 
