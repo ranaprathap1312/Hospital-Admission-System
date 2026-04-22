@@ -109,12 +109,9 @@ public class PatientController {
     @Autowired
     private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
-    @GetMapping("/fix-db")
-    public ResponseEntity<String> fixDb() {
-        jdbcTemplate.update("UPDATE patient SET patient_id = '2026-4' WHERE id = 62");
-        jdbcTemplate.update("UPDATE master_admission SET patient_id = '2026-4' WHERE id = 57");
-        jdbcTemplate.update("UPDATE patient SET patient_id = '2026-5' WHERE id = 63");
-        jdbcTemplate.update("UPDATE master_admission SET patient_id = '2026-5' WHERE id = 58");
-        return ResponseEntity.ok("Database fixed! You can remove this endpoint now.");
+    @GetMapping("/clear-db")
+    public ResponseEntity<String> clearDb() {
+        jdbcTemplate.execute("TRUNCATE TABLE patient, master_admission, discharge_entry, mlc_discharge, death_discharge, maternity_block_discharge, insurance_block_discharge, general_side_discharge, x6, x7 RESTART IDENTITY CASCADE");
+        return ResponseEntity.ok("All patient and discharge records have been successfully deleted. The system is reset for a fresh start!");
     }
 }
