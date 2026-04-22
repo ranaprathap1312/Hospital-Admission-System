@@ -30,6 +30,7 @@ const DischargePage = () => {
   const [manualDischargeDate, setManualDischargeDate] = useState(false);
   const [destinationTable, setDestinationTable] = useState('');
   const [caseType, setCaseType] = useState('');
+  const [isEditingCaseType, setIsEditingCaseType] = useState(false);
   const [summaryText, setSummaryText] = useState('');
 
   const [isSearching, setIsSearching] = useState(false);
@@ -52,6 +53,7 @@ const DischargePage = () => {
         const data = await response.json();
         setPatientData(data);
         setCaseType(data.caseType || '');
+        setIsEditingCaseType(false);
         setSummaryText('');
         setDischargeWard('');
         setDischargeDate(getCurrentDate());
@@ -154,7 +156,28 @@ const DischargePage = () => {
                     <p><strong>Caretaker:</strong> {patientData.caretakerName || 'N/A'}</p>
                     <p><strong>Address:</strong> {patientData.address || 'N/A'}</p>
                     <p><strong>Admission Ward:</strong> {patientData.wardName}</p>
-                    <p><strong>Case Type:</strong> {patientData.caseType}</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                      <strong>Case Type:</strong> 
+                      {isEditingCaseType ? (
+                        <>
+                          <select
+                            value={caseType}
+                            onChange={(e) => setCaseType(e.target.value)}
+                            style={{ padding: '0.25rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', fontSize: '0.9rem' }}
+                          >
+                            <option value="Non-MLC">Non-MLC</option>
+                            <option value="MLC">MLC</option>
+                            <option value="RTX">RTX</option>
+                          </select>
+                          <button type="button" onClick={() => setIsEditingCaseType(false)} className="btn btn-primary" style={{ padding: '0.1rem 0.5rem', fontSize: '0.8rem' }}>Done</button>
+                        </>
+                      ) : (
+                        <>
+                          {caseType}
+                          <button type="button" onClick={() => setIsEditingCaseType(true)} className="btn btn-outline" style={{ padding: '0.1rem 0.5rem', fontSize: '0.8rem' }}>Edit</button>
+                        </>
+                      )}
+                    </div>
                     <p><strong>AR No:</strong> {patientData.arNo || 'N/A'}</p>
                     <p><strong>Admission Date:</strong> {new Date(patientData.admissionDate).toLocaleString()}</p>
                   </div>
@@ -256,23 +279,6 @@ const DischargePage = () => {
                           <option value="general_side_discharge">general_side_discharge</option>
                           <option value="x6">x6</option>
                           <option value="x7">x7</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="form-row" style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
-                      <div className="form-group" style={{ flex: 1 }}>
-                        <label>Case Type *</label>
-                        <select
-                          value={caseType}
-                          onChange={(e) => setCaseType(e.target.value)}
-                          required
-                          style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white' }}
-                        >
-                          <option value="">Select</option>
-                          <option value="Non-MLC">Non-MLC</option>
-                          <option value="MLC">MLC</option>
-                          <option value="RTX">RTX</option>
                         </select>
                       </div>
                     </div>
