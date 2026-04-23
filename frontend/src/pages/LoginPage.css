@@ -143,3 +143,18 @@
   text-align: center;
   border: 1px solid rgba(222, 53, 11, 0.2);
 }
+
+@media (max-width: 480px) {
+  .login-container {
+    padding: 2rem 1.25rem;
+  }
+
+  .login-header h2 {
+    font-size: 1.4rem;
+  }
+
+  .back-link {
+    top: 1rem;
+    left: 1rem;
+  }
+}

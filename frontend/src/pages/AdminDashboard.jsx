@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { UserPlus, LayoutDashboard, Settings, LogOut, CheckCircle2, Activity, Users } from 'lucide-react';
+import { UserPlus, LayoutDashboard, Settings, LogOut, CheckCircle2, Activity, Users, Menu, X } from 'lucide-react';
 import indiaData from '../utils/states-and-districts.json';
 import { Link } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
@@ -181,6 +181,7 @@ const AdminDashboard = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [viewMode, setViewMode] = useState('FORM'); // 'FORM', 'SUCCESS', 'PRINT'
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('ADMISSION'); // 'ADMISSION', 'RECORDS'
   const [isDestinationDropdownOpen, setIsDestinationDropdownOpen] = useState(false);
   const [destinationRecords, setDestinationRecords] = useState([]);
@@ -863,25 +864,40 @@ const AdminDashboard = () => {
 
   return (
     <div className="dashboard-wrapper">
+      {/* Hamburger button - mobile only */}
+      <button
+        className="hamburger-btn"
+        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+        aria-label="Toggle navigation"
+      >
+        {isSidebarOpen ? <X size={22} /> : <Menu size={22} />}
+      </button>
+
+      {/* Dark overlay - closes sidebar when clicked */}
+      <div
+        className={`sidebar-overlay ${isSidebarOpen ? 'open' : ''}`}
+        onClick={() => setIsSidebarOpen(false)}
+      />
+
       {/* Sidebar */}
-      <aside className="sidebar">
+      <aside className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
           <h2>Admin Dashboard</h2>
         </div>
         <nav className="sidebar-nav">
-          <a href="#" className={`nav-item ${activeTab === 'ADMISSION' ? 'active' : ''}`} onClick={(e) => { e.preventDefault(); setActiveTab('ADMISSION'); }}>
+          <a href="#" className={`nav-item ${activeTab === 'ADMISSION' ? 'active' : ''}`} onClick={(e) => { e.preventDefault(); setActiveTab('ADMISSION'); setIsSidebarOpen(false); }}>
             <UserPlus size={20} /> New Admission
           </a>
-          <a href="#" className={`nav-item ${activeTab === 'RECORDS' ? 'active' : ''}`} onClick={(e) => { e.preventDefault(); setActiveTab('RECORDS'); }}>
+          <a href="#" className={`nav-item ${activeTab === 'RECORDS' ? 'active' : ''}`} onClick={(e) => { e.preventDefault(); setActiveTab('RECORDS'); setIsSidebarOpen(false); }}>
             <LayoutDashboard size={20} /> Patient Records
           </a>
-          <Link to="/discharge" className="nav-item">
+          <Link to="/discharge" className="nav-item" onClick={() => setIsSidebarOpen(false)}>
             <Activity size={20} /> Discharge Entry
           </Link>
-          <a href="#" className={`nav-item ${activeTab === 'ACTIVE_PATIENTS' ? 'active' : ''}`} onClick={(e) => { e.preventDefault(); setActiveTab('ACTIVE_PATIENTS'); }}>
+          <a href="#" className={`nav-item ${activeTab === 'ACTIVE_PATIENTS' ? 'active' : ''}`} onClick={(e) => { e.preventDefault(); setActiveTab('ACTIVE_PATIENTS'); setIsSidebarOpen(false); }}>
             <Users size={20} /> Active Patients
           </a>
-          <a href="#" className={`nav-item ${activeTab === 'DISCHARGE_RECORDS' ? 'active' : ''}`} onClick={(e) => { e.preventDefault(); setActiveTab('DISCHARGE_RECORDS'); }}>
+          <a href="#" className={`nav-item ${activeTab === 'DISCHARGE_RECORDS' ? 'active' : ''}`} onClick={(e) => { e.preventDefault(); setActiveTab('DISCHARGE_RECORDS'); setIsSidebarOpen(false); }}>
             <Activity size={20} /> Discharge Records
           </a>
           <div className="nav-item-group">

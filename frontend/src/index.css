@@ -106,6 +106,17 @@ button {
   font-size: 1rem;
 }
 
+@media (max-width: 480px) {
+  .btn {
+    padding: 0.625rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .container {
+    padding: 0 1rem;
+  }
+}
+
 .btn-primary {
   background-color: var(--primary);
   color: var(--text-light);

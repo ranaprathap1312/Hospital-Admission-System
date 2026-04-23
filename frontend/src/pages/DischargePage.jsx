@@ -7,6 +7,26 @@ import TimeInput12Hour from '../components/TimeInput12Hour';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
+// Inject scoped responsive styles for discharge page
+const dischargeResponsiveStyle = `
+  @media (max-width: 640px) {
+    .discharge-form-row {
+      flex-direction: column !important;
+    }
+    .discharge-search-bar {
+      flex-direction: column !important;
+    }
+    .discharge-search-bar button {
+      width: 100%;
+    }
+  }
+  @media (max-width: 480px) {
+    .print-grid {
+      grid-template-columns: 1fr !important;
+    }
+  }
+`;
+
 const DischargePage = () => {
   const navigate = useNavigate();
   const [patientNumber, setPatientNumber] = useState('');
@@ -121,6 +141,7 @@ const DischargePage = () => {
 
   return (
     <div className="dashboard-wrapper">
+      <style>{dischargeResponsiveStyle}</style>
       <main className="main-content" style={{ marginLeft: 0, padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
         <header className="content-header no-print" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
           <button onClick={() => navigate('/admin')} className="btn btn-outline" style={{ padding: '0.5rem' }}>
@@ -136,7 +157,7 @@ const DischargePage = () => {
           {!success ? (
             <>
               {/* Search Form */}
-              <form onSubmit={handleSearch} style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', alignItems: 'center' }}>
+              <form onSubmit={handleSearch} className="discharge-search-bar" style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', alignItems: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', backgroundColor: '#fcfcfc', overflow: 'hidden', flexGrow: 1, height: '48px' }}>
                   <span style={{ padding: '0 1rem', color: 'var(--text-muted)', fontWeight: '600', backgroundColor: '#f4f5f7', borderRight: '1px solid var(--border-color)', height: '100%', display: 'flex', alignItems: 'center' }}>
                     {new Date().getFullYear()}-
