@@ -86,6 +86,7 @@ const LoginPage = () => {
                 required
               />
             </div>
+            {formErrors.email && <span className="error-text">{formErrors.email}</span>}
           </div>
           
           <div className="form-group">
@@ -103,6 +104,7 @@ const LoginPage = () => {
                 required
               />
             </div>
+            {formErrors.password && <span className="error-text">{formErrors.password}</span>}
           </div>
 
           <div className="form-options">

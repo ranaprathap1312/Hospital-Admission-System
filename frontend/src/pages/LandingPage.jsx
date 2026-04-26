@@ -1,10 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ShieldPlus, Activity, Stethoscope, ChevronRight, ChevronDown } from 'lucide-react';
 import './LandingPage.css';
 
 const LandingPage = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   return (
     <div className="landing-wrapper">
       {/* Navbar */}
@@ -15,11 +30,10 @@ const LandingPage = () => {
             <span className="logo-text">GOVT HOSPITAL VIRUDHACHALAM</span>
           </div>
           <div className="nav-actions">
-            <div className="dropdown-container">
+            <div className="dropdown-container" ref={dropdownRef}>
               <button 
                 className="btn btn-primary" 
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                onBlur={() => setTimeout(() => setIsDropdownOpen(false), 200)}
                 style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}
               >
                 Login <ChevronDown size={18} />
