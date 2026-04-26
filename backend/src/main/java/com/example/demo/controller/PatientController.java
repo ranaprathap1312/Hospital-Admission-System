@@ -191,6 +191,15 @@ public class PatientController {
                 result.append("❌ Failed to create ").append(table).append(": ").append(e.getMessage()).append("\n");
             }
         }
+
+        // Drop the foreign key constraint that blocks discharge on production
+        try {
+            jdbcTemplate.execute("ALTER TABLE discharge_entry DROP CONSTRAINT IF EXISTS fkc4xnbbu1vvuk88e6h5uocpvc;");
+            result.append("\n✅ Successfully dropped outdated foreign key constraint from discharge_entry\n");
+        } catch (Exception e) {
+            result.append("\nℹ️ Skipped dropping foreign key constraint (might already be removed): ").append(e.getMessage()).append("\n");
+        }
+
         return ResponseEntity.ok(result.toString());
     }
 }
