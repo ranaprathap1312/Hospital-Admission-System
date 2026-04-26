@@ -103,9 +103,9 @@ const RegisterPage = () => {
     e.preventDefault();
     // Custom Validation
     const errors = {};
-    if (!name) errors.name = 'Name is required';
-    if (!email) errors.email = 'Email is required';
-    if (!password) errors.password = 'Password is required';
+    if (!formData.name) errors.name = 'Name is required';
+    if (!formData.email) errors.email = 'Email is required';
+    if (!formData.password) errors.password = 'Password is required';
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
       return;
