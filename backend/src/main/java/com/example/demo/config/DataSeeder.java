@@ -4,6 +4,7 @@ import com.example.demo.entity.Admin;
 import com.example.demo.repository.AdminRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -14,8 +15,19 @@ public class DataSeeder implements CommandLineRunner {
     @Autowired
     private AdminRepository adminRepository;
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
     @Override
     public void run(String... args) throws Exception {
+        // Always drop the FK constraint that blocks patient discharge (Hibernate re-adds it on update)
+        try {
+            jdbcTemplate.execute("ALTER TABLE discharge_entry DROP CONSTRAINT IF EXISTS fkc4xnbbu1vvuk88e6h5uocpvc");
+            System.out.println("Startup: Dropped FK constraint on discharge_entry (if existed)");
+        } catch (Exception ex) {
+            System.out.println("Startup: FK drop skipped - " + ex.getMessage());
+        }
+
         try {
             Optional<Admin> oldAdmin = adminRepository.findByEmail("ranaprathap13122003@gmail.com");
             Optional<Admin> newAdmin = adminRepository.findByEmail("rajaji.gh@gmail.com");
