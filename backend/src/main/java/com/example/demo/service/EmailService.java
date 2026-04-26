@@ -24,14 +24,10 @@ public class EmailService {
                 message.setText(text);
                 message.setFrom("rajaji.gh@gmail.com");
                 mailSender.send(message);
-                System.out.println("Email sent successfully to " + toEmail);
+                System.out.println("✅ Email sent successfully to " + toEmail);
             } catch (Exception e) {
-                System.out.println("Failed to send real email (check properties). Simulating instead.");
-                System.out.println("----------------------------------------");
-                System.out.println("SIMULATED EMAIL TO: " + toEmail);
-                System.out.println("SUBJECT: " + subject);
-                System.out.println("BODY: " + text);
-                System.out.println("----------------------------------------");
+                System.out.println("❌ FAILED TO SEND EMAIL: " + e.getMessage());
+                e.printStackTrace();
             }
         } else {
             System.out.println("----------------------------------------");
