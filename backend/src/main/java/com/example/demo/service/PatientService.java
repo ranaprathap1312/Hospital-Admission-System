@@ -115,70 +115,72 @@ public class PatientService {
         return patientRepository.findByPatientId(patientId);
     }
 
-    @Transactional
     public Long dischargePatient(String patientId, String dischargeType, String dischargeWard, String dischargeDateStr, String destinationTable, String updatedCaseType) {
         Patient patient = patientRepository.findByPatientId(patientId)
             .orElseThrow(() -> new RuntimeException("Patient not found with ID: " + patientId));
 
-        if (updatedCaseType != null && !updatedCaseType.trim().isEmpty()) {
-            patient.setCaseType(updatedCaseType);
-            patientRepository.save(patient);
-        }
-
-        // Build or update the discharge entry
-        DischargeEntry entry = dischargeEntryRepository.findByPatientDbId(patient.getId())
-            .orElse(new DischargeEntry());
-
-        entry.setPatientDbId(patient.getId());
-        entry.setCustomPatientId(patient.getPatientId());
-        entry.setCaseType(patient.getCaseType());
-        entry.setArNo(patient.getArNo());
-        entry.setPatientName(patient.getPatientName());
-        entry.setAge(patient.getAge());
-        entry.setGender(patient.getGender());
-        entry.setMotherName(patient.getMotherName());
-        entry.setMobileNo(patient.getMobileNo());
-        entry.setAadharNo(patient.getAadharNo());
-        entry.setOccupation(patient.getOccupation());
-        entry.setCaretakerName(patient.getCaretakerName());
-        entry.setAddress(patient.getAddress());
-        entry.setAdmissionWard(patient.getWardName());
-        entry.setAdmissionDate(patient.getAdmissionDate());
-        entry.setAdmissionTime(patient.getAdmissionTime());
-        entry.setDischargeType(dischargeType);
-        entry.setDischargeWard(dischargeWard);
-
+        // Parse discharge date/time
+        java.time.LocalDate dischargeDate;
+        java.time.LocalTime dischargeTime;
         if (dischargeDateStr != null && !dischargeDateStr.isEmpty()) {
             try {
                 java.time.LocalDateTime dt = java.time.LocalDateTime.parse(dischargeDateStr);
-                entry.setDischargeDate(dt.toLocalDate());
-                entry.setDischargeTime(dt.toLocalTime());
+                dischargeDate = dt.toLocalDate();
+                dischargeTime = dt.toLocalTime();
             } catch (Exception e) {
                 java.time.LocalDateTime now = java.time.LocalDateTime.now();
-                entry.setDischargeDate(now.toLocalDate());
-                entry.setDischargeTime(now.toLocalTime());
+                dischargeDate = now.toLocalDate();
+                dischargeTime = now.toLocalTime();
             }
         } else {
             java.time.LocalDateTime now = java.time.LocalDateTime.now();
-            entry.setDischargeDate(now.toLocalDate());
-            entry.setDischargeTime(now.toLocalTime());
+            dischargeDate = now.toLocalDate();
+            dischargeTime = now.toLocalTime();
         }
 
-        // Save discharge record
-        dischargeEntryRepository.save(entry);
+        String finalCaseType = (updatedCaseType != null && !updatedCaseType.trim().isEmpty()) ? updatedCaseType : patient.getCaseType();
 
-        // Update master_admission status to DISCHARGED (keep the record)
-        masterAdmissionRepository.findByPatientId(patientId).ifPresent(master -> {
-            master.setStatus("DISCHARGED");
-            if (updatedCaseType != null && !updatedCaseType.trim().isEmpty()) {
-                master.setCaseType(updatedCaseType);
-            }
-            masterAdmissionRepository.save(master);
-        });
+        // Step 1: Save to discharge_entry via raw JDBC (bypasses JPA FK tracking)
+        String checkSql = "SELECT COUNT(*) FROM discharge_entry WHERE patient_db_id = ?";
+        int existingCount = jdbcTemplate.queryForObject(checkSql, Integer.class, patient.getId());
+
+        if (existingCount > 0) {
+            jdbcTemplate.update(
+                "UPDATE discharge_entry SET custom_patient_id=?, discharge_type=?, discharge_ward=?, " +
+                "ar_no=?, case_type=?, patient_name=?, age=?, gender=?, mother_name=?, mobile_no=?, " +
+                "aadhar_no=?, occupation=?, income=?, caretaker_name=?, address=?, admission_ward=?, " +
+                "admission_date=?, admission_time=?, discharge_date=?, discharge_time=? WHERE patient_db_id=?",
+                patient.getPatientId(), dischargeType, dischargeWard,
+                patient.getArNo(), finalCaseType, patient.getPatientName(), patient.getAge(), patient.getGender(),
+                patient.getMotherName(), patient.getMobileNo(), patient.getAadharNo(), patient.getOccupation(),
+                patient.getIncome(), patient.getCaretakerName(), patient.getAddress(), patient.getWardName(),
+                patient.getAdmissionDate(), patient.getAdmissionTime(), dischargeDate, dischargeTime,
+                patient.getId()
+            );
+        } else {
+            jdbcTemplate.update(
+                "INSERT INTO discharge_entry (custom_patient_id, discharge_type, patient_db_id, discharge_ward, " +
+                "ar_no, case_type, patient_name, age, gender, mother_name, mobile_no, " +
+                "aadhar_no, occupation, income, caretaker_name, address, admission_ward, " +
+                "admission_date, admission_time, discharge_date, discharge_time) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                patient.getPatientId(), dischargeType, patient.getId(), dischargeWard,
+                patient.getArNo(), finalCaseType, patient.getPatientName(), patient.getAge(), patient.getGender(),
+                patient.getMotherName(), patient.getMobileNo(), patient.getAadharNo(), patient.getOccupation(),
+                patient.getIncome(), patient.getCaretakerName(), patient.getAddress(), patient.getWardName(),
+                patient.getAdmissionDate(), patient.getAdmissionTime(), dischargeDate, dischargeTime
+            );
+        }
+
+        // Step 2: Update master_admission status to DISCHARGED
+        jdbcTemplate.update(
+            "UPDATE master_admission_table_of_patients SET status=?, case_type=? WHERE patient_id=?",
+            "DISCHARGED", finalCaseType, patientId
+        );
 
         Long generatedId = null;
 
-        // Replicate to x1-x7 table if requested (best effort)
+        // Step 3: Replicate to destination table (mlc_discharge, death_discharge, etc.)
         try {
             if (destinationTable != null && destinationTable.matches("x[6-7]|mlc_discharge|death_discharge|maternity_block_discharge|insurance_block_discharge|general_side_discharge")) {
                 String sql = "INSERT INTO " + destinationTable + " (" +
@@ -187,31 +189,31 @@ public class PatientService {
                     "aadhar_no, occupation, income, caretaker_name, address, admission_ward, " +
                     "admission_date, admission_time, discharge_date, discharge_time" +
                     ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                
+
                 KeyHolder keyHolder = new GeneratedKeyHolder();
                 jdbcTemplate.update(connection -> {
                     PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-                    ps.setObject(1, entry.getCustomPatientId());
-                    ps.setObject(2, entry.getDischargeType());
-                    ps.setObject(3, entry.getPatientDbId());
-                    ps.setObject(4, entry.getDischargeWard());
-                    ps.setObject(5, entry.getArNo());
-                    ps.setObject(6, entry.getCaseType());
-                    ps.setObject(7, entry.getPatientName());
-                    ps.setObject(8, entry.getAge());
-                    ps.setObject(9, entry.getGender());
-                    ps.setObject(10, entry.getMotherName());
-                    ps.setObject(11, entry.getMobileNo());
-                    ps.setObject(12, entry.getAadharNo());
-                    ps.setObject(13, entry.getOccupation());
-                    ps.setObject(14, entry.getIncome());
-                    ps.setObject(15, entry.getCaretakerName());
-                    ps.setObject(16, entry.getAddress());
-                    ps.setObject(17, entry.getAdmissionWard());
-                    ps.setObject(18, entry.getAdmissionDate());
-                    ps.setObject(19, entry.getAdmissionTime());
-                    ps.setObject(20, entry.getDischargeDate());
-                    ps.setObject(21, entry.getDischargeTime());
+                    ps.setObject(1, patient.getPatientId());
+                    ps.setObject(2, dischargeType);
+                    ps.setObject(3, patient.getId());
+                    ps.setObject(4, dischargeWard);
+                    ps.setObject(5, patient.getArNo());
+                    ps.setObject(6, finalCaseType);
+                    ps.setObject(7, patient.getPatientName());
+                    ps.setObject(8, patient.getAge());
+                    ps.setObject(9, patient.getGender());
+                    ps.setObject(10, patient.getMobileNo());
+                    ps.setObject(11, patient.getMobileNo());
+                    ps.setObject(12, patient.getAadharNo());
+                    ps.setObject(13, patient.getOccupation());
+                    ps.setObject(14, patient.getIncome());
+                    ps.setObject(15, patient.getCaretakerName());
+                    ps.setObject(16, patient.getAddress());
+                    ps.setObject(17, patient.getWardName());
+                    ps.setObject(18, patient.getAdmissionDate());
+                    ps.setObject(19, patient.getAdmissionTime());
+                    ps.setObject(20, dischargeDate);
+                    ps.setObject(21, dischargeTime);
                     return ps;
                 }, keyHolder);
 
@@ -228,13 +230,15 @@ public class PatientService {
             }
         } catch (Exception e) {
             System.err.println("Failed to replicate to " + destinationTable + ": " + e.getMessage());
+            e.printStackTrace();
         }
 
-        // DELETE patient from active patients table (master_admission keeps the full history)
-        patientRepository.delete(patient);
+        // Step 4: DELETE patient from active patients table
+        jdbcTemplate.update("DELETE FROM active_patients WHERE patient_id = ?", patientId);
 
         return generatedId;
     }
+
 
     @Transactional
     public void undoDischarge(String patientId, String destinationTable, Long destinationId) {
