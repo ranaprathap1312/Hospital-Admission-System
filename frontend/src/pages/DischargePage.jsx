@@ -108,7 +108,12 @@ const DischargePage = () => {
         setDestinationId(result.destinationId);
         setSuccess(true);
       } else {
-        setError('Failed to discharge patient.');
+        try {
+          const errData = await response.json();
+          setError(errData.error || 'Failed to discharge patient.');
+        } catch {
+          setError('Failed to discharge patient.');
+        }
       }
     } catch (err) {
       setError('Could not connect to the server.');

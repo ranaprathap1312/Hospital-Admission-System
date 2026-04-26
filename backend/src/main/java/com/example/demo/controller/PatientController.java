@@ -111,9 +111,15 @@ public class PatientController {
             Long destinationId = patientService.dischargePatient(patientId, dischargeType, dischargeWard, dischargeDate, destinationTable, caseType);
             return ResponseEntity.ok(java.util.Collections.singletonMap("destinationId", destinationId));
         } catch (RuntimeException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            System.err.println("Discharge error for patient " + patientId + ": " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(java.util.Collections.singletonMap("error", e.getMessage()));
         } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            System.err.println("Unexpected discharge error: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(java.util.Collections.singletonMap("error", e.getMessage()));
         }
     }
 
