@@ -119,24 +119,19 @@ public class PatientService {
         Patient patient = patientRepository.findByPatientId(patientId)
             .orElseThrow(() -> new RuntimeException("Patient not found with ID: " + patientId));
 
-        // Parse discharge date/time
-        java.time.LocalDate dischargeDate;
-        java.time.LocalTime dischargeTime;
+        // Parse discharge date/time — must be effectively final for use in lambda
+        java.time.LocalDateTime parsedDt;
         if (dischargeDateStr != null && !dischargeDateStr.isEmpty()) {
             try {
-                java.time.LocalDateTime dt = java.time.LocalDateTime.parse(dischargeDateStr);
-                dischargeDate = dt.toLocalDate();
-                dischargeTime = dt.toLocalTime();
+                parsedDt = java.time.LocalDateTime.parse(dischargeDateStr);
             } catch (Exception e) {
-                java.time.LocalDateTime now = java.time.LocalDateTime.now();
-                dischargeDate = now.toLocalDate();
-                dischargeTime = now.toLocalTime();
+                parsedDt = java.time.LocalDateTime.now();
             }
         } else {
-            java.time.LocalDateTime now = java.time.LocalDateTime.now();
-            dischargeDate = now.toLocalDate();
-            dischargeTime = now.toLocalTime();
+            parsedDt = java.time.LocalDateTime.now();
         }
+        final java.time.LocalDate finalDischargeDate = parsedDt.toLocalDate();
+        final java.time.LocalTime finalDischargeTime = parsedDt.toLocalTime();
 
         String finalCaseType = (updatedCaseType != null && !updatedCaseType.trim().isEmpty()) ? updatedCaseType : patient.getCaseType();
 
@@ -154,7 +149,7 @@ public class PatientService {
                 patient.getArNo(), finalCaseType, patient.getPatientName(), patient.getAge(), patient.getGender(),
                 patient.getMotherName(), patient.getMobileNo(), patient.getAadharNo(), patient.getOccupation(),
                 patient.getIncome(), patient.getCaretakerName(), patient.getAddress(), patient.getWardName(),
-                patient.getAdmissionDate(), patient.getAdmissionTime(), dischargeDate, dischargeTime,
+                patient.getAdmissionDate(), patient.getAdmissionTime(), finalDischargeDate, finalDischargeTime,
                 patient.getId()
             );
         } else {
@@ -168,7 +163,7 @@ public class PatientService {
                 patient.getArNo(), finalCaseType, patient.getPatientName(), patient.getAge(), patient.getGender(),
                 patient.getMotherName(), patient.getMobileNo(), patient.getAadharNo(), patient.getOccupation(),
                 patient.getIncome(), patient.getCaretakerName(), patient.getAddress(), patient.getWardName(),
-                patient.getAdmissionDate(), patient.getAdmissionTime(), dischargeDate, dischargeTime
+                patient.getAdmissionDate(), patient.getAdmissionTime(), finalDischargeDate, finalDischargeTime
             );
         }
 
@@ -212,8 +207,8 @@ public class PatientService {
                     ps.setObject(17, patient.getWardName());
                     ps.setObject(18, patient.getAdmissionDate());
                     ps.setObject(19, patient.getAdmissionTime());
-                    ps.setObject(20, dischargeDate);
-                    ps.setObject(21, dischargeTime);
+                    ps.setObject(20, finalDischargeDate);
+                    ps.setObject(21, finalDischargeTime);
                     return ps;
                 }, keyHolder);
 
