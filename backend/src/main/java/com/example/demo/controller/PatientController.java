@@ -144,4 +144,19 @@ public class PatientController {
         jdbcTemplate.execute("TRUNCATE TABLE patient, master_admission, discharge_entry, mlc_discharge, death_discharge, maternity_block_discharge, insurance_block_discharge, general_side_discharge, x6, x7 RESTART IDENTITY CASCADE");
         return ResponseEntity.ok("All patient and discharge records have been successfully deleted. The system is reset for a fresh start!");
     }
+
+    @GetMapping("/migrate-db")
+    public ResponseEntity<String> migrateDb() {
+        String[] tables = {"mlc_discharge", "death_discharge", "maternity_block_discharge", "insurance_block_discharge", "general_side_discharge", "x6", "x7"};
+        StringBuilder result = new StringBuilder("Migration Results:\n");
+        for (String table : tables) {
+            try {
+                jdbcTemplate.execute("ALTER TABLE " + table + " ADD COLUMN income VARCHAR(255);");
+                result.append("✅ Added 'income' to ").append(table).append("\n");
+            } catch (Exception e) {
+                result.append("ℹ️ Skipped ").append(table).append(" (might already exist): ").append(e.getMessage()).append("\n");
+            }
+        }
+        return ResponseEntity.ok(result.toString());
+    }
 }
