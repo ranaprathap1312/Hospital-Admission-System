@@ -289,9 +289,27 @@ public class PatientService {
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
             DischargeEntry entry = new DischargeEntry();
             try {
-                entry.setDestinationTableId(rs.getLong(tableName + "_id"));
+                // Try to find the primary key column. Check "id" first, then "tableName_id", then "patient_tableName_id"
+                boolean idSet = false;
+                try {
+                    entry.setDestinationTableId(rs.getLong("id"));
+                    idSet = true;
+                } catch (Exception e) {}
+                
+                if (!idSet) {
+                    try {
+                        entry.setDestinationTableId(rs.getLong(tableName + "_id"));
+                        idSet = true;
+                    } catch (Exception e) {}
+                }
+                
+                if (!idSet) {
+                    try {
+                        entry.setDestinationTableId(rs.getLong("patient_" + tableName + "_id"));
+                    } catch (Exception e) {}
+                }
             } catch (Exception e) {
-                // Ignore if column doesn't exist (e.g. x6, x7)
+                // Ignore if all attempts fail
             }
             entry.setCustomPatientId(rs.getString("custom_patient_id"));
             entry.setPatientName(rs.getString("patient_name"));
