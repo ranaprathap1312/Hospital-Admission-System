@@ -22,7 +22,7 @@ public class DataSeeder implements CommandLineRunner {
     public void run(String... args) throws Exception {
         // Always drop the FK constraint that blocks patient discharge (Hibernate re-adds it on update)
         try {
-            jdbcTemplate.execute("ALTER TABLE discharge_entry DROP CONSTRAINT IF EXISTS fkc4xnbbu1vvuk88e6h5uocpvc");
+            jdbcTemplate.execute("ALTER TABLE discharge_entry DROP CONSTRAINT IF EXISTS fkc4xnbbu1vvuk88e6h5uoqcpvc");
             System.out.println("Startup: Dropped FK constraint on discharge_entry (if existed)");
         } catch (Exception ex) {
             System.out.println("Startup: FK drop skipped - " + ex.getMessage());
