@@ -180,11 +180,11 @@ public class PatientService {
             if (destinationTable != null && destinationTable.matches("x[6-7]|mlc_discharge|death_discharge|maternity_block_discharge|insurance_block_discharge|general_side_discharge")) {
                 
                 // Ensure the custom auto-increment ID column exists
-                String idColumnName = "patient_" + destinationTable + "_id";
+                String newIdColumnName = "patient_" + destinationTable + "_id";
                 try {
-                    jdbcTemplate.execute("ALTER TABLE " + destinationTable + " ADD COLUMN IF NOT EXISTS " + idColumnName + " SERIAL");
+                    jdbcTemplate.execute("ALTER TABLE " + destinationTable + " ADD COLUMN IF NOT EXISTS " + newIdColumnName + " SERIAL");
                 } catch (Exception e) {
-                    System.err.println("Could not add auto-increment column " + idColumnName + " to " + destinationTable + ": " + e.getMessage());
+                    System.err.println("Could not add auto-increment column " + newIdColumnName + " to " + destinationTable + ": " + e.getMessage());
                 }
                 String sql = "INSERT INTO " + destinationTable + " (" +
                     "custom_patient_id, discharge_type, patient_db_id, discharge_ward, " +
