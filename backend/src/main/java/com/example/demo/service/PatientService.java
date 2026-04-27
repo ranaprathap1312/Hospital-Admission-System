@@ -178,6 +178,14 @@ public class PatientService {
         // Step 3: Replicate to destination table (mlc_discharge, death_discharge, etc.)
         try {
             if (destinationTable != null && destinationTable.matches("x[6-7]|mlc_discharge|death_discharge|maternity_block_discharge|insurance_block_discharge|general_side_discharge")) {
+                
+                // Ensure the custom auto-increment ID column exists
+                String idColumnName = "patient_" + destinationTable + "_id";
+                try {
+                    jdbcTemplate.execute("ALTER TABLE " + destinationTable + " ADD COLUMN IF NOT EXISTS " + idColumnName + " SERIAL");
+                } catch (Exception e) {
+                    System.err.println("Could not add auto-increment column " + idColumnName + " to " + destinationTable + ": " + e.getMessage());
+                }
                 String sql = "INSERT INTO " + destinationTable + " (" +
                     "custom_patient_id, discharge_type, patient_db_id, discharge_ward, " +
                     "ar_no, case_type, patient_name, age, gender, mother_name, mobile_no, " +
@@ -289,23 +297,24 @@ public class PatientService {
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
             DischargeEntry entry = new DischargeEntry();
             try {
-                // Try to find the primary key column. Check "id" first, then "tableName_id", then "patient_tableName_id"
+                // Try to find the primary key column. Check "patient_tableName_id" first, then "id", then "tableName_id"
                 boolean idSet = false;
                 try {
-                    entry.setDestinationTableId(rs.getLong("id"));
+                    entry.setDestinationTableId(rs.getLong("patient_" + tableName + "_id"));
                     idSet = true;
                 } catch (Exception e) {}
                 
                 if (!idSet) {
                     try {
-                        entry.setDestinationTableId(rs.getLong(tableName + "_id"));
+                        entry.setDestinationTableId(rs.getLong("id"));
                         idSet = true;
                     } catch (Exception e) {}
                 }
                 
                 if (!idSet) {
                     try {
-                        entry.setDestinationTableId(rs.getLong("patient_" + tableName + "_id"));
+                        entry.setDestinationTableId(rs.getLong(tableName + "_id"));
+                        idSet = true;
                     } catch (Exception e) {}
                 }
             } catch (Exception e) {
