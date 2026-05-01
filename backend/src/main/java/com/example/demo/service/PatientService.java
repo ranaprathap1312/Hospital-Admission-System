@@ -271,37 +271,18 @@ public class PatientService {
                     "ar_no, case_type, patient_name, age, gender, mother_name, mobile_no, " +
                     "aadhar_no, occupation, income, address, admission_ward, " +
                     "admission_date, admission_time, discharge_date, discharge_time, summary" +
-                    ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    "admission_date, admission_time, discharge_date, discharge_time, summary" +
+                    ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
 
-                KeyHolder keyHolder = new GeneratedKeyHolder();
-                jdbcTemplate.update(connection -> {
-                    PreparedStatement ps = connection.prepareStatement(sql, new String[]{"id"});
-                    ps.setObject(1, patient.getPatientId());
-                    ps.setObject(2, dischargeType);
-                    ps.setObject(3, patient.getId());
-                    ps.setObject(4, dischargeWard);
-                    ps.setObject(5, patient.getArNo());
-                    ps.setObject(6, finalCaseType);
-                    ps.setObject(7, patient.getPatientName());
-                    ps.setObject(8, patient.getAge());
-                    ps.setObject(9, patient.getGender());
-                    ps.setObject(10, patient.getMotherName());
-                    ps.setObject(11, patient.getMobileNo());
-                    ps.setObject(12, patient.getAadharNo());
-                    ps.setObject(13, patient.getOccupation());
-                    ps.setObject(14, patient.getIncome());
-                    ps.setObject(15, patient.getAddress());
-                    ps.setObject(16, patient.getWardName());
-                    ps.setObject(17, patient.getAdmissionDate());
-                    ps.setObject(18, patient.getAdmissionTime());
-                    ps.setObject(19, finalDischargeDate);
-                    ps.setObject(20, finalDischargeTime);
-                    ps.setObject(21, summaryText);
-                    return ps;
-                }, keyHolder);
+                Long baseId = jdbcTemplate.queryForObject(sql, Long.class, 
+                    patient.getPatientId(), dischargeType, patient.getId(), dischargeWard,
+                    patient.getArNo(), finalCaseType, patient.getPatientName(), patient.getAge(), patient.getGender(),
+                    patient.getMotherName(), patient.getMobileNo(), patient.getAadharNo(), patient.getOccupation(),
+                    patient.getIncome(), patient.getAddress(), patient.getWardName(),
+                    patient.getAdmissionDate(), patient.getAdmissionTime(), finalDischargeDate, finalDischargeTime, summaryText
+                );
 
-                if (keyHolder.getKey() != null) {
-                    long baseId = keyHolder.getKey().longValue();
+                if (baseId != null) {
                     String formattedId = java.time.Year.now().getValue() + "-" + baseId;
                     jdbcTemplate.update("UPDATE " + destinationTable + " SET " + newIdColumnName + " = ? WHERE id = ?", formattedId, baseId);
                     generatedId = formattedId;
