@@ -193,7 +193,7 @@ public class PatientService {
         return savedPatient;
     }
 
-    public Long dischargePatient(String patientId, String dischargeType, String dischargeWard, String dischargeDateStr, String destinationTable, String updatedCaseType, String summaryText) {
+    public String dischargePatient(String patientId, String dischargeType, String dischargeWard, String dischargeDateStr, String destinationTable, String updatedCaseType, String summaryText) {
         Patient patient = patientRepository.findByPatientId(patientId)
             .orElseThrow(() -> new RuntimeException("Patient not found with ID: " + patientId));
 
@@ -251,7 +251,7 @@ public class PatientService {
             "DISCHARGED", finalCaseType, patientId
         );
 
-        Long generatedId = null;
+        String generatedId = null;
 
         // Step 3: Replicate to destination table (mlc_discharge, death_discharge, etc.)
         try {
@@ -260,9 +260,11 @@ public class PatientService {
                 // Ensure the custom auto-increment ID column exists
                 String newIdColumnName = "patient_" + destinationTable + "_id";
                 try {
-                    jdbcTemplate.execute("ALTER TABLE " + destinationTable + " ADD COLUMN IF NOT EXISTS " + newIdColumnName + " SERIAL");
+                    jdbcTemplate.execute("ALTER TABLE " + destinationTable + " ADD COLUMN IF NOT EXISTS " + newIdColumnName + " VARCHAR(255)");
+                    jdbcTemplate.execute("ALTER TABLE " + destinationTable + " ALTER COLUMN " + newIdColumnName + " TYPE VARCHAR(255) USING " + newIdColumnName + "::varchar");
+                    jdbcTemplate.execute("ALTER TABLE " + destinationTable + " ALTER COLUMN " + newIdColumnName + " DROP DEFAULT");
                 } catch (Exception e) {
-                    System.err.println("Could not add auto-increment column " + newIdColumnName + " to " + destinationTable + ": " + e.getMessage());
+                    System.err.println("Could not alter column " + newIdColumnName + " to VARCHAR in " + destinationTable + ": " + e.getMessage());
                 }
                 String sql = "INSERT INTO " + destinationTable + " (" +
                     "custom_patient_id, discharge_type, patient_db_id, discharge_ward, " +
@@ -273,7 +275,7 @@ public class PatientService {
 
                 KeyHolder keyHolder = new GeneratedKeyHolder();
                 jdbcTemplate.update(connection -> {
-                    PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                    PreparedStatement ps = connection.prepareStatement(sql, new String[]{"id"});
                     ps.setObject(1, patient.getPatientId());
                     ps.setObject(2, dischargeType);
                     ps.setObject(3, patient.getId());
@@ -298,15 +300,11 @@ public class PatientService {
                     return ps;
                 }, keyHolder);
 
-                if (keyHolder.getKeys() != null && !keyHolder.getKeys().isEmpty()) {
-                    String idColumnName = destinationTable + "_id";
-                    if (keyHolder.getKeys().containsKey(idColumnName)) {
-                        generatedId = ((Number) keyHolder.getKeys().get(idColumnName)).longValue();
-                    } else if (keyHolder.getKeys().containsKey("id")) {
-                        generatedId = ((Number) keyHolder.getKeys().get("id")).longValue();
-                    } else {
-                        generatedId = ((Number) keyHolder.getKeys().values().iterator().next()).longValue();
-                    }
+                if (keyHolder.getKey() != null) {
+                    long baseId = keyHolder.getKey().longValue();
+                    String formattedId = java.time.Year.now().getValue() + "-" + baseId;
+                    jdbcTemplate.update("UPDATE " + destinationTable + " SET " + newIdColumnName + " = ? WHERE id = ?", formattedId, baseId);
+                    generatedId = formattedId;
                 }
             }
         } catch (Exception e) {
@@ -322,11 +320,12 @@ public class PatientService {
 
 
     @Transactional
-    public void undoDischarge(String patientId, String destinationTable, Long destinationId) {
+    public void undoDischarge(String patientId, String destinationTable, String destinationId) {
         // 1. Delete from destination table if it was created
-        if (destinationTable != null && !destinationTable.isEmpty() && destinationId != null) {
+        if (destinationTable != null && !destinationTable.isEmpty() && destinationId != null && !destinationId.trim().isEmpty()) {
             try {
-                String sql = "DELETE FROM " + destinationTable + " WHERE " + destinationTable + "_id = ?";
+                String idCol = "patient_" + destinationTable + "_id";
+                String sql = "DELETE FROM " + destinationTable + " WHERE " + idCol + " = ?";
                 jdbcTemplate.update(sql, destinationId);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -378,20 +377,20 @@ public class PatientService {
                 // Try to find the primary key column. Check "patient_tableName_id" first, then "id", then "tableName_id"
                 boolean idSet = false;
                 try {
-                    entry.setDestinationTableId(rs.getLong("patient_" + tableName + "_id"));
+                    entry.setDestinationTableId(rs.getString("patient_" + tableName + "_id"));
                     idSet = true;
                 } catch (Exception e) {}
                 
                 if (!idSet) {
                     try {
-                        entry.setDestinationTableId(rs.getLong("id"));
+                        entry.setDestinationTableId(rs.getString("id"));
                         idSet = true;
                     } catch (Exception e) {}
                 }
                 
                 if (!idSet) {
                     try {
-                        entry.setDestinationTableId(rs.getLong(tableName + "_id"));
+                        entry.setDestinationTableId(rs.getString(tableName + "_id"));
                         idSet = true;
                     } catch (Exception e) {}
                 }

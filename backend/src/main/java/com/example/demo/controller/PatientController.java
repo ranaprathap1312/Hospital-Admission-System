@@ -186,7 +186,7 @@ public class PatientController {
             String destinationTable = payload.get("destinationTable");
             String caseType = payload.get("caseType");
             String summaryText = payload.get("summaryText");
-            Long destinationId = patientService.dischargePatient(patientId, dischargeType, dischargeWard, dischargeDate, destinationTable, caseType, summaryText);
+            String destinationId = patientService.dischargePatient(patientId, dischargeType, dischargeWard, dischargeDate, destinationTable, caseType, summaryText);
             return ResponseEntity.ok(java.util.Collections.singletonMap("destinationId", destinationId));
         } catch (RuntimeException e) {
             System.err.println("Discharge error for patient " + patientId + ": " + e.getMessage());
@@ -206,8 +206,7 @@ public class PatientController {
         try {
             String destinationTable = payload.get("destinationTable");
             String destinationIdStr = payload.get("destinationId");
-            Long destinationId = destinationIdStr != null ? Long.parseLong(destinationIdStr) : null;
-            patientService.undoDischarge(patientId, destinationTable, destinationId);
+            patientService.undoDischarge(patientId, destinationTable, destinationIdStr);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

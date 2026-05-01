@@ -59,7 +59,7 @@ public class DischargeEntry {
     private String summary;
 
     @Transient
-    private Long destinationTableId;
+    private String destinationTableId;
 
     public DischargeEntry() {
     }
@@ -144,6 +144,6 @@ public class DischargeEntry {
     public String getSummary() { return summary; }
     public void setSummary(String summary) { this.summary = summary; }
 
-    public Long getDestinationTableId() { return destinationTableId; }
-    public void setDestinationTableId(Long destinationTableId) { this.destinationTableId = destinationTableId; }
+    public String getDestinationTableId() { return destinationTableId; }
+    public void setDestinationTableId(String destinationTableId) { this.destinationTableId = destinationTableId; }
 }
