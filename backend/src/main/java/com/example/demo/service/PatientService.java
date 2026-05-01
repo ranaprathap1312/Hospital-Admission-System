@@ -271,7 +271,6 @@ public class PatientService {
                     "ar_no, case_type, patient_name, age, gender, mother_name, mobile_no, " +
                     "aadhar_no, occupation, income, address, admission_ward, " +
                     "admission_date, admission_time, discharge_date, discharge_time, summary" +
-                    "admission_date, admission_time, discharge_date, discharge_time, summary" +
                     ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
 
                 Long baseId = jdbcTemplate.queryForObject(sql, Long.class, 
