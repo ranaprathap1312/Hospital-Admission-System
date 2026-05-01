@@ -266,6 +266,12 @@ public class PatientService {
                 } catch (Exception e) {
                     System.err.println("Could not alter column " + newIdColumnName + " to VARCHAR in " + destinationTable + ": " + e.getMessage());
                 }
+                
+                // Dynamically ensure new columns exist (auto-healing the DB schema)
+                try { jdbcTemplate.execute("ALTER TABLE " + destinationTable + " ADD COLUMN IF NOT EXISTS income VARCHAR(255)"); } catch (Exception e) {}
+                try { jdbcTemplate.execute("ALTER TABLE " + destinationTable + " ADD COLUMN IF NOT EXISTS summary TEXT"); } catch (Exception e) {}
+                try { jdbcTemplate.execute("ALTER TABLE discharge_entry ADD COLUMN IF NOT EXISTS summary TEXT"); } catch (Exception e) {}
+
                 String sql = "INSERT INTO " + destinationTable + " (" +
                     "custom_patient_id, discharge_type, patient_db_id, discharge_ward, " +
                     "ar_no, case_type, patient_name, age, gender, mother_name, mobile_no, " +
