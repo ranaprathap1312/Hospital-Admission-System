@@ -31,7 +31,8 @@ public class DistributeOfficerAccess {
     public enum Status {
         PENDING_APPROVAL,
         ACTIVE,
-        REJECTED
+        REJECTED,
+        PAUSED
     }
 
     // Getters and Setters

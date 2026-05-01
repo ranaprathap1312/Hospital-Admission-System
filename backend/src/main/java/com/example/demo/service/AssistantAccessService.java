@@ -42,6 +42,8 @@ public class AssistantAccessService {
                     return user;
                 } else if (user.getStatus() == AssistantAccess.Status.PENDING_APPROVAL) {
                     throw new Exception("Account pending approval by higher official.");
+                } else if (user.getStatus() == AssistantAccess.Status.PAUSED) {
+                    throw new Exception("Your access has been temporarily paused by a higher official.");
                 } else {
                     throw new Exception("Account has been rejected.");
                 }
@@ -54,6 +56,34 @@ public class AssistantAccessService {
 
     public List<AssistantAccess> getPendingApprovals() {
         return repository.findByStatus(AssistantAccess.Status.PENDING_APPROVAL);
+    }
+
+    public List<AssistantAccess> getGrantedAccesses() {
+        return repository.findByStatusIn(java.util.Arrays.asList(AssistantAccess.Status.ACTIVE, AssistantAccess.Status.PAUSED));
+    }
+
+    public boolean togglePauseAccess(Long id) {
+        Optional<AssistantAccess> accessOpt = repository.findById(id);
+        if (accessOpt.isPresent()) {
+            AssistantAccess access = accessOpt.get();
+            if (access.getStatus() == AssistantAccess.Status.ACTIVE) {
+                access.setStatus(AssistantAccess.Status.PAUSED);
+            } else if (access.getStatus() == AssistantAccess.Status.PAUSED) {
+                access.setStatus(AssistantAccess.Status.ACTIVE);
+            }
+            repository.save(access);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean removeGrantedAccess(Long id) {
+        Optional<AssistantAccess> accessOpt = repository.findById(id);
+        if (accessOpt.isPresent()) {
+            repository.delete(accessOpt.get());
+            return true;
+        }
+        return false;
     }
 
     public AssistantAccess updateStatus(Long id, AssistantAccess.Status status) throws Exception {

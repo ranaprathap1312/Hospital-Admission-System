@@ -58,4 +58,27 @@ public class AssistantAccessController {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage(), "success", false));
         }
     }
+
+    @GetMapping("/granted")
+    public ResponseEntity<?> getGrantedAccesses() {
+        return ResponseEntity.ok(service.getGrantedAccesses());
+    }
+
+    @PutMapping("/toggle-pause/{id}")
+    public ResponseEntity<?> togglePauseAccess(@PathVariable Long id) {
+        boolean success = service.togglePauseAccess(id);
+        if (success) {
+            return ResponseEntity.ok(Map.of("message", "Access status toggled", "success", true));
+        }
+        return ResponseEntity.badRequest().body(Map.of("message", "Failed to toggle status", "success", false));
+    }
+
+    @DeleteMapping("/remove/{id}")
+    public ResponseEntity<?> removeGrantedAccess(@PathVariable Long id) {
+        boolean success = service.removeGrantedAccess(id);
+        if (success) {
+            return ResponseEntity.ok(Map.of("message", "Access completely removed", "success", true));
+        }
+        return ResponseEntity.badRequest().body(Map.of("message", "Failed to remove access", "success", false));
+    }
 }

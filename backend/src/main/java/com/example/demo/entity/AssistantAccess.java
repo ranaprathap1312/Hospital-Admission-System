@@ -35,7 +35,8 @@ public class AssistantAccess {
     public enum Status {
         PENDING_APPROVAL,
         ACTIVE,
-        REJECTED
+        REJECTED,
+        PAUSED
     }
 
     // Getters and Setters

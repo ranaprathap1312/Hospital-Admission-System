@@ -437,6 +437,12 @@ const DischargePage = () => {
               <div className="success-message no-print" style={{ textAlign: 'center', padding: '2rem 1rem 1rem' }}>
                 <CheckCircle2 size={64} className="success-icon" style={{ margin: '0 auto 1rem auto' }} />
                 <h2 style={{ marginBottom: '1rem' }}>Discharge Successful!</h2>
+                {destinationId && destinationTable && (
+                  <div style={{ backgroundColor: 'var(--bg-color)', padding: '1rem', borderRadius: '0.5rem', marginBottom: '1rem', display: 'inline-block', border: '1px solid var(--border-color)' }}>
+                    <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)' }}>Generated {destinationTable} ID:</p>
+                    <p style={{ margin: '0.25rem 0 0 0', fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--primary-color)' }}>{destinationId}</p>
+                  </div>
+                )}
                 <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '1.5rem', flexWrap: 'wrap' }}>
                   <button className="btn btn-outline" onClick={handleUndoDischarge} style={{ borderColor: 'var(--danger-color)', color: 'var(--danger-color)' }}>
                     Undo Discharge

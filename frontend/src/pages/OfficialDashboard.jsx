@@ -8,6 +8,10 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080
 const OfficialDashboard = () => {
   const [pendingAdmins, setPendingAdmins] = useState([]);
   const [grantedAdmins, setGrantedAdmins] = useState([]);
+  const [grantedBillAccesses, setGrantedBillAccesses] = useState([]);
+  const [grantedStockOfficers, setGrantedStockOfficers] = useState([]);
+  const [grantedDistributeOfficers, setGrantedDistributeOfficers] = useState([]);
+  const [grantedAssistants, setGrantedAssistants] = useState([]);
   const [pendingBillAccesses, setPendingBillAccesses] = useState([]);
   const [pendingStockOfficers, setPendingStockOfficers] = useState([]);
   const [pendingDistributeOfficers, setPendingDistributeOfficers] = useState([]);
@@ -16,6 +20,7 @@ const OfficialDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('admins'); // 'admins', 'billing', 'stock', or 'distribute'
+  const [grantedActiveTab, setGrantedActiveTab] = useState('admins');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -25,14 +30,21 @@ const OfficialDashboard = () => {
   const fetchAllPending = async () => {
     setLoading(true);
     try {
-      const [adminRes, billRes, stockRes, distributeRes, assistantRes, manualEditRes, grantedAdminsRes] = await Promise.all([
+      const [
+        adminRes, billRes, stockRes, distributeRes, assistantRes, manualEditRes, 
+        grantedAdminsRes, grantedBillRes, grantedStockRes, grantedDistributeRes, grantedAssistantRes
+      ] = await Promise.all([
         fetch(`${API_BASE_URL}/api/admin/pending`),
         fetch(`${API_BASE_URL}/api/bill-register-access/pending`),
         fetch(`${API_BASE_URL}/api/stock-officer-access/pending`),
         fetch(`${API_BASE_URL}/api/distribute-officer-access/pending`),
         fetch(`${API_BASE_URL}/api/assistant-access/pending`),
         fetch(`${API_BASE_URL}/api/manual-edit-control`),
-        fetch(`${API_BASE_URL}/api/admin/granted`)
+        fetch(`${API_BASE_URL}/api/admin/granted`),
+        fetch(`${API_BASE_URL}/api/bill-register-access/granted`),
+        fetch(`${API_BASE_URL}/api/stock-officer-access/granted`),
+        fetch(`${API_BASE_URL}/api/distribute-officer-access/granted`),
+        fetch(`${API_BASE_URL}/api/assistant-access/granted`)
       ]);
       
       const adminData = await adminRes.json();
@@ -42,9 +54,17 @@ const OfficialDashboard = () => {
       const assistantData = await assistantRes.json();
       const manualEditData = await manualEditRes.json();
       const grantedAdminsData = await grantedAdminsRes.json();
+      const grantedBillData = await grantedBillRes.json();
+      const grantedStockData = await grantedStockRes.json();
+      const grantedDistributeData = await grantedDistributeRes.json();
+      const grantedAssistantData = await grantedAssistantRes.json();
       
       setPendingAdmins(adminData);
       setGrantedAdmins(grantedAdminsData);
+      setGrantedBillAccesses(grantedBillData);
+      setGrantedStockOfficers(grantedStockData);
+      setGrantedDistributeOfficers(grantedDistributeData);
+      setGrantedAssistants(grantedAssistantData);
       setPendingBillAccesses(billData);
       setPendingStockOfficers(stockData);
       setPendingDistributeOfficers(distributeData);
@@ -69,12 +89,12 @@ const OfficialDashboard = () => {
     }
   };
 
-  const handleTogglePause = async (id) => {
+  const handleTogglePauseGeneric = async (id, endpoint, fetchEndpoint, setter) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/admin/toggle-pause/${id}`, { method: 'PUT' });
+      const response = await fetch(`${API_BASE_URL}${endpoint}/${id}`, { method: 'PUT' });
       if (response.ok) {
-        const res = await fetch(`${API_BASE_URL}/api/admin/granted`);
-        setGrantedAdmins(await res.json());
+        const res = await fetch(`${API_BASE_URL}${fetchEndpoint}`);
+        setter(await res.json());
       } else {
         const data = await response.json();
         alert(data.message || 'Failed to toggle pause');
@@ -84,12 +104,12 @@ const OfficialDashboard = () => {
     }
   };
 
-  const handleRemoveGranted = async (id) => {
+  const handleRemoveGrantedGeneric = async (id, endpoint, fetchEndpoint, setter, dataState) => {
     if (!window.confirm('Are you sure you want to completely remove this granted user?')) return;
     try {
-      const response = await fetch(`${API_BASE_URL}/api/admin/remove/${id}`, { method: 'DELETE' });
+      const response = await fetch(`${API_BASE_URL}${endpoint}/${id}`, { method: 'DELETE' });
       if (response.ok) {
-        setGrantedAdmins(grantedAdmins.filter(admin => admin.id !== id));
+        setter(dataState.filter(user => user.id !== id));
       } else {
         const data = await response.json();
         alert(data.message || 'Failed to remove user');
@@ -306,7 +326,7 @@ const OfficialDashboard = () => {
     );
   };
 
-  const renderGrantedTable = (data) => {
+  const renderGrantedTable = (data, toggleEndpoint, fetchEndpoint, setter, typeField = null, typeLabel = 'Role') => {
     if (data.length === 0) {
       return (
         <div className="empty-state">
@@ -322,6 +342,7 @@ const OfficialDashboard = () => {
         <thead>
           <tr>
             <th>Name</th>
+            {typeField && <th>{typeLabel}</th>}
             <th>Email</th>
             <th>Phone</th>
             <th>Status</th>
@@ -332,6 +353,7 @@ const OfficialDashboard = () => {
           {data.map(item => (
             <tr key={item.id}>
               <td><strong>{item.name}</strong></td>
+              {typeField && <td><span className="badge" style={{backgroundColor: '#e2e8f0', padding: '0.25rem 0.5rem', borderRadius: '0.25rem', color: '#1e293b', fontWeight: '500'}}>{item[typeField]}</span></td>}
               <td>{item.email}</td>
               <td>{item.phone || item.phoneNumber || 'N/A'}</td>
               <td>
@@ -342,14 +364,14 @@ const OfficialDashboard = () => {
               <td className="action-cell">
                 <button 
                   className={`btn-action ${item.status === 'PAUSED' ? 'approve' : 'reject'}`} 
-                  onClick={() => handleTogglePause(item.id)}
+                  onClick={() => handleTogglePauseGeneric(item.id, toggleEndpoint, fetchEndpoint, setter)}
                   title={item.status === 'PAUSED' ? 'Resume Access' : 'Pause Access'}
                 >
                   {item.status === 'PAUSED' ? <Check size={18} /> : <Clock size={18} />} {item.status === 'PAUSED' ? 'Resume' : 'Pause'}
                 </button>
                 <button 
                   className="btn-action reject" 
-                  onClick={() => handleRemoveGranted(item.id)}
+                  onClick={() => handleRemoveGrantedGeneric(item.id, toggleEndpoint.replace('toggle-pause', 'remove'), fetchEndpoint, setter, data)}
                   title="Completely Remove Access"
                 >
                   <X size={18} /> Remove
@@ -359,6 +381,25 @@ const OfficialDashboard = () => {
           ))}
         </tbody>
       </table>
+    );
+  };
+
+  const renderGrantedSection = () => {
+    return (
+      <div>
+        <div className="tabs-container" style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+          <button className={`btn ${grantedActiveTab === 'admins' ? 'btn-primary' : 'btn-outline'}`} onClick={() => setGrantedActiveTab('admins')} style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}>Admins</button>
+          <button className={`btn ${grantedActiveTab === 'billing' ? 'btn-primary' : 'btn-outline'}`} onClick={() => setGrantedActiveTab('billing')} style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}>Billing</button>
+          <button className={`btn ${grantedActiveTab === 'stock' ? 'btn-primary' : 'btn-outline'}`} onClick={() => setGrantedActiveTab('stock')} style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}>Stock</button>
+          <button className={`btn ${grantedActiveTab === 'distribute' ? 'btn-primary' : 'btn-outline'}`} onClick={() => setGrantedActiveTab('distribute')} style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}>Distribute</button>
+          <button className={`btn ${grantedActiveTab === 'assistant' ? 'btn-primary' : 'btn-outline'}`} onClick={() => setGrantedActiveTab('assistant')} style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}>Assistant</button>
+        </div>
+        {grantedActiveTab === 'admins' && renderGrantedTable(grantedAdmins, '/api/admin/toggle-pause', '/api/admin/granted', setGrantedAdmins)}
+        {grantedActiveTab === 'billing' && renderGrantedTable(grantedBillAccesses, '/api/bill-register-access/toggle-pause', '/api/bill-register-access/granted', setGrantedBillAccesses)}
+        {grantedActiveTab === 'stock' && renderGrantedTable(grantedStockOfficers, '/api/stock-officer-access/toggle-pause', '/api/stock-officer-access/granted', setGrantedStockOfficers, 'officerType', 'Officer Type')}
+        {grantedActiveTab === 'distribute' && renderGrantedTable(grantedDistributeOfficers, '/api/distribute-officer-access/toggle-pause', '/api/distribute-officer-access/granted', setGrantedDistributeOfficers)}
+        {grantedActiveTab === 'assistant' && renderGrantedTable(grantedAssistants, '/api/assistant-access/toggle-pause', '/api/assistant-access/granted', setGrantedAssistants, 'assistantType', 'Assistant Level')}
+      </div>
     );
   };
 
@@ -445,7 +486,7 @@ const OfficialDashboard = () => {
             onClick={() => setActiveTab('granted')}
             style={{ marginLeft: 'auto', backgroundColor: activeTab === 'granted' ? '#10b981' : 'transparent', color: activeTab === 'granted' ? '#fff' : '#10b981', borderColor: '#10b981' }}
           >
-            Granted Users ({grantedAdmins.length})
+            Granted Users ({grantedAdmins.length + grantedBillAccesses.length + grantedStockOfficers.length + grantedDistributeOfficers.length + grantedAssistants.length})
           </button>
         </div>
 
@@ -462,7 +503,7 @@ const OfficialDashboard = () => {
               : activeTab === 'distribute'
               ? renderTable(pendingDistributeOfficers, handleApproveDistributeOfficer, handleRejectDistributeOfficer)
               : activeTab === 'granted'
-              ? renderGrantedTable(grantedAdmins)
+              ? renderGrantedSection()
               : renderTable(pendingAssistants, handleApproveAssistant, handleRejectAssistant, 'assistantType', 'Assistant Level')
           )}
         </div>

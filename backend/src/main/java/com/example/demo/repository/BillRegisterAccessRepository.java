@@ -12,4 +12,5 @@ public interface BillRegisterAccessRepository extends JpaRepository<BillRegister
     Optional<BillRegisterAccess> findByEmail(String email);
     Optional<BillRegisterAccess> findByPhone(String phone);
     List<BillRegisterAccess> findByStatus(String status);
+    List<BillRegisterAccess> findByStatusIn(List<String> statuses);
 }

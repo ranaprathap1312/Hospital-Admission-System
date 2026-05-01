@@ -12,4 +12,5 @@ public interface AssistantAccessRepository extends JpaRepository<AssistantAccess
     Optional<AssistantAccess> findByEmail(String email);
     Optional<AssistantAccess> findByPhoneNumber(String phoneNumber);
     List<AssistantAccess> findByStatus(AssistantAccess.Status status);
+    List<AssistantAccess> findByStatusIn(List<AssistantAccess.Status> statuses);
 }

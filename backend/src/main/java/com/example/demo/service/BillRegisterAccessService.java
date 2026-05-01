@@ -23,6 +23,8 @@ public class BillRegisterAccessService {
             if (access.getPassword().equals(password)) {
                 if ("PENDING_APPROVAL".equals(access.getStatus())) {
                     throw new RuntimeException("Your account is pending approval from a higher official.");
+                } else if ("PAUSED".equals(access.getStatus())) {
+                    throw new RuntimeException("Your access has been temporarily paused by a higher official.");
                 }
                 
                 access.setUpdatedAt(LocalDateTime.now());
@@ -51,6 +53,35 @@ public class BillRegisterAccessService {
 
     public List<BillRegisterAccess> getPendingAccesses() {
         return repository.findByStatus("PENDING_APPROVAL");
+    }
+
+    public List<BillRegisterAccess> getGrantedAccesses() {
+        return repository.findByStatusIn(java.util.Arrays.asList("ACTIVE", "PAUSED"));
+    }
+
+    public boolean togglePauseAccess(Long id) {
+        Optional<BillRegisterAccess> accessOpt = repository.findById(id);
+        if (accessOpt.isPresent()) {
+            BillRegisterAccess access = accessOpt.get();
+            if ("ACTIVE".equals(access.getStatus())) {
+                access.setStatus("PAUSED");
+            } else if ("PAUSED".equals(access.getStatus())) {
+                access.setStatus("ACTIVE");
+            }
+            access.setUpdatedAt(LocalDateTime.now());
+            repository.save(access);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean removeGrantedAccess(Long id) {
+        Optional<BillRegisterAccess> accessOpt = repository.findById(id);
+        if (accessOpt.isPresent()) {
+            repository.delete(accessOpt.get());
+            return true;
+        }
+        return false;
     }
 
     public boolean approveAccess(Long id) {

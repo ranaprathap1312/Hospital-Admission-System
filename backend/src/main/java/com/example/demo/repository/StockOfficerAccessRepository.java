@@ -12,4 +12,5 @@ public interface StockOfficerAccessRepository extends JpaRepository<StockOfficer
     Optional<StockOfficerAccess> findByEmail(String email);
     Optional<StockOfficerAccess> findByPhoneNumber(String phoneNumber);
     List<StockOfficerAccess> findByStatus(StockOfficerAccess.Status status);
+    List<StockOfficerAccess> findByStatusIn(List<StockOfficerAccess.Status> statuses);
 }

@@ -11,4 +11,5 @@ import java.util.Optional;
 public interface DistributeOfficerAccessRepository extends JpaRepository<DistributeOfficerAccess, Long> {
     Optional<DistributeOfficerAccess> findByEmailOrPhoneNumber(String email, String phoneNumber);
     List<DistributeOfficerAccess> findByStatus(DistributeOfficerAccess.Status status);
+    List<DistributeOfficerAccess> findByStatusIn(List<DistributeOfficerAccess.Status> statuses);
 }

@@ -33,6 +33,9 @@ public class StockOfficerAccessService {
         if (userOpt.isPresent()) {
             StockOfficerAccess user = userOpt.get();
             if (user.getPassword().equals(password)) {
+                if (user.getStatus() == StockOfficerAccess.Status.PAUSED) {
+                    throw new RuntimeException("Your access has been temporarily paused by a higher official.");
+                }
                 if (user.getStatus() != StockOfficerAccess.Status.ACTIVE) {
                     throw new RuntimeException("Account is " + user.getStatus().name() + ". Please wait for higher official approval.");
                 }
@@ -46,6 +49,34 @@ public class StockOfficerAccessService {
 
     public List<StockOfficerAccess> getPendingApprovals() {
         return repository.findByStatus(StockOfficerAccess.Status.PENDING_APPROVAL);
+    }
+
+    public List<StockOfficerAccess> getGrantedAccesses() {
+        return repository.findByStatusIn(java.util.Arrays.asList(StockOfficerAccess.Status.ACTIVE, StockOfficerAccess.Status.PAUSED));
+    }
+
+    public boolean togglePauseAccess(Long id) {
+        Optional<StockOfficerAccess> accessOpt = repository.findById(id);
+        if (accessOpt.isPresent()) {
+            StockOfficerAccess access = accessOpt.get();
+            if (access.getStatus() == StockOfficerAccess.Status.ACTIVE) {
+                access.setStatus(StockOfficerAccess.Status.PAUSED);
+            } else if (access.getStatus() == StockOfficerAccess.Status.PAUSED) {
+                access.setStatus(StockOfficerAccess.Status.ACTIVE);
+            }
+            repository.save(access);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean removeGrantedAccess(Long id) {
+        Optional<StockOfficerAccess> accessOpt = repository.findById(id);
+        if (accessOpt.isPresent()) {
+            repository.delete(accessOpt.get());
+            return true;
+        }
+        return false;
     }
 
     public StockOfficerAccess updateStatus(Long id, StockOfficerAccess.Status status) {

@@ -31,6 +31,8 @@ public class DistributeOfficerAccessService {
                     return user;
                 } else if (user.getStatus() == DistributeOfficerAccess.Status.PENDING_APPROVAL) {
                     throw new RuntimeException("Account is pending approval from higher official");
+                } else if (user.getStatus() == DistributeOfficerAccess.Status.PAUSED) {
+                    throw new RuntimeException("Your access has been temporarily paused by a higher official.");
                 } else {
                     throw new RuntimeException("Account access denied");
                 }
@@ -41,6 +43,34 @@ public class DistributeOfficerAccessService {
 
     public List<DistributeOfficerAccess> getPendingApprovals() {
         return repository.findByStatus(DistributeOfficerAccess.Status.PENDING_APPROVAL);
+    }
+
+    public List<DistributeOfficerAccess> getGrantedAccesses() {
+        return repository.findByStatusIn(java.util.Arrays.asList(DistributeOfficerAccess.Status.ACTIVE, DistributeOfficerAccess.Status.PAUSED));
+    }
+
+    public boolean togglePauseAccess(Long id) {
+        Optional<DistributeOfficerAccess> accessOpt = repository.findById(id);
+        if (accessOpt.isPresent()) {
+            DistributeOfficerAccess access = accessOpt.get();
+            if (access.getStatus() == DistributeOfficerAccess.Status.ACTIVE) {
+                access.setStatus(DistributeOfficerAccess.Status.PAUSED);
+            } else if (access.getStatus() == DistributeOfficerAccess.Status.PAUSED) {
+                access.setStatus(DistributeOfficerAccess.Status.ACTIVE);
+            }
+            repository.save(access);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean removeGrantedAccess(Long id) {
+        Optional<DistributeOfficerAccess> accessOpt = repository.findById(id);
+        if (accessOpt.isPresent()) {
+            repository.delete(accessOpt.get());
+            return true;
+        }
+        return false;
     }
 
     public DistributeOfficerAccess updateStatus(Long id, DistributeOfficerAccess.Status status) {
