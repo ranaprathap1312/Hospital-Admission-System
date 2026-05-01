@@ -239,6 +239,7 @@ const AdminDashboard = () => {
     taluk: 'Vridhachalam',
     district: 'Cuddalore',
     state: 'Tamil Nadu',
+    addressManual: '',
     caseType: '',
     arNo: '',
     gender: ''
@@ -257,6 +258,7 @@ const AdminDashboard = () => {
   const [manualPatientId, setManualPatientId] = useState(false);
   const [manualAdmissionDate, setManualAdmissionDate] = useState(false);
   const [manualOccupationEdit, setManualOccupationEdit] = useState(false);
+  const [manualAddressEdit, setManualAddressEdit] = useState(false);
   const [predictedNextId, setPredictedNextId] = useState('Loading...');
   
   // Global Print Prompt State
@@ -995,7 +997,12 @@ const AdminDashboard = () => {
     try {
       // Perform custom validation
       const errors = {};
-      const requiredFields = ['patientName', 'age', 'gender', 'income', 'aadharNo', 'mobileNo', 'caseType', 'wardName', 'street', 'village', 'taluk', 'district', 'state'];
+      const requiredFields = ['patientName', 'age', 'gender', 'income', 'aadharNo', 'mobileNo', 'caseType', 'wardName'];
+      if (!manualAddressEdit) {
+         requiredFields.push('street', 'village', 'taluk', 'district', 'state');
+      } else {
+         requiredFields.push('addressManual');
+      }
       if (formData.caseType === 'MLC') requiredFields.push('arNo');
 
       requiredFields.forEach(field => {
@@ -1022,7 +1029,7 @@ const AdminDashboard = () => {
         patientId: manualPatientId ? formData.patientId : predictedNextId,
         motherName: formData.relativeName ? `${formData.relationPrefix} ${formData.relativeName}`.trim() : '',
         occupation: manualOccupationEdit ? formData.occupationManual : (formData.occupationCategory ? `${formData.occupationCategory}${formData.occupationType ? ' - ' + formData.occupationType : ''}` : ''),
-        address: `${formData.street}, ${formData.village}, ${formData.taluk}, ${formData.district}, ${formData.state}`
+        address: manualAddressEdit ? formData.addressManual : `${formData.street}, ${formData.village}, ${formData.taluk}, ${formData.district}, ${formData.state}`
       };
 
       const response = await fetch(`${API_BASE_URL}/api/patients/admit`, {
@@ -1065,6 +1072,7 @@ const AdminDashboard = () => {
     setManualPatientId(false);
     setManualAdmissionDate(false);
     setManualOccupationEdit(false);
+    setManualAddressEdit(false);
     setSubmittedData(null);
     fetchNextId(); // Refresh the ID for the new form
     setViewMode('FORM');
@@ -2029,51 +2037,83 @@ const AdminDashboard = () => {
                     </div>
                   </div>
 
-                  <h3 className="section-title" style={{ marginTop: '1.5rem' }}>Address Details</h3>
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Street / Box *</label>
-                      <input type="text" name="street" value={formData.street} onChange={handleChange} required />
-                      {formErrors.street && <span className="error-text">{formErrors.street}</span>}
-                    </div>
-                    <div className="form-group">
-                      <label>Village / Town *</label>
-                      <input type="text" name="village" value={formData.village} onChange={handleChange} required />
-                      {formErrors.village && <span className="error-text">{formErrors.village}</span>}
-                    </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem', marginBottom: '1.5rem' }}>
+                    <h3 className="section-title" style={{ margin: 0, border: 'none', padding: 0 }}>Address Details</h3>
+                    <label style={{ fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                      <input 
+                        type="checkbox" 
+                        checked={manualAddressEdit} 
+                        onChange={(e) => {
+                          setManualAddressEdit(e.target.checked);
+                          setFormData({...formData, street: '', village: '', taluk: 'Vridhachalam', district: 'Cuddalore', state: 'Tamil Nadu', addressManual: ''});
+                        }}
+                      /> Manual Edit
+                    </label>
                   </div>
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Taluk *</label>
-                      <input type="text" name="taluk" value={formData.taluk} onChange={handleChange} required />
-                      {formErrors.taluk && <span className="error-text">{formErrors.taluk}</span>}
+                  
+                  {manualAddressEdit ? (
+                    <div className="form-row">
+                      <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                        <label>Full Address *</label>
+                        <textarea 
+                          name="addressManual" 
+                          rows="3"
+                          placeholder="Enter complete address manually..."
+                          value={formData.addressManual || ''} 
+                          onChange={handleChange} 
+                          required
+                        />
+                        {formErrors.addressManual && <span className="error-text">{formErrors.addressManual}</span>}
+                      </div>
                     </div>
-                    <div className="form-group">
-                      <label>District *</label>
-                      <select name="district" value={formData.district} onChange={handleChange} required>
-                        <option value="">Select District</option>
-                        {formData.state && (indiaData.states.find(s => s.state === formData.state)?.districts || []).map(d => (
-                          <option key={d} value={d}>{d}</option>
-                        ))}
-                      </select>
-                      {formErrors.district && <span className="error-text">{formErrors.district}</span>}
-                    </div>
-                  </div>
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>State *</label>
-                      <select name="state" value={formData.state} onChange={handleChange} required>
-                        <option value="">Select State</option>
-                        {indiaData.states.map(s => (
-                          <option key={s.state} value={s.state}>{s.state}</option>
-                        ))}
-                      </select>
-                      {formErrors.state && <span className="error-text">{formErrors.state}</span>}
-                    </div>
-                    <div className="form-group">
-                      {/* Empty slot for balance */}
-                    </div>
-                  </div>
+                  ) : (
+                    <>
+                      <div className="form-row">
+                        <div className="form-group">
+                          <label>Street / Box *</label>
+                          <input type="text" name="street" value={formData.street} onChange={handleChange} required />
+                          {formErrors.street && <span className="error-text">{formErrors.street}</span>}
+                        </div>
+                        <div className="form-group">
+                          <label>Village / Town *</label>
+                          <input type="text" name="village" value={formData.village} onChange={handleChange} required />
+                          {formErrors.village && <span className="error-text">{formErrors.village}</span>}
+                        </div>
+                      </div>
+                      <div className="form-row">
+                        <div className="form-group">
+                          <label>Taluk *</label>
+                          <input type="text" name="taluk" value={formData.taluk} onChange={handleChange} required />
+                          {formErrors.taluk && <span className="error-text">{formErrors.taluk}</span>}
+                        </div>
+                        <div className="form-group">
+                          <label>District *</label>
+                          <select name="district" value={formData.district} onChange={handleChange} required>
+                            <option value="">Select District</option>
+                            {formData.state && (indiaData.states.find(s => s.state === formData.state)?.districts || []).map(d => (
+                              <option key={d} value={d}>{d}</option>
+                            ))}
+                          </select>
+                          {formErrors.district && <span className="error-text">{formErrors.district}</span>}
+                        </div>
+                      </div>
+                      <div className="form-row">
+                        <div className="form-group">
+                          <label>State *</label>
+                          <select name="state" value={formData.state} onChange={handleChange} required>
+                            <option value="">Select State</option>
+                            {indiaData.states.map(s => (
+                              <option key={s.state} value={s.state}>{s.state}</option>
+                            ))}
+                          </select>
+                          {formErrors.state && <span className="error-text">{formErrors.state}</span>}
+                        </div>
+                        <div className="form-group">
+                          {/* Empty slot for balance */}
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
 
               </div>
