@@ -170,6 +170,50 @@ const AdminDashboard = () => {
     }
   };
 
+  const downloadActiveAsExcel = () => {
+    if (filteredActivePatients.length === 0) return;
+
+    // Define the headers
+    const headers = [
+      'Patient ID', 'Name', 'Age', 'Gender', 'Case Type', 'AR No',
+      'Aadhar No', 'Mobile', 'Ward', 'Admission Date', 'Admission Time',
+      'Occupation', 'Income', 'Relation Name', 'Address'
+    ];
+
+    // Map the filtered patients to rows
+    const rows = filteredActivePatients.map(p => [
+      p.patientId || '',
+      p.patientName || '',
+      p.age || '',
+      p.gender || '',
+      p.caseType || '',
+      p.arNo || '',
+      p.aadharNo || '',
+      p.mobileNo || '',
+      p.wardName || '',
+      p.admissionDate || '',
+      formatTime12Hour(p.admissionTime),
+      p.occupation || '',
+      p.income || '',
+      p.motherName || '',
+      p.address ? `"${p.address.replace(/"/g, '""')}"` : ''
+    ]);
+
+    // Construct the CSV string
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+
+    // Create a Blob and trigger the download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const dateStr = new Date().toISOString().split('T')[0];
+    link.setAttribute('download', `Active_Patients_${dateStr}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const downloadDischargeAsExcel = () => {
     if (filteredDischargeRecords.length === 0) return;
 
@@ -1369,6 +1413,11 @@ const AdminDashboard = () => {
                     <p>No patient records found.</p>
                   ) : (
                     <>
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+                        <button onClick={downloadAsExcel} disabled={filteredPatients.length === 0} className="btn btn-primary" style={{ backgroundColor: '#107c41', borderColor: '#107c41', display: 'flex', alignItems: 'center', gap: '0.5rem', opacity: filteredPatients.length === 0 ? 0.6 : 1 }}>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Download Excel
+                        </button>
+                      </div>
                       <div style={{ overflowX: 'auto' }}>
                         <table className="records-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', whiteSpace: 'nowrap' }}>
                           <thead>
@@ -1465,28 +1514,7 @@ const AdminDashboard = () => {
                         </table>
                       </div>
 
-                      <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
-                        <button
-                          onClick={downloadAsExcel}
-                          disabled={activeTab === 'RECORDS' ? filteredPatients.length === 0 : filteredDischargeRecords.length === 0}
-                          className="btn btn-primary"
-                          style={{
-                            backgroundColor: '#107c41', // Excel Green
-                            borderColor: '#107c41',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.5rem',
-                            opacity: (activeTab === 'RECORDS' ? filteredPatients.length === 0 : filteredDischargeRecords.length === 0) ? 0.6 : 1
-                          }}
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="7 10 12 15 17 10"></polyline>
-                            <line x1="12" y1="15" x2="12" y2="3"></line>
-                          </svg>
-                          Download Excel
-                        </button>
-                      </div>
+
                     </>
                   )}
                 </>
@@ -1500,8 +1528,13 @@ const AdminDashboard = () => {
                     <p>No active patients found.</p>
                   ) : (
                     <>
-                      <div style={{ marginBottom: '0.75rem', fontWeight: '600', color: '#16a34a' }}>
-                        {filteredActivePatients.length} active patient{filteredActivePatients.length !== 1 ? 's' : ''} currently admitted
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                        <div style={{ fontWeight: '600', color: '#16a34a' }}>
+                          {filteredActivePatients.length} active patient{filteredActivePatients.length !== 1 ? 's' : ''} currently admitted
+                        </div>
+                        <button onClick={downloadActiveAsExcel} disabled={filteredActivePatients.length === 0} className="btn btn-primary" style={{ backgroundColor: '#107c41', borderColor: '#107c41', display: 'flex', alignItems: 'center', gap: '0.5rem', opacity: filteredActivePatients.length === 0 ? 0.6 : 1 }}>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Download Excel
+                        </button>
                       </div>
                       <div style={{ overflowX: 'auto' }}>
                         <table className="records-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', whiteSpace: 'nowrap' }}>
@@ -1566,6 +1599,11 @@ const AdminDashboard = () => {
                     <p>No discharge records found.</p>
                   ) : (
                     <>
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+                        <button onClick={downloadDischargeAsExcel} disabled={filteredDischargeRecords.length === 0} className="btn btn-primary" style={{ backgroundColor: '#107c41', borderColor: '#107c41', display: 'flex', alignItems: 'center', gap: '0.5rem', opacity: filteredDischargeRecords.length === 0 ? 0.6 : 1 }}>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Download Excel
+                        </button>
+                      </div>
                       <div style={{ overflowX: 'auto' }}>
                         <table className="records-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', whiteSpace: 'nowrap' }}>
                           <thead>
@@ -1616,28 +1654,7 @@ const AdminDashboard = () => {
                           </tbody>
                         </table>
                       </div>
-                      <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
-                        <button
-                          onClick={activeTab === 'DISCHARGE_RECORDS' ? downloadDischargeAsExcel : (activeTab === 'DESTINATION_RECORDS' ? downloadDestinationAsExcel : downloadAsExcel)}
-                          disabled={(activeTab === 'DISCHARGE_RECORDS' && filteredDischargeRecords.length === 0) || (activeTab === 'DESTINATION_RECORDS' && filteredDestinationRecords.length === 0)}
-                          className="btn btn-primary"
-                          style={{
-                            backgroundColor: '#107c41', // Excel Green
-                            borderColor: '#107c41',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.5rem',
-                            opacity: filteredDischargeRecords.length === 0 ? 0.6 : 1
-                          }}
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="7 10 12 15 17 10"></polyline>
-                            <line x1="12" y1="15" x2="12" y2="3"></line>
-                          </svg>
-                          Download Excel
-                        </button>
-                      </div>
+
                     </>
                   )}
                 </>
@@ -1664,6 +1681,11 @@ const AdminDashboard = () => {
                 <p>No destination records found.</p>
               ) : (
                 <>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+                    <button onClick={downloadDestinationAsExcel} disabled={filteredDestinationRecords.length === 0} className="btn btn-primary" style={{ backgroundColor: '#107c41', borderColor: '#107c41', display: 'flex', alignItems: 'center', gap: '0.5rem', opacity: filteredDestinationRecords.length === 0 ? 0.6 : 1 }}>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Download Excel
+                    </button>
+                  </div>
                   <div style={{ overflowX: 'auto' }}>
                     <table className="records-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', whiteSpace: 'nowrap' }}>
                       <thead>
@@ -1698,28 +1720,7 @@ const AdminDashboard = () => {
                       </tbody>
                     </table>
                   </div>
-                  <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
-                    <button
-                      onClick={downloadDestinationAsExcel}
-                      disabled={filteredDestinationRecords.length === 0}
-                      className="btn btn-primary"
-                      style={{
-                        backgroundColor: '#107c41', // Excel Green
-                        borderColor: '#107c41',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                        opacity: filteredDestinationRecords.length === 0 ? 0.6 : 1
-                      }}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="7 10 12 15 17 10"></polyline>
-                        <line x1="12" y1="15" x2="12" y2="3"></line>
-                      </svg>
-                      Download Excel
-                    </button>
-                  </div>
+
                 </>
               )}
             </>
