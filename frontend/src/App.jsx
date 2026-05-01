@@ -15,6 +15,9 @@ import StockOfficerDashboard from './pages/StockOfficerDashboard';
 import DistributeOfficerLoginPage from './pages/DistributeOfficerLoginPage';
 import DistributeOfficerRegisterPage from './pages/DistributeOfficerRegisterPage';
 import DistributeOfficerDashboard from './pages/DistributeOfficerDashboard';
+import AssistantLoginPage from './pages/AssistantLoginPage';
+import AssistantRegisterPage from './pages/AssistantRegisterPage';
+import AssistantDashboard from './pages/AssistantDashboard';
 import tnLogo from '../asserts/tn_logo.jpg';
 import './App.css';
 
@@ -44,6 +47,9 @@ function App() {
             <Route path="/distribute-login" element={<DistributeOfficerLoginPage />} />
             <Route path="/distribute-register" element={<DistributeOfficerRegisterPage />} />
             <Route path="/distribute-dashboard" element={<DistributeOfficerDashboard />} />
+            <Route path="/assistant-login" element={<AssistantLoginPage />} />
+            <Route path="/assistant-register" element={<AssistantRegisterPage />} />
+            <Route path="/assistant-dashboard" element={<AssistantDashboard />} />
           </Routes>
         </main>
       </div>

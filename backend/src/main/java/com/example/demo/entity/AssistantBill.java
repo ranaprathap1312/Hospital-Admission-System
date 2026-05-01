@@ -5,8 +5,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "distribute_officer_bills")
-public class DistributeOfficerBill {
+@Table(name = "assistant_bills")
+public class AssistantBill {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -15,7 +15,10 @@ public class DistributeOfficerBill {
     @Column(name = "bill_register_no", nullable = false)
     private String billRegisterNo;
 
-    @Column(name = "source_stock_officer", nullable = false)
+    @Column(name = "target_assistant", nullable = false)
+    private String targetAssistant;
+
+    @Column(name = "source_stock_officer")
     private String sourceStockOfficer;
 
     @Column(name = "stock_book_name")
@@ -58,8 +61,8 @@ public class DistributeOfficerBill {
     @Column(name = "supply_to")
     private String supplyTo;
 
-    @Column(name = "distributed_at")
-    private LocalDateTime distributedAt;
+    @Column(name = "forwarded_at")
+    private LocalDateTime forwardedAt;
 
     @Column(name = "status")
     private String status = "PENDING";
@@ -70,6 +73,9 @@ public class DistributeOfficerBill {
 
     public String getBillRegisterNo() { return billRegisterNo; }
     public void setBillRegisterNo(String billRegisterNo) { this.billRegisterNo = billRegisterNo; }
+
+    public String getTargetAssistant() { return targetAssistant; }
+    public void setTargetAssistant(String targetAssistant) { this.targetAssistant = targetAssistant; }
 
     public String getSourceStockOfficer() { return sourceStockOfficer; }
     public void setSourceStockOfficer(String sourceStockOfficer) { this.sourceStockOfficer = sourceStockOfficer; }
@@ -113,8 +119,8 @@ public class DistributeOfficerBill {
     public String getSupplyTo() { return supplyTo; }
     public void setSupplyTo(String supplyTo) { this.supplyTo = supplyTo; }
 
-    public LocalDateTime getDistributedAt() { return distributedAt; }
-    public void setDistributedAt(LocalDateTime distributedAt) { this.distributedAt = distributedAt; }
+    public LocalDateTime getForwardedAt() { return forwardedAt; }
+    public void setForwardedAt(LocalDateTime forwardedAt) { this.forwardedAt = forwardedAt; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }

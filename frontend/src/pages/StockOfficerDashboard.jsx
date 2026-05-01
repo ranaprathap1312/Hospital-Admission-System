@@ -141,99 +141,113 @@ const StockOfficerDashboard = () => {
 
           {error && <div className="error-alert">{error}</div>}
 
-          <div className="bills-grid">
+          <div className="table-responsive" style={{ backgroundColor: 'white', borderRadius: '0.5rem', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
             {loading ? (
-              <div className="loading-state">Loading your bills...</div>
+              <div className="loading-state" style={{ padding: '2rem', textAlign: 'center' }}>Loading your bills...</div>
             ) : bills.length === 0 ? (
-              <div className="empty-state">
-                <Package size={48} className="empty-icon" />
+              <div className="empty-state" style={{ padding: '3rem', textAlign: 'center' }}>
+                <Package size={48} className="empty-icon" style={{ margin: '0 auto 1rem', color: '#6366f1' }} />
                 <h3>No Bills Assigned</h3>
                 <p>You have no bills forwarded to you at this time.</p>
               </div>
             ) : (
-              bills.map(bill => (
-                <div key={bill.id} className="bill-card">
-                  <div className="bill-card-header">
-                    <span className="bill-number">{bill.billRegisterNo}</span>
-                    <span className="bill-date"><Calendar size={14} /> {bill.receivedDate || 'N/A'}</span>
-                  </div>
-                  
-                  <div className="bill-card-body">
-                    <div className="bill-company">
-                      <strong>{bill.companyNameAndAddress || 'Unknown Company'}</strong>
-                    </div>
-                    
-                    <div className="bill-details-grid">
-                      <div className="detail-item">
-                        <span className="detail-label">Invoice No:</span>
-                        <span className="detail-value">{bill.invoiceNo || 'N/A'}</span>
-                      </div>
-                      <div className="detail-item">
-                        <span className="detail-label">Supply Order:</span>
-                        <span className="detail-value">{bill.supplyOrderNo || 'N/A'}</span>
-                      </div>
-                      <div className="detail-item full-width amount-item">
-                        <span className="detail-label">Total Amount:</span>
-                        <span className="detail-value amount-value">
-                          <IndianRupee size={16} />
-                          {bill.amount ? bill.amount.toFixed(2) : '0.00'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bill-card-footer" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
-                    <div className="action-inputs" style={{ display: 'flex', gap: '1rem', width: '100%', marginBottom: '1rem' }}>
-                      <input 
-                        type="text" 
-                        placeholder="Stock Book Name *" 
-                        value={billInputs[bill.id]?.stockBookName || ''}
-                        onChange={(e) => handleInputChange(bill.id, 'stockBookName', e.target.value)}
-                        style={{ flex: 1, padding: '0.5rem', borderRadius: '0.25rem', border: '1px solid #cbd5e1' }}
-                      />
-                      <input 
-                        type="text" 
-                        placeholder="Page No *" 
-                        value={billInputs[bill.id]?.pageNo || ''}
-                        onChange={(e) => handleInputChange(bill.id, 'pageNo', e.target.value)}
-                        style={{ flex: 1, padding: '0.5rem', borderRadius: '0.25rem', border: '1px solid #cbd5e1' }}
-                      />
-                    </div>
-                    
-                    <div className="action-buttons" style={{ display: 'flex', gap: '1rem', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div style={{ display: 'flex', gap: '0.5rem' }}>
-                        <button 
-                          className="btn" 
-                          style={{ backgroundColor: '#ef4444', color: 'white', padding: '0.5rem 1rem', fontSize: '0.9rem' }}
-                          onClick={() => handleProcessAction(bill.id, 'REJECT')}
-                        >
-                          Reject
-                        </button>
-                        <button 
-                          className="btn" 
-                          style={{ backgroundColor: '#10b981', color: 'white', padding: '0.5rem 1rem', fontSize: '0.9rem' }}
-                          onClick={() => handleProcessAction(bill.id, 'DISTRIBUTE')}
-                        >
-                          Move to Distribute Officer
-                        </button>
-                      </div>
-                      
-                      {bill.attachedInvoiceName ? (
-                        <button 
-                          className="btn-download" 
-                          onClick={() => handleDownload(bill.id, bill.attachedInvoiceName)}
-                          title={bill.attachedInvoiceName}
-                          style={{ padding: '0.5rem 1rem', margin: 0 }}
-                        >
-                          <Download size={18} /> Excel
-                        </button>
-                      ) : (
-                        <span className="no-attachment">No Attachment</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))
+              <table className="table table-bordered table-hover" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                <thead style={{ backgroundColor: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
+                  <tr>
+                    <th style={{ padding: '1rem', color: '#475569', fontWeight: '600' }}>Bill Reg No</th>
+                    <th style={{ padding: '1rem', color: '#475569', fontWeight: '600' }}>Received Date</th>
+                    <th style={{ padding: '1rem', color: '#475569', fontWeight: '600' }}>Company Name & Address</th>
+                    <th style={{ padding: '1rem', color: '#475569', fontWeight: '600' }}>Invoice No</th>
+                    <th style={{ padding: '1rem', color: '#475569', fontWeight: '600' }}>Invoice Date</th>
+                    <th style={{ padding: '1rem', color: '#475569', fontWeight: '600' }}>Supply Order No</th>
+                    <th style={{ padding: '1rem', color: '#475569', fontWeight: '600' }}>Supply Order Date</th>
+                    <th style={{ padding: '1rem', color: '#475569', fontWeight: '600' }}>Supply To</th>
+                    <th style={{ padding: '1rem', color: '#475569', fontWeight: '600' }}>Amount</th>
+                    <th style={{ padding: '1rem', color: '#475569', fontWeight: '600', minWidth: '250px' }}>Processing Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {bills.map(bill => (
+                    <tr key={bill.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                      <td style={{ padding: '1rem', verticalAlign: 'top', fontWeight: 'bold', color: '#1e293b' }}>
+                        {bill.billRegisterNo}
+                      </td>
+                      <td style={{ padding: '1rem', verticalAlign: 'top', whiteSpace: 'nowrap' }}>
+                        <Calendar size={12} style={{marginRight:'4px'}}/> {bill.receivedDate || 'N/A'}
+                      </td>
+                      <td style={{ padding: '1rem', verticalAlign: 'top', maxWidth: '200px' }}>
+                        {bill.companyNameAndAddress || 'N/A'}
+                      </td>
+                      <td style={{ padding: '1rem', verticalAlign: 'top' }}>
+                        {bill.invoiceNo || 'N/A'}
+                      </td>
+                      <td style={{ padding: '1rem', verticalAlign: 'top', whiteSpace: 'nowrap' }}>
+                        {bill.invoiceDate || 'N/A'}
+                      </td>
+                      <td style={{ padding: '1rem', verticalAlign: 'top' }}>
+                        {bill.supplyOrderNo || 'N/A'}
+                      </td>
+                      <td style={{ padding: '1rem', verticalAlign: 'top', whiteSpace: 'nowrap' }}>
+                        {bill.supplyOrderDate || 'N/A'}
+                      </td>
+                      <td style={{ padding: '1rem', verticalAlign: 'top' }}>
+                        {bill.supplyTo || 'N/A'}
+                      </td>
+                      <td style={{ padding: '1rem', verticalAlign: 'top', fontWeight: 'bold', color: '#059669' }}>
+                        ₹{bill.amount ? bill.amount.toFixed(2) : '0.00'}
+                      </td>
+                      <td style={{ padding: '1rem', verticalAlign: 'top' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                          <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <input 
+                              type="text" 
+                              placeholder="Stock Book Name *" 
+                              value={billInputs[bill.id]?.stockBookName || ''}
+                              onChange={(e) => handleInputChange(bill.id, 'stockBookName', e.target.value)}
+                              style={{ flex: 1, padding: '0.4rem', borderRadius: '0.25rem', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
+                            />
+                            <input 
+                              type="text" 
+                              placeholder="Page No *" 
+                              value={billInputs[bill.id]?.pageNo || ''}
+                              onChange={(e) => handleInputChange(bill.id, 'pageNo', e.target.value)}
+                              style={{ width: '80px', padding: '0.4rem', borderRadius: '0.25rem', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
+                            />
+                          </div>
+                          
+                          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                            <button 
+                              className="btn" 
+                              style={{ flex: 1, backgroundColor: '#10b981', color: 'white', padding: '0.4rem', fontSize: '0.85rem', border: 'none', borderRadius: '0.25rem', cursor: 'pointer' }}
+                              onClick={() => handleProcessAction(bill.id, 'DISTRIBUTE')}
+                            >
+                              Move to Distribute
+                            </button>
+                            <button 
+                              className="btn" 
+                              style={{ backgroundColor: '#ef4444', color: 'white', padding: '0.4rem 0.75rem', fontSize: '0.85rem', border: 'none', borderRadius: '0.25rem', cursor: 'pointer' }}
+                              onClick={() => handleProcessAction(bill.id, 'REJECT')}
+                            >
+                              Reject
+                            </button>
+                            
+                            {bill.attachedInvoiceName && (
+                              <button 
+                                className="btn-download" 
+                                onClick={() => handleDownload(bill.id, bill.attachedInvoiceName)}
+                                title={bill.attachedInvoiceName}
+                                style={{ padding: '0.4rem', fontSize: '0.85rem', backgroundColor: '#f1f5f9', color: '#334155', border: '1px solid #cbd5e1', borderRadius: '0.25rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                              >
+                                <Download size={14} />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             )}
           </div>
         </div>

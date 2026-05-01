@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldPlus, Activity, Stethoscope, ChevronRight, ChevronDown } from 'lucide-react';
+import { ShieldPlus, Activity, Stethoscope, ChevronRight, ChevronDown, Users, Truck } from 'lucide-react';
 import './LandingPage.css';
 
 const LandingPage = () => {
@@ -46,6 +46,7 @@ const LandingPage = () => {
                   <Link to="/bill-login" className="dropdown-item">Bill Register Login</Link>
                   <Link to="/stock-login" className="dropdown-item">Stock Officer Login</Link>
                   <Link to="/distribute-login" className="dropdown-item">Distribute Officer Login</Link>
+                  <Link to="/assistant-login" className="dropdown-item">Assistant Login</Link>
                 </div>
               )}
             </div>

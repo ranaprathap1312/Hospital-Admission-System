@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -21,6 +22,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/stock-officer-bills")
+@Transactional
 public class StockOfficerBillController {
 
     @Autowired
@@ -32,10 +34,20 @@ public class StockOfficerBillController {
     @Autowired
     private DistributeOfficerBillRepository distributeOfficerBillRepository;
 
+    @GetMapping("/test")
+    public ResponseEntity<String> test() {
+        return ResponseEntity.ok("Controller is reachable");
+    }
+
     @GetMapping("/officer/{officerType}")
-    public ResponseEntity<List<StockOfficerBill>> getBillsByOfficer(@PathVariable String officerType) {
-        List<StockOfficerBill> bills = repository.findByTargetOfficerAndStatusOrderByCreatedAtDesc(officerType, "PENDING");
-        return ResponseEntity.ok(bills);
+    public ResponseEntity<?> getBillsByOfficer(@PathVariable String officerType) {
+        try {
+            List<StockOfficerBill> bills = repository.findByTargetOfficerAndStatusOrderByCreatedAtDesc(officerType, "PENDING");
+            return ResponseEntity.ok(bills);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("error", e.getMessage(), "cause", e.getCause() != null ? e.getCause().getMessage() : ""));
+        }
     }
 
     @PostMapping("/{id}/process")

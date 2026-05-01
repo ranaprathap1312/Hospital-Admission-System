@@ -10,6 +10,7 @@ const OfficialDashboard = () => {
   const [pendingBillAccesses, setPendingBillAccesses] = useState([]);
   const [pendingStockOfficers, setPendingStockOfficers] = useState([]);
   const [pendingDistributeOfficers, setPendingDistributeOfficers] = useState([]);
+  const [pendingAssistants, setPendingAssistants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('admins'); // 'admins', 'billing', 'stock', or 'distribute'
@@ -22,22 +23,25 @@ const OfficialDashboard = () => {
   const fetchAllPending = async () => {
     setLoading(true);
     try {
-      const [adminRes, billRes, stockRes, distributeRes] = await Promise.all([
+      const [adminRes, billRes, stockRes, distributeRes, assistantRes] = await Promise.all([
         fetch(`${API_BASE_URL}/api/admin/pending`),
         fetch(`${API_BASE_URL}/api/bill-register-access/pending`),
         fetch(`${API_BASE_URL}/api/stock-officer-access/pending`),
-        fetch(`${API_BASE_URL}/api/distribute-officer-access/pending`)
+        fetch(`${API_BASE_URL}/api/distribute-officer-access/pending`),
+        fetch(`${API_BASE_URL}/api/assistant-access/pending`)
       ]);
       
       const adminData = await adminRes.json();
       const billData = await billRes.json();
       const stockData = await stockRes.json();
       const distributeData = await distributeRes.json();
+      const assistantData = await assistantRes.json();
       
       setPendingAdmins(adminData);
       setPendingBillAccesses(billData);
       setPendingStockOfficers(stockData);
       setPendingDistributeOfficers(distributeData);
+      setPendingAssistants(assistantData);
     } catch (err) {
       setError('Failed to fetch pending requests');
       console.error(err);
@@ -154,11 +158,42 @@ const OfficialDashboard = () => {
     }
   };
 
+  const handleApproveAssistant = async (id) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/assistant-access/${id}/status`, { 
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'ACTIVE' })
+      });
+      if (response.ok) {
+        setPendingAssistants(pendingAssistants.filter(access => access.id !== id));
+      }
+    } catch (err) {
+      console.error('Failed to approve assistant', err);
+    }
+  };
+
+  const handleRejectAssistant = async (id) => {
+    if (!window.confirm('Are you sure you want to reject this candidate?')) return;
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/assistant-access/${id}/status`, { 
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'REJECTED' })
+      });
+      if (response.ok) {
+        setPendingAssistants(pendingAssistants.filter(access => access.id !== id));
+      }
+    } catch (err) {
+      console.error('Failed to reject assistant', err);
+    }
+  };
+
   const handleLogout = () => {
     navigate('/official-login');
   };
 
-  const renderTable = (data, handleApprove, handleReject, isStockOfficer = false) => {
+  const renderTable = (data, handleApprove, handleReject, typeField = null, typeLabel = 'Role') => {
     if (data.length === 0) {
       return (
         <div className="empty-state">
@@ -174,7 +209,7 @@ const OfficialDashboard = () => {
         <thead>
           <tr>
             <th>Name</th>
-            {isStockOfficer && <th>Officer Type</th>}
+            {typeField && <th>{typeLabel}</th>}
             <th>Email</th>
             <th>Phone</th>
             <th>Registration Date</th>
@@ -186,7 +221,7 @@ const OfficialDashboard = () => {
           {data.map(item => (
             <tr key={item.id}>
               <td><strong>{item.name}</strong></td>
-              {isStockOfficer && <td><span className="badge" style={{backgroundColor: '#e2e8f0', padding: '0.25rem 0.5rem', borderRadius: '0.25rem'}}>{item.officerType}</span></td>}
+              {typeField && <td><span className="badge" style={{backgroundColor: '#e2e8f0', padding: '0.25rem 0.5rem', borderRadius: '0.25rem', color: '#1e293b', fontWeight: '500'}}>{item[typeField]}</span></td>}
               <td>{item.email}</td>
               <td>{item.phone || item.phoneNumber || 'N/A'}</td>
               <td>{new Date(item.createdAt).toLocaleString()}</td>
@@ -263,6 +298,12 @@ const OfficialDashboard = () => {
           >
             Distribute Officers ({pendingDistributeOfficers.length})
           </button>
+          <button 
+            className={`btn ${activeTab === 'assistant' ? 'btn-primary' : 'btn-outline'}`}
+            onClick={() => setActiveTab('assistant')}
+          >
+            Assistants ({pendingAssistants.length})
+          </button>
         </div>
 
         <div className="table-container glass-panel-dark">
@@ -274,8 +315,10 @@ const OfficialDashboard = () => {
               : activeTab === 'billing'
               ? renderTable(pendingBillAccesses, handleApproveBillAccess, handleRejectBillAccess)
               : activeTab === 'stock'
-              ? renderTable(pendingStockOfficers, handleApproveStockOfficer, handleRejectStockOfficer, true)
-              : renderTable(pendingDistributeOfficers, handleApproveDistributeOfficer, handleRejectDistributeOfficer)
+              ? renderTable(pendingStockOfficers, handleApproveStockOfficer, handleRejectStockOfficer, 'officerType', 'Officer Type')
+              : activeTab === 'distribute'
+              ? renderTable(pendingDistributeOfficers, handleApproveDistributeOfficer, handleRejectDistributeOfficer)
+              : renderTable(pendingAssistants, handleApproveAssistant, handleRejectAssistant, 'assistantType', 'Assistant Level')
           )}
         </div>
       </main>

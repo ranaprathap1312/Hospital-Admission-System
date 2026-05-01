@@ -12,9 +12,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.Map;
+import org.springframework.transaction.annotation.Transactional;
 
 @RestController
 @RequestMapping("/api/bills")
+@Transactional
 public class NewBillDetailController {
 
     @Autowired

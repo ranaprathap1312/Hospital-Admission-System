@@ -591,7 +591,7 @@ const AdminDashboard = () => {
         }
       })();
 
-      const isStrictColumn = ['Case Type', 'Gender', 'Status'].includes(searchColumn);
+      const isStrictColumn = ['Case Type', 'Gender', 'Status', 'Ward'].includes(searchColumn);
       return checkMatch(valueToCheck, isStrictColumn);
     });
   });
@@ -679,7 +679,7 @@ const AdminDashboard = () => {
           default: return '';
         }
       })();
-      const isStrictColumn = ['Case Type', 'Gender'].includes(searchColumn);
+      const isStrictColumn = ['Case Type', 'Gender', 'Ward'].includes(searchColumn);
       return (() => {
         if (valueToCheck == null) return false;
         const strVal = valueToCheck.toString().toLowerCase();
@@ -923,7 +923,7 @@ const AdminDashboard = () => {
         }
       })();
 
-      const isStrictColumn = ['Case Type', 'Gender', 'Discharge Type'].includes(searchColumn);
+      const isStrictColumn = ['Case Type', 'Gender', 'Discharge Type', 'Ward', 'Discharge Ward'].includes(searchColumn);
       return checkMatch(valueToCheck, isStrictColumn);
     });
   });

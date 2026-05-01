@@ -290,36 +290,33 @@ const BillDashboard = () => {
                   </div>
 
                   <div className="bill-form-group">
-                    <label>Supply Order No *</label>
+                    <label>Supply Order No</label>
                     <input 
                       type="text" 
                       name="supplyOrderNo" 
                       value={formData.supplyOrderNo} 
                       onChange={handleChange} 
-                      required
                       placeholder="e.g. SO-994"
                     />
                   </div>
 
                   <div className="bill-form-group">
-                    <label>Supply Order Date *</label>
+                    <label>Supply Order Date</label>
                     <input 
                       type="date" 
                       name="supplyOrderDate" 
                       value={formData.supplyOrderDate} 
                       onChange={handleChange} 
-                      required
                     />
                   </div>
 
                   <div className="bill-form-group">
-                    <label>Supply To *</label>
+                    <label>Supply To</label>
                     <input 
                       type="text" 
                       name="supplyTo" 
                       value={formData.supplyTo} 
                       onChange={handleChange} 
-                      required
                       placeholder="e.g. Pharmacy Dept"
                     />
                   </div>
