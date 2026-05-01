@@ -79,7 +79,6 @@ const DischargePage = () => {
   const [caseType, setCaseType] = useState('');
   const [isEditingCaseType, setIsEditingCaseType] = useState(false);
   const [summaryText, setSummaryText] = useState('');
-  const [isMultiPageSummary, setIsMultiPageSummary] = useState(false);
   const [isPatientDetailsOpen, setIsPatientDetailsOpen] = useState(false);
 
   const [isSearching, setIsSearching] = useState(false);
@@ -457,37 +456,31 @@ const DischargePage = () => {
                     setDischargeType('');
                     setDestinationTable('');
                     setDestinationId(null);
-                    setIsMultiPageSummary(false);
                   }}>
                     Process Another Discharge
                   </button>
-                </div>
-                <div className="no-print" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '1.5rem', justifyContent: 'center' }}>
-                  <input 
-                    type="checkbox" 
-                    id="multiPageCheck" 
-                    checked={isMultiPageSummary} 
-                    onChange={(e) => setIsMultiPageSummary(e.target.checked)} 
-                    style={{ width: '1.2rem', height: '1.2rem', cursor: 'pointer' }}
-                  />
-                  <label htmlFor="multiPageCheck" style={{ fontSize: '0.95rem', color: '#475569', cursor: 'pointer', fontWeight: '500' }}>
-                    Check here if this summary prints on multiple pages (updates ending message)
-                  </label>
                 </div>
               </div>
 
               {/* Printable Discharge Summary */}
               <div className="print-section" style={{ border: '1px solid var(--border-color)', borderRadius: '0.5rem', padding: '2rem', marginTop: '2rem' }}>
-                <div className="print-header" style={{ textAlign: 'center', marginBottom: '2rem', borderBottom: '2px solid #000', paddingBottom: '1rem' }}>
+                <div className="print-header" style={{ position: 'relative', textAlign: 'center', marginBottom: '2rem', borderBottom: '2px solid #000', paddingBottom: '1rem' }}>
                   <img src={tnLogo} alt="TN Logo" style={{ width: '80px', height: 'auto', marginBottom: '1rem' }} />
+                  
+                  {destinationId && destinationTable && (
+                    <div style={{ position: 'absolute', top: 0, right: 0, border: '2px solid #000', padding: '0.5rem 1rem', borderRadius: '4px', textAlign: 'left', minWidth: '150px' }}>
+                      <div style={{ fontSize: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase', color: '#333', marginBottom: '0.25rem' }}>
+                        {destinationTable.replace(/_/g, ' ')} ID
+                      </div>
+                      <div style={{ fontSize: '1.25rem', fontWeight: '900', color: '#000' }}>
+                        {destinationId}
+                      </div>
+                    </div>
+                  )}
+
                   <h2 style={{ margin: '0 0 0.5rem 0', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: '900', color: '#000000', fontSize: '1.5rem' }}>
                     DISCHARGE SUMMARY - GOVERNMENT HOSPITAL VRIDHACHALAM
                   </h2>
-                  {destinationId && destinationTable && (
-                    <h4 style={{ margin: 0, color: '#333' }}>
-                      patient_{destinationTable}_id: {destinationId}
-                    </h4>
-                  )}
                 </div>
 
                 <div style={{ marginBottom: '1rem', lineHeight: '1.6', fontSize: '0.95rem' }}>
