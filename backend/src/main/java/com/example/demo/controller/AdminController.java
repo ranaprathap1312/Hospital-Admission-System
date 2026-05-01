@@ -143,4 +143,27 @@ public class AdminController {
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Admin not found", "success", false));
     }
+
+    @GetMapping("/granted")
+    public ResponseEntity<?> getGrantedAdmins() {
+        return ResponseEntity.ok(adminService.getGrantedAdmins());
+    }
+
+    @PutMapping("/toggle-pause/{id}")
+    public ResponseEntity<?> togglePauseAdmin(@PathVariable Long id) {
+        boolean success = adminService.togglePauseAdmin(id);
+        if (success) {
+            return ResponseEntity.ok(Map.of("message", "Admin access status toggled", "success", true));
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Failed to toggle status or cannot modify Super Admin", "success", false));
+    }
+
+    @DeleteMapping("/remove/{id}")
+    public ResponseEntity<?> removeGrantedAdmin(@PathVariable Long id) {
+        boolean success = adminService.removeGrantedAdmin(id);
+        if (success) {
+            return ResponseEntity.ok(Map.of("message", "Admin access completely removed", "success", true));
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Failed to remove admin or cannot modify Super Admin", "success", false));
+    }
 }

@@ -23,6 +23,8 @@ public class AdminService {
             if (admin.getPassword().equals(password)) {
                 if ("PENDING_APPROVAL".equals(admin.getStatus())) {
                     throw new RuntimeException("Your account is pending approval from a higher official.");
+                } else if ("PAUSED".equals(admin.getStatus())) {
+                    throw new RuntimeException("Your access has been temporarily paused by a higher official.");
                 }
                 
                 admin.setUpdatedAt(LocalDateTime.now());
@@ -65,6 +67,44 @@ public class AdminService {
 
     public List<Admin> getPendingAdmins() {
         return adminRepository.findByStatus("PENDING_APPROVAL");
+    }
+
+    public List<Admin> getGrantedAdmins() {
+        List<Admin> granted = adminRepository.findByStatusIn(java.util.Arrays.asList("ACTIVE", "PAUSED"));
+        granted.removeIf(admin -> "SUPER_ADMIN".equals(admin.getRole()));
+        return granted;
+    }
+
+    public boolean togglePauseAdmin(Long id) {
+        Optional<Admin> adminOpt = adminRepository.findById(id);
+        if (adminOpt.isPresent()) {
+            Admin admin = adminOpt.get();
+            if ("SUPER_ADMIN".equals(admin.getRole())) {
+                return false; // Cannot pause super admin
+            }
+            if ("ACTIVE".equals(admin.getStatus())) {
+                admin.setStatus("PAUSED");
+            } else if ("PAUSED".equals(admin.getStatus())) {
+                admin.setStatus("ACTIVE");
+            }
+            admin.setUpdatedAt(LocalDateTime.now());
+            adminRepository.save(admin);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean removeGrantedAdmin(Long id) {
+        Optional<Admin> adminOpt = adminRepository.findById(id);
+        if (adminOpt.isPresent()) {
+            Admin admin = adminOpt.get();
+            if ("SUPER_ADMIN".equals(admin.getRole())) {
+                return false; // Cannot remove super admin
+            }
+            adminRepository.delete(admin);
+            return true;
+        }
+        return false;
     }
 
     public boolean approveAdmin(Long id) {

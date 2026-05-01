@@ -7,6 +7,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080
 
 const OfficialDashboard = () => {
   const [pendingAdmins, setPendingAdmins] = useState([]);
+  const [grantedAdmins, setGrantedAdmins] = useState([]);
   const [pendingBillAccesses, setPendingBillAccesses] = useState([]);
   const [pendingStockOfficers, setPendingStockOfficers] = useState([]);
   const [pendingDistributeOfficers, setPendingDistributeOfficers] = useState([]);
@@ -24,13 +25,14 @@ const OfficialDashboard = () => {
   const fetchAllPending = async () => {
     setLoading(true);
     try {
-      const [adminRes, billRes, stockRes, distributeRes, assistantRes, manualEditRes] = await Promise.all([
+      const [adminRes, billRes, stockRes, distributeRes, assistantRes, manualEditRes, grantedAdminsRes] = await Promise.all([
         fetch(`${API_BASE_URL}/api/admin/pending`),
         fetch(`${API_BASE_URL}/api/bill-register-access/pending`),
         fetch(`${API_BASE_URL}/api/stock-officer-access/pending`),
         fetch(`${API_BASE_URL}/api/distribute-officer-access/pending`),
         fetch(`${API_BASE_URL}/api/assistant-access/pending`),
-        fetch(`${API_BASE_URL}/api/manual-edit-control`)
+        fetch(`${API_BASE_URL}/api/manual-edit-control`),
+        fetch(`${API_BASE_URL}/api/admin/granted`)
       ]);
       
       const adminData = await adminRes.json();
@@ -39,8 +41,10 @@ const OfficialDashboard = () => {
       const distributeData = await distributeRes.json();
       const assistantData = await assistantRes.json();
       const manualEditData = await manualEditRes.json();
+      const grantedAdminsData = await grantedAdminsRes.json();
       
       setPendingAdmins(adminData);
+      setGrantedAdmins(grantedAdminsData);
       setPendingBillAccesses(billData);
       setPendingStockOfficers(stockData);
       setPendingDistributeOfficers(distributeData);
@@ -62,6 +66,36 @@ const OfficialDashboard = () => {
       }
     } catch (err) {
       console.error('Failed to approve admin', err);
+    }
+  };
+
+  const handleTogglePause = async (id) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/admin/toggle-pause/${id}`, { method: 'PUT' });
+      if (response.ok) {
+        const res = await fetch(`${API_BASE_URL}/api/admin/granted`);
+        setGrantedAdmins(await res.json());
+      } else {
+        const data = await response.json();
+        alert(data.message || 'Failed to toggle pause');
+      }
+    } catch (err) {
+      console.error('Failed to toggle pause', err);
+    }
+  };
+
+  const handleRemoveGranted = async (id) => {
+    if (!window.confirm('Are you sure you want to completely remove this granted user?')) return;
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/admin/remove/${id}`, { method: 'DELETE' });
+      if (response.ok) {
+        setGrantedAdmins(grantedAdmins.filter(admin => admin.id !== id));
+      } else {
+        const data = await response.json();
+        alert(data.message || 'Failed to remove user');
+      }
+    } catch (err) {
+      console.error('Failed to remove granted user', err);
     }
   };
 
@@ -272,6 +306,62 @@ const OfficialDashboard = () => {
     );
   };
 
+  const renderGrantedTable = (data) => {
+    if (data.length === 0) {
+      return (
+        <div className="empty-state">
+          <UserCheck size={48} className="empty-icon" />
+          <h3>No Granted Users</h3>
+          <p>There are no users with granted access yet.</p>
+        </div>
+      );
+    }
+
+    return (
+      <table className="official-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.map(item => (
+            <tr key={item.id}>
+              <td><strong>{item.name}</strong></td>
+              <td>{item.email}</td>
+              <td>{item.phone || item.phoneNumber || 'N/A'}</td>
+              <td>
+                <span className={`status-badge ${item.status === 'PAUSED' ? 'reject' : 'approve'}`} style={{color: item.status === 'PAUSED' ? '#ef4444' : '#10b981', backgroundColor: item.status === 'PAUSED' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)'}}>
+                  {item.status === 'PAUSED' ? <X size={14} /> : <Check size={14} />} {item.status}
+                </span>
+              </td>
+              <td className="action-cell">
+                <button 
+                  className={`btn-action ${item.status === 'PAUSED' ? 'approve' : 'reject'}`} 
+                  onClick={() => handleTogglePause(item.id)}
+                  title={item.status === 'PAUSED' ? 'Resume Access' : 'Pause Access'}
+                >
+                  {item.status === 'PAUSED' ? <Check size={18} /> : <Clock size={18} />} {item.status === 'PAUSED' ? 'Resume' : 'Pause'}
+                </button>
+                <button 
+                  className="btn-action reject" 
+                  onClick={() => handleRemoveGranted(item.id)}
+                  title="Completely Remove Access"
+                >
+                  <X size={18} /> Remove
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    );
+  };
+
   return (
     <div className="official-dashboard-wrapper">
       <nav className="official-navbar">
@@ -350,6 +440,13 @@ const OfficialDashboard = () => {
           >
             Assistants ({pendingAssistants.length})
           </button>
+          <button 
+            className={`btn ${activeTab === 'granted' ? 'btn-primary' : 'btn-outline'}`}
+            onClick={() => setActiveTab('granted')}
+            style={{ marginLeft: 'auto', backgroundColor: activeTab === 'granted' ? '#10b981' : 'transparent', color: activeTab === 'granted' ? '#fff' : '#10b981', borderColor: '#10b981' }}
+          >
+            Granted Users ({grantedAdmins.length})
+          </button>
         </div>
 
         <div className="table-container glass-panel-dark">
@@ -364,6 +461,8 @@ const OfficialDashboard = () => {
               ? renderTable(pendingStockOfficers, handleApproveStockOfficer, handleRejectStockOfficer, 'officerType', 'Officer Type')
               : activeTab === 'distribute'
               ? renderTable(pendingDistributeOfficers, handleApproveDistributeOfficer, handleRejectDistributeOfficer)
+              : activeTab === 'granted'
+              ? renderGrantedTable(grantedAdmins)
               : renderTable(pendingAssistants, handleApproveAssistant, handleRejectAssistant, 'assistantType', 'Assistant Level')
           )}
         </div>
