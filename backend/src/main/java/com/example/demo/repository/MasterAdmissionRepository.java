@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface MasterAdmissionRepository extends JpaRepository<MasterAdmission, Long> {
     java.util.Optional<MasterAdmission> findByPatientId(String patientId);
+    java.util.Optional<MasterAdmission> findFirstByPatientIdOrderByIdDesc(String patientId);
 
     @Query("SELECT m.patientId FROM MasterAdmission m WHERE m.patientId LIKE :prefix%")
     java.util.List<String> findPatientIdsWithPrefix(@Param("prefix") String prefix);

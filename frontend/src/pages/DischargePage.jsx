@@ -25,6 +25,32 @@ const dischargeResponsiveStyle = `
       grid-template-columns: 1fr !important;
     }
   }
+  @media print {
+    /* Hide global app header and other non-print elements */
+    .app-header, .content-header, .discharge-search-bar, button {
+      display: none !important;
+    }
+    
+    /* Remove browser default print headers/footers */
+    @page {
+      margin: 0;
+      size: auto;
+    }
+
+    /* Provide a safe printable area */
+    body {
+      padding: 5mm !important;
+      margin: 0 !important;
+    }
+
+    /* Ensure the print content tries to fit on one page */
+    .print-section {
+      page-break-inside: avoid;
+      break-inside: avoid;
+      margin-top: 0 !important;
+      padding-top: 0 !important;
+    }
+  }
 `;
 
 const DischargePage = () => {
@@ -53,6 +79,8 @@ const DischargePage = () => {
   const [caseType, setCaseType] = useState('');
   const [isEditingCaseType, setIsEditingCaseType] = useState(false);
   const [summaryText, setSummaryText] = useState('');
+  const [isMultiPageSummary, setIsMultiPageSummary] = useState(false);
+  const [isPatientDetailsOpen, setIsPatientDetailsOpen] = useState(false);
 
   const [isSearching, setIsSearching] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -100,7 +128,7 @@ const DischargePage = () => {
       const response = await fetch(`${API_BASE_URL}/api/patients/${patientId}/discharge`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dischargeType, dischargeWard, dischargeDate: `${dischargeDate}T${dischargeTime}`, destinationTable, caseType })
+        body: JSON.stringify({ dischargeType, dischargeWard, dischargeDate: `${dischargeDate}T${dischargeTime}`, destinationTable, caseType, summaryText })
       });
 
       if (response.ok) {
@@ -142,6 +170,31 @@ const DischargePage = () => {
     } catch (err) {
       console.error("Error connecting to server to undo discharge.");
     }
+  };
+
+  const getSummaryParts = () => {
+    if (!summaryText) return { part1: '', part2: '' };
+    
+    let currentLines = 0;
+    let breakPoint = 0;
+    const rawLines = summaryText.split('\n');
+    for (let i = 0; i < rawLines.length; i++) {
+        const line = rawLines[i];
+        currentLines += Math.max(1, Math.ceil(line.length / 90));
+        breakPoint += line.length + 1;
+        if (currentLines >= 14) {
+            break;
+        }
+    }
+    
+    if (breakPoint >= summaryText.length) {
+        return { part1: summaryText, part2: '' };
+    }
+    
+    return {
+        part1: summaryText.substring(0, breakPoint).trim(),
+        part2: summaryText.substring(breakPoint).trim()
+    };
   };
 
   return (
@@ -195,51 +248,72 @@ const DischargePage = () => {
               {/* Patient Details & Discharge Form */}
               {patientData && (
                 <div className="print-section" style={{ border: '1px solid var(--border-color)', borderRadius: '0.5rem', padding: '1.5rem' }}>
-                  <h3 style={{ marginBottom: '1rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>Patient Details</h3>
-                  <div className="print-grid" style={{ marginBottom: '2rem' }}>
-                    <p><strong>Name:</strong> {patientData.patientName}</p>
-                    <p><strong>Age:</strong> {patientData.age}</p>
-                    <p><strong>Gender:</strong> {patientData.gender || 'N/A'}</p>
-                    <p><strong>Mother's Name:</strong> {patientData.motherName || 'N/A'}</p>
-                    <p><strong>Mobile No:</strong> {patientData.mobileNo || 'N/A'}</p>
-                    <p><strong>Aadhar No:</strong> {patientData.aadharNo || 'N/A'}</p>
-                    <p><strong>Occupation:</strong> {patientData.occupation || 'N/A'}</p>
-                    <p><strong>Caretaker:</strong> {patientData.caretakerName || 'N/A'}</p>
-                    <p><strong>Address:</strong> {patientData.address || 'N/A'}</p>
-                    <p><strong>Admission Ward:</strong> {patientData.wardName}</p>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                      <strong>Case Type:</strong>
-                      {isEditingCaseType ? (
-                        <>
-                          <select
-                            value={caseType}
-                            onChange={(e) => setCaseType(e.target.value)}
-                            style={{ padding: '0.25rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', fontSize: '0.9rem' }}
-                          >
-                            <option value="Non-MLC">Non-MLC</option>
-                            <option value="MLC">MLC</option>
-
-                          </select>
-                          <button type="button" onClick={() => setIsEditingCaseType(false)} className="btn btn-primary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem', borderRadius: '0.25rem', height: 'auto' }}>Done</button>
-                        </>
-                      ) : (
-                        <>
-                          {caseType}
-                          <button type="button" onClick={() => setIsEditingCaseType(true)} className="btn btn-outline" style={{ padding: '0.25rem 0.75rem', fontSize: '0.85rem', borderRadius: '0.25rem', height: 'auto' }}>Edit</button>
-                        </>
-                      )}
-                    </div>
-                    <p><strong>AR No:</strong> {patientData.arNo || 'N/A'}</p>
-                    <p><strong>Admission Date:</strong> {new Date(patientData.admissionDate).toLocaleString()}</p>
+                  <div 
+                    style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center', 
+                      cursor: 'pointer', 
+                      marginBottom: isPatientDetailsOpen ? '1rem' : '1.5rem',
+                      borderBottom: isPatientDetailsOpen ? 'none' : '1px solid var(--border-color)',
+                      paddingBottom: isPatientDetailsOpen ? '0' : '0.5rem'
+                    }}
+                    onClick={() => setIsPatientDetailsOpen(!isPatientDetailsOpen)}
+                  >
+                    <h3 style={{ margin: 0, fontSize: '1.1rem', color: 'var(--primary-color)' }}>Patient Details {patientData.patientName ? `- ${patientData.patientName}` : ''}</h3>
+                    <span style={{ fontSize: '1.2rem', transition: 'transform 0.3s' }}>
+                      {isPatientDetailsOpen ? '▲' : '▼'}
+                    </span>
                   </div>
 
-                  <form onSubmit={handleDischarge}>
-                    <h3 style={{ marginBottom: '1rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>Discharge Processing</h3>
+                  {isPatientDetailsOpen && (
+                    <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1rem', marginBottom: '1rem' }}>
+                      <div className="print-grid">
+                        <p><strong>Name:</strong> {patientData.patientName}</p>
+                        <p><strong>Age:</strong> {patientData.age}</p>
+                        <p><strong>Gender:</strong> {patientData.gender || 'N/A'}</p>
+                        <p><strong>Relation Name:</strong> {patientData.motherName || 'N/A'}</p>
+                        <p><strong>Mobile No:</strong> {patientData.mobileNo || 'N/A'}</p>
+                        <p><strong>Aadhar No:</strong> {patientData.aadharNo || 'N/A'}</p>
+                        <p><strong>Occupation:</strong> {patientData.occupation || 'N/A'}</p>
 
-                    <div className="form-row" style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
-                      <div className="form-group" style={{ flex: 1 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                          <label style={{ marginBottom: 0 }}>Discharge Date and time *</label>
+                        <p><strong>Address:</strong> {patientData.address || 'N/A'}</p>
+                        <p><strong>Admission Ward:</strong> {patientData.wardName}</p>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                          <strong>Case Type:</strong>
+                          {isEditingCaseType ? (
+                            <>
+                              <select
+                                value={caseType}
+                                onChange={(e) => setCaseType(e.target.value)}
+                                style={{ padding: '0.25rem', borderRadius: '0.25rem', border: '1px solid var(--border-color)', fontSize: '0.9rem' }}
+                              >
+                                <option value="Non-MLC">Non-MLC</option>
+                                <option value="MLC">MLC</option>
+
+                              </select>
+                              <button type="button" onClick={() => setIsEditingCaseType(false)} className="btn btn-primary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem', borderRadius: '0.25rem', height: 'auto' }}>Done</button>
+                            </>
+                          ) : (
+                            <>
+                              {caseType}
+                              <button type="button" onClick={() => setIsEditingCaseType(true)} className="btn btn-outline" style={{ padding: '0.25rem 0.75rem', fontSize: '0.85rem', borderRadius: '0.25rem', height: 'auto' }}>Edit</button>
+                            </>
+                          )}
+                        </div>
+                        <p><strong>AR No:</strong> {patientData.arNo || 'N/A'}</p>
+                        <p><strong>Admission Date:</strong> {new Date(patientData.admissionDate).toLocaleString()}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  <form onSubmit={handleDischarge}>
+                    <h3 style={{ marginBottom: '0.75rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem', marginTop: '1rem' }}>Discharge Processing</h3>
+
+                    <div className="form-row" style={{ display: 'flex', gap: '1rem', marginBottom: '0.75rem' }}>
+                      <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
+                          <label style={{ marginBottom: 0, fontSize: '0.9rem' }}>Discharge Date and time *</label>
                           <label style={{ fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: 0, fontWeight: 'normal' }}>
                             <input
                               type="checkbox"
@@ -263,7 +337,7 @@ const DischargePage = () => {
                             onChange={(e) => setDischargeDate(e.target.value)}
                             disabled={!manualDischargeDate}
                             required
-                            style={{ flex: 1, padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white' }}
+                            style={{ flex: 1, padding: '0.5rem 0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '0.95rem', backgroundColor: 'white' }}
                           />
                           <TimeInput12Hour
                             value={dischargeTime}
@@ -273,13 +347,13 @@ const DischargePage = () => {
                           />
                         </div>
                       </div>
-                      <div className="form-group" style={{ flex: 1 }}>
-                        <label style={{ color: 'red' }}>Discharge Ward *</label>
+                      <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+                        <label style={{ color: 'red', marginBottom: '0.25rem', fontSize: '0.9rem' }}>Discharge Ward *</label>
                         <select
                           value={dischargeWard}
                           onChange={(e) => setDischargeWard(e.target.value)}
                           required
-                          style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white' }}
+                          style={{ width: '100%', padding: '0.5rem 0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '0.95rem', backgroundColor: 'white' }}
                         >
                           <option value="">Select</option>
                           <option value="CH-Children Ward">CH-Children Ward</option>
@@ -298,14 +372,14 @@ const DischargePage = () => {
                       </div>
                     </div>
 
-                    <div className="form-row" style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
-                      <div className="form-group" style={{ flex: 1 }}>
-                        <label>Discharge Type *</label>
+                    <div className="form-row" style={{ display: 'flex', gap: '1rem', marginBottom: '0.75rem' }}>
+                      <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+                        <label style={{ marginBottom: '0.25rem', fontSize: '0.9rem' }}>Discharge Type *</label>
                         <select
                           value={dischargeType}
                           onChange={(e) => setDischargeType(e.target.value)}
                           required
-                          style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white' }}
+                          style={{ width: '100%', padding: '0.5rem 0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '0.95rem', backgroundColor: 'white' }}
                         >
                           <option value="">Select</option>
                           <option value="Normal Discharge">Normal Discharge</option>
@@ -314,13 +388,13 @@ const DischargePage = () => {
                           <option value="Refer">Refer</option>
                         </select>
                       </div>
-                      <div className="form-group" style={{ flex: 1 }}>
-                        <label style={{ color: 'red' }}>File transfer to *</label>
+                      <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
+                        <label style={{ color: 'red', marginBottom: '0.25rem', fontSize: '0.9rem' }}>File transfer to *</label>
                         <select
                           value={destinationTable}
                           onChange={(e) => setDestinationTable(e.target.value)}
                           required
-                          style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white' }}
+                          style={{ width: '100%', padding: '0.5rem 0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '0.95rem', backgroundColor: 'white' }}
                         >
                           <option value="">Select</option>
                           <option value="mlc_discharge">mlc_discharge</option>
@@ -334,17 +408,24 @@ const DischargePage = () => {
                       </div>
                     </div>
 
-                    <div className="form-group" style={{ marginBottom: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                      <label style={{ width: '100%', textAlign: 'center' }}>Summary / Remarks</label>
+                    <div className="form-group" style={{ marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center', marginBottom: '0.25rem' }}>
+                        <label style={{ margin: 0, fontSize: '0.9rem' }}>Summary / Remarks</label>
+                        {(summaryText.length > 1200 || (summaryText.match(/\n/g) || []).length > 15) && (
+                          <span style={{ color: '#b91c1c', fontSize: '0.85rem', fontWeight: 'bold' }}>
+                            ⚠️ Warning: May spill to a second printed page
+                          </span>
+                        )}
+                      </div>
                       <textarea
                         value={summaryText}
                         onChange={(e) => setSummaryText(e.target.value)}
                         placeholder="Enter summary or remarks"
-                        rows="4"
-                        style={{ width: '100%', padding: '1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', resize: 'none', textAlign: 'center' }}
+                        rows="25"
+                        style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '0.95rem', resize: 'vertical', minHeight: '400px' }}
                       />
                     </div>
-                    <button type="submit" className="btn btn-primary" disabled={isSubmitting} style={{ width: '100%' }}>
+                    <button type="submit" className="btn btn-primary" disabled={isSubmitting} style={{ width: '100%', padding: '0.75rem', fontSize: '1rem' }}>
                       {isSubmitting ? 'Processing...' : 'Confirm Discharge'}
                     </button>
                   </form>
@@ -370,9 +451,22 @@ const DischargePage = () => {
                     setDischargeType('');
                     setDestinationTable('');
                     setDestinationId(null);
+                    setIsMultiPageSummary(false);
                   }}>
                     Process Another Discharge
                   </button>
+                </div>
+                <div className="no-print" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '1.5rem', justifyContent: 'center' }}>
+                  <input 
+                    type="checkbox" 
+                    id="multiPageCheck" 
+                    checked={isMultiPageSummary} 
+                    onChange={(e) => setIsMultiPageSummary(e.target.checked)} 
+                    style={{ width: '1.2rem', height: '1.2rem', cursor: 'pointer' }}
+                  />
+                  <label htmlFor="multiPageCheck" style={{ fontSize: '0.95rem', color: '#475569', cursor: 'pointer', fontWeight: '500' }}>
+                    Check here if this summary prints on multiple pages (updates ending message)
+                  </label>
                 </div>
               </div>
 
@@ -380,8 +474,9 @@ const DischargePage = () => {
               <div className="print-section" style={{ border: '1px solid var(--border-color)', borderRadius: '0.5rem', padding: '2rem', marginTop: '2rem' }}>
                 <div className="print-header" style={{ textAlign: 'center', marginBottom: '2rem', borderBottom: '2px solid #000', paddingBottom: '1rem' }}>
                   <img src={tnLogo} alt="TN Logo" style={{ width: '80px', height: 'auto', marginBottom: '1rem' }} />
-                  <h2 style={{ margin: '0 0 0.5rem 0', textTransform: 'uppercase', letterSpacing: '1px' }}>DIET SHEET - DISCHARGE FORM</h2>
-                  <h3 style={{ margin: '0 0 0.5rem 0', fontWeight: 'normal' }}>GOVERNMENT HOSPITAL VRIDHACHALAM</h3>
+                  <h2 style={{ margin: '0 0 0.5rem 0', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: '900', color: '#000000', fontSize: '1.5rem' }}>
+                    DISCHARGE SUMMARY - GOVERNMENT HOSPITAL VRIDHACHALAM
+                  </h2>
                   {destinationId && destinationTable && (
                     <h4 style={{ margin: 0, color: '#333' }}>
                       patient_{destinationTable}_id: {destinationId}
@@ -389,30 +484,73 @@ const DischargePage = () => {
                   )}
                 </div>
 
-                <div className="print-grid" style={{ marginBottom: '2rem' }}>
-                  <p><strong>Patient ID:</strong> {patientData?.patientId}</p>
-                  <p><strong>Name:</strong> {patientData?.patientName}</p>
-                  <p><strong>Age:</strong> {patientData?.age}</p>
-                  <p><strong>Gender:</strong> {patientData?.gender || 'N/A'}</p>
-                  <p><strong>Mother's Name:</strong> {patientData?.motherName || 'N/A'}</p>
-                  <p><strong>Mobile No:</strong> {patientData?.mobileNo || 'N/A'}</p>
-                  <p><strong>Aadhar No:</strong> {patientData?.aadharNo || 'N/A'}</p>
-                  <p><strong>Address:</strong> {patientData?.address || 'N/A'}</p>
+                <div style={{ marginBottom: '1rem', lineHeight: '1.6', fontSize: '0.95rem' }}>
+                  <strong style={{ color: '#000' }}>Patient ID:</strong> {patientData?.patientId}<strong style={{ color: '#000' }}>, Name:</strong> {patientData?.patientName}<strong style={{ color: '#000' }}>, Age:</strong> {patientData?.age}<strong style={{ color: '#000' }}>, Gender:</strong> {patientData?.gender || 'N/A'}<strong style={{ color: '#000' }}>, Relation Name:</strong> {patientData?.motherName || 'N/A'}<strong style={{ color: '#000' }}>, Mobile No:</strong> {patientData?.mobileNo || 'N/A'}<strong style={{ color: '#000' }}>, Aadhar No:</strong> {patientData?.aadharNo || 'N/A'}<strong style={{ color: '#000' }}>, Address:</strong> {patientData?.address || 'N/A'}
                 </div>
 
-                <h3 style={{ marginBottom: '1rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>Admission & Discharge Details</h3>
-                <div className="print-grid">
-                  <p><strong>Case Type:</strong> {caseType}</p>
-                  <p><strong>AR No:</strong> {patientData?.arNo || 'N/A'}</p>
-                  <p><strong>Admission Date:</strong> {new Date(patientData?.admissionDate).toLocaleString()}</p>
-                  <p><strong>Admission Ward:</strong> {patientData?.wardName}</p>
-                  <p><strong>Discharge Date:</strong> {new Date(`${dischargeDate}T${dischargeTime}`).toLocaleString()}</p>
-                  <p><strong>Discharge Ward:</strong> {dischargeWard}</p>
-                  <p><strong>Discharge Type:</strong> <span style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>{dischargeType}</span></p>
-                  {summaryText && (
-                    <p style={{ gridColumn: '1 / -1', marginTop: '1rem' }}><strong>Summary / Remarks:</strong><br />{summaryText}</p>
-                  )}
+                <div style={{ marginBottom: '1.5rem', lineHeight: '1.6', fontSize: '0.95rem', borderTop: '1px solid #000', borderBottom: '1px solid #000', padding: '0.5rem 0' }}>
+                  <strong style={{ color: '#000' }}>Admission & Discharge Details:</strong> <strong style={{ color: '#000' }}>Case Type:</strong> {caseType}<strong style={{ color: '#000' }}>, AR No:</strong> {patientData?.arNo || 'N/A'}<strong style={{ color: '#000' }}>, Admission Date:</strong> {new Date(patientData?.admissionDate).toLocaleString()}<strong style={{ color: '#000' }}>, Admission Ward:</strong> {patientData?.wardName}<strong style={{ color: '#000' }}>, Discharge Date:</strong> {new Date(`${dischargeDate}T${dischargeTime}`).toLocaleString()}<strong style={{ color: '#000' }}>, Discharge Ward:</strong> {dischargeWard}<strong style={{ color: '#000' }}>, Discharge Type:</strong> <span style={{ fontWeight: 'bold' }}>{dischargeType}</span>
                 </div>
+
+                {summaryText && (() => {
+                  const parts = getSummaryParts();
+                  if (!parts.part2) {
+                    return (
+                      <div>
+                        <h3 style={{ marginBottom: '0.5rem', fontSize: '1.1rem', textTransform: 'uppercase' }}>Summary / Remarks:</h3>
+                        <div style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word', overflowWrap: 'break-word', wordBreak: 'break-word', lineHeight: '1.6', fontSize: '0.95rem' }}>
+                          {parts.part1}
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '2.5rem' }}>
+                          <div style={{ width: '120px' }}></div>
+                          <div style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1.05rem' }}>
+                            *** END OF DISCHARGE SUMMARY ***
+                          </div>
+                          <div style={{ width: '120px', textAlign: 'right', fontSize: '0.95rem', fontWeight: 'bold' }}>
+                            Page no : 1
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  } else {
+                    return (
+                      <div>
+                        <h3 style={{ marginBottom: '0.5rem', fontSize: '1.1rem', textTransform: 'uppercase' }}>Summary / Remarks:</h3>
+                        <div style={{ position: 'relative', height: '150mm' }}>
+                          <div style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word', overflowWrap: 'break-word', wordBreak: 'break-word', lineHeight: '1.6', fontSize: '0.95rem' }}>
+                            {parts.part1}
+                          </div>
+                          
+                          {/* Absolute positioned footer at the bottom of the 150mm container */}
+                          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ width: '120px' }}></div>
+                            <div style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1.05rem' }}>
+                              *** END OF DISCHARGE SUMMARY (Please continue on back side of this page) ***
+                            </div>
+                            <div style={{ width: '120px', textAlign: 'right', fontSize: '0.95rem', fontWeight: 'bold' }}>
+                              Page no : 1
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div style={{ pageBreakBefore: 'always', paddingTop: '2rem' }}>
+                          <div style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word', overflowWrap: 'break-word', wordBreak: 'break-word', lineHeight: '1.6', fontSize: '0.95rem' }}>
+                            {parts.part2}
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '3rem' }}>
+                            <div style={{ width: '120px' }}></div>
+                            <div style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '1.05rem' }}>
+                              *** END OF DISCHARGE SUMMARY ***
+                            </div>
+                            <div style={{ width: '120px', textAlign: 'right', fontSize: '0.95rem', fontWeight: 'bold' }}>
+                              Page no : 2
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+                })()}
               </div>
             </div>
           )}

@@ -43,6 +43,9 @@ const LandingPage = () => {
                 <div className="dropdown-menu">
                   <Link to="/official-login" className="dropdown-item">Higher Official Login</Link>
                   <Link to="/login" className="dropdown-item">Admission Login</Link>
+                  <Link to="/bill-login" className="dropdown-item">Bill Register Login</Link>
+                  <Link to="/stock-login" className="dropdown-item">Stock Officer Login</Link>
+                  <Link to="/distribute-login" className="dropdown-item">Distribute Officer Login</Link>
                 </div>
               )}
             </div>

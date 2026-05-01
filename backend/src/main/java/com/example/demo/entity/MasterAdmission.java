@@ -42,10 +42,19 @@ public class MasterAdmission {
     private String occupation;
     private String income;
 
-    @Column(name = "caretaker_name")
-    private String caretakerName;
+
 
     private String address;
+
+    @Column(name = "case_file_name")
+    private String caseFileName;
+
+    @Column(name = "case_file_type")
+    private String caseFileType;
+
+    @Lob
+    @Column(name = "case_file_data")
+    private byte[] caseFileData;
 
     @Column(name = "case_type")
     private String caseType;
@@ -95,11 +104,19 @@ public class MasterAdmission {
     public String getOccupation() { return occupation; }
     public void setOccupation(String occupation) { this.occupation = occupation; }
 
-    public String getCaretakerName() { return caretakerName; }
-    public void setCaretakerName(String caretakerName) { this.caretakerName = caretakerName; }
+
 
     public String getAddress() { return address; }
     public void setAddress(String address) { this.address = address; }
+
+    public String getCaseFileName() { return caseFileName; }
+    public void setCaseFileName(String caseFileName) { this.caseFileName = caseFileName; }
+
+    public String getCaseFileType() { return caseFileType; }
+    public void setCaseFileType(String caseFileType) { this.caseFileType = caseFileType; }
+
+    public byte[] getCaseFileData() { return caseFileData; }
+    public void setCaseFileData(byte[] caseFileData) { this.caseFileData = caseFileData; }
 
     public String getCaseType() { return caseType; }
     public void setCaseType(String caseType) { this.caseType = caseType; }

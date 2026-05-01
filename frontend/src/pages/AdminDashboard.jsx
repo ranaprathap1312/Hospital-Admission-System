@@ -1,5 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { UserPlus, LayoutDashboard, Settings, LogOut, CheckCircle2, Activity, Users, Menu, X } from 'lucide-react';
+
+const OCCUPATION_OPTIONS = {
+  "Student": ["School Student", "College Student", "Diploma Student", "Coaching / Training"],
+  "Government Employee": ["Clerk", "Officer", "Police", "Teacher (Govt)", "Healthcare Worker (Govt)", "Defense / Army"],
+  "Private Employee": ["Software Engineer", "IT Support", "HR", "Sales Executive", "Accountant", "Factory Worker", "Nurse (Private)"],
+  "Self-Employed": ["Freelancer", "Consultant", "Driver (Own vehicle)", "Electrician", "Plumber", "Mechanic"],
+  "Business": ["Shop Owner", "Small Business", "Trader", "Entrepreneur", "Wholesale Dealer"],
+  "Farmer": ["Small Farmer", "Large Farmer", "Agricultural Labor"],
+  "Daily Wage Worker": ["Construction Worker", "Helper", "Cleaner", "Loader"],
+  "Unemployed": ["No Occupation"],
+  "Retired": ["Retired Govt Employee", "Retired Private Employee"],
+  "Homemaker": ["Housewife", "Househusband"],
+  "Professional": ["Doctor", "Lawyer", "Engineer", "Chartered Accountant", "Teacher (Private)"],
+  "Others": ["Other"]
+};
+
+const FILTER_COLUMNS = {
+  'RECORDS': ['Patient ID', 'Name', 'Age', 'Gender', 'Case Type', 'AR No', 'Aadhar No', 'Mobile', 'Ward', 'Admission Date', 'Admission Time', 'Occupation', 'Income', 'Relation Name', 'Address', 'Status'],
+  'ACTIVE_PATIENTS': ['Patient ID', 'Name', 'Age', 'Gender', 'Case Type', 'AR No', 'Aadhar No', 'Mobile', 'Ward', 'Admission Date', 'Admission Time', 'Occupation', 'Income', 'Relation Name', 'Address'],
+  'DISCHARGE_RECORDS': ['Patient ID', 'Name', 'Age', 'Gender', 'Case Type', 'AR No', 'Admission Date', 'Discharge Date', 'Discharge Time', 'Discharge Type', 'Discharge Ward', 'Mobile', 'Aadhar No', 'Occupation', 'Income', 'Address'],
+  'DESTINATION_RECORDS': ['Patient ID', 'Name', 'Relation Name', 'Admission Date', 'Discharge Date', 'Income', 'Address']
+};
+
 import indiaData from '../utils/states-and-districts.json';
 import { Link } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
@@ -38,7 +61,7 @@ const AdminDashboard = () => {
     const headers = [
       'Patient ID', 'Name', 'Age', 'Gender', 'Case Type', 'AR No',
       'Aadhar No', 'Mobile', 'Ward', 'Admission Date', 'Admission Time',
-      'Occupation', 'Income', 'Mother Name', 'Caretaker Name', 'Address', 'Status'
+      'Occupation', 'Income', 'Relation Name', 'Address', 'Status'
     ];
 
     // Map the filtered patients to rows
@@ -57,7 +80,7 @@ const AdminDashboard = () => {
       p.occupation || '',
       p.income || '',
       p.motherName || '',
-      p.caretakerName || '',
+
       p.address ? `"${p.address.replace(/"/g, '""')}"` : '', // Escape commas
       p.status || ''
     ]);
@@ -84,7 +107,7 @@ const AdminDashboard = () => {
 
     // Define the headers for discharge records
     const headers = [
-      'ID', 'Patient Name', 'Mother Name', 'Admission Date', 'Discharge Date', 'Income', 'Village Name'
+      'ID', 'Patient Name', 'Relation Name', 'Admission Date', 'Discharge Date', 'Income', 'Village Name'
     ];
 
     const rows = filteredDestinationRecords.map(p => [
@@ -108,6 +131,45 @@ const AdminDashboard = () => {
     document.body.removeChild(link);
   };
 
+  const handleUploadCaseFile = async (patientId, file) => {
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/patients/id/${patientId}/upload-case-file`, {
+        method: 'POST',
+        body: formData,
+      });
+      if (response.ok) {
+        fetchPatients(); // Reload data to show View button
+      } else {
+        console.error('Failed to upload case file.');
+      }
+    } catch (err) {
+      console.error('Error uploading file.', err);
+    }
+  };
+
+  const handleViewCaseFile = (patientId) => {
+    window.open(`${API_BASE_URL}/api/patients/id/${patientId}/case-file`, '_blank');
+  };
+
+  const handleDeleteCaseFile = async (patientId) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/patients/id/${patientId}/case-file`, {
+        method: 'DELETE',
+      });
+      if (response.ok) {
+        fetchPatients(); // Reload data to show Upload button
+      } else {
+        console.error('Failed to delete case file.');
+      }
+    } catch (err) {
+      console.error('Error deleting file.', err);
+    }
+  };
+
   const downloadDischargeAsExcel = () => {
     if (filteredDischargeRecords.length === 0) return;
 
@@ -116,7 +178,7 @@ const AdminDashboard = () => {
       'Patient ID', 'Name', 'Age', 'Gender', 'Case Type', 'AR No',
       'Aadhar No', 'Mobile', 'Admission Ward', 'Admission Date', 'Admission Time',
       'Discharge Ward', 'Discharge Date', 'Discharge Time', 'Discharge Type',
-      'Occupation', 'Income', 'Mother Name', 'Caretaker Name', 'Address'
+      'Occupation', 'Income', 'Relation Name', 'Address'
     ];
 
     // Map the filtered discharge records to rows
@@ -139,7 +201,7 @@ const AdminDashboard = () => {
       p.occupation || '',
       p.income || '',
       p.motherName || '',
-      p.caretakerName || '',
+
       p.address ? `"${p.address.replace(/"/g, '""')}"` : ''
     ]);
     // Construct the CSV string
@@ -160,15 +222,18 @@ const AdminDashboard = () => {
   const [formData, setFormData] = useState({
     patientName: '',
     age: '',
-    motherName: '',
+    relationPrefix: 'S/o',
+    relativeName: '',
     patientId: '',
     admissionDate: getCurrentDate(),
     admissionTime: getCurrentTime(),
     wardName: '',
     mobileNo: '',
     aadharNo: '',
-    occupation: '',
-    caretakerName: '',
+    occupationCategory: '',
+    occupationType: '',
+    occupationManual: '',
+    income: '',
     street: '',
     village: '',
     taluk: 'Vridhachalam',
@@ -191,7 +256,15 @@ const AdminDashboard = () => {
   const [formErrors, setFormErrors] = useState({});
   const [manualPatientId, setManualPatientId] = useState(false);
   const [manualAdmissionDate, setManualAdmissionDate] = useState(false);
+  const [manualOccupationEdit, setManualOccupationEdit] = useState(false);
   const [predictedNextId, setPredictedNextId] = useState('Loading...');
+  
+  // Global Print Prompt State
+  const [showPrintPrompt, setShowPrintPrompt] = useState(false);
+  const [printPatientId, setPrintPatientId] = useState('');
+  const [printPatientNumber, setPrintPatientNumber] = useState('');
+  const [printError, setPrintError] = useState('');
+  const [isFetchingPrint, setIsFetchingPrint] = useState(false);
 
   // Patient Records State
   const [patients, setPatients] = useState([]);
@@ -202,9 +275,99 @@ const AdminDashboard = () => {
   const [activePatients, setActivePatients] = useState([]);
   const [loadingActivePatients, setLoadingActivePatients] = useState(false);
 
+  // Edit Patient State
+  const [editingPatient, setEditingPatient] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editFormData, setEditFormData] = useState({});
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const handleFetchAndPrint = async (e) => {
+    if (e) e.preventDefault();
+    const fullId = `${new Date().getFullYear()}-${printPatientNumber.trim()}`;
+    if (!printPatientNumber.trim()) {
+      setPrintError('Please enter a Patient Number.');
+      return;
+    }
+    setPrintPatientId(fullId);
+    
+    setIsFetchingPrint(true);
+    setPrintError('');
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/patients/master-admissions/by-patient-id/${fullId}`);
+      if (response.ok) {
+        const data = await response.json();
+        // MasterAdmission fields map to the same shape submittedData expects
+        setSubmittedData(data);
+        setViewMode('PRINT');
+        setShowPrintPrompt(false);
+        setPrintPatientId('');
+        setPrintPatientNumber('');
+      } else if (response.status === 404) {
+        setPrintError(`Patient ID ${fullId} not found.`);
+      } else {
+        setPrintError(`Failed to fetch patient data (Status: ${response.status}).`);
+      }
+    } catch (error) {
+      console.error("Error fetching patient for print:", error);
+      setPrintError(`Error connecting to server: ${error.message}`);
+    } finally {
+      setIsFetchingPrint(false);
+    }
+  };
+
+  const handleEditClick = (patient) => {
+    setEditingPatient(patient);
+    setEditFormData({
+      patientName: patient.patientName || '',
+      age: patient.age || '',
+      gender: patient.gender || '',
+      caseType: patient.caseType || '',
+      arNo: patient.arNo || '',
+      aadharNo: patient.aadharNo || '',
+      mobileNo: patient.mobileNo || '',
+      wardName: patient.wardName || '',
+      occupation: patient.occupation || '',
+      income: patient.income || '',
+      motherName: patient.motherName || '',
+      address: patient.address || ''
+    });
+    setShowEditModal(true);
+  };
+
+  const handleUpdatePatient = async (e) => {
+    e.preventDefault();
+    setIsUpdating(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/patients/id/${editingPatient.patientId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editFormData)
+      });
+      if (response.ok) {
+        setShowEditModal(false);
+        setEditingPatient(null);
+        fetchPatients(); // Refresh master records
+        fetchActivePatients(); // Refresh active patients
+      } else {
+        alert('Failed to update patient.');
+      }
+    } catch (error) {
+      console.error('Error updating patient:', error);
+      alert('Error updating patient.');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   // Discharge Records State
   const [dischargeRecords, setDischargeRecords] = useState([]);
   const [loadingDischarges, setLoadingDischarges] = useState(false);
+
+  useEffect(() => {
+    // Reset filters when tab changes to avoid invalid column selections
+    setFilters([{ column: 'All Columns', value: '', addressType: 'All', subType: 'All', rangeStart: '', rangeEnd: '' }]);
+  }, [activeTab]);
 
   const addFilter = () => {
     setFilters([...filters, { column: 'All Columns', value: '', addressType: 'All', subType: 'All', rangeStart: '', rangeEnd: '' }]);
@@ -281,7 +444,7 @@ const AdminDashboard = () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/patients/master-admissions`);
       const data = await response.json();
-      setPatients(data);
+      setPatients(data.sort((a, b) => b.id - a.id));
     } catch (err) {
       console.error('Failed to fetch patients', err);
     } finally {
@@ -294,7 +457,7 @@ const AdminDashboard = () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/patients`);
       const data = await response.json();
-      setActivePatients(data);
+      setActivePatients(data.sort((a, b) => b.id - a.id));
     } catch (err) {
       console.error('Failed to fetch active patients', err);
     } finally {
@@ -307,7 +470,7 @@ const AdminDashboard = () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/patients/discharge-entries`);
       const data = await response.json();
-      setDischargeRecords(data);
+      setDischargeRecords(data.sort((a, b) => b.id - a.id));
     } catch (err) {
       console.error('Failed to fetch discharge records', err);
     } finally {
@@ -404,14 +567,15 @@ const AdminDashboard = () => {
             const tParts = patient.admissionTime.split(':'); // HH:MM:SS
             const hh = parseInt(tParts[0], 10);
             if (filter.subType === 'Hour') {
-              return (hh % 12 || 12).toString(); // Return 12-hour integer string for easy match
+              const h12 = (hh % 12 || 12).toString();
+              return [h12, h12.padStart(2, '0')].join(',');
             }
             if (filter.subType === 'Minute') return tParts[1];
             return formatTime12Hour(patient.admissionTime);
           case 'Occupation': return patient.occupation;
           case 'Income': return patient.income;
-          case "Mother's Name": return patient.motherName;
-          case 'Caretaker Name': return patient.caretakerName;
+          case "Relation Name": return patient.motherName;
+
           case 'Address':
             if (!filter.addressType || filter.addressType === 'All') return patient.address;
             if (!patient.address) return '';
@@ -467,7 +631,7 @@ const AdminDashboard = () => {
           checkMatch(patient.aadharNo) || checkMatch(patient.mobileNo) || checkMatch(patient.wardName) ||
           checkMatch(patient.admissionDate) || checkMatch(patient.admissionTime) || checkMatch(patient.occupation) ||
           checkMatch(patient.income) ||
-          checkMatch(patient.motherName) || checkMatch(patient.caretakerName) || checkMatch(patient.address)
+          checkMatch(patient.motherName) || checkMatch(patient.address)
         );
       }
       const valueToCheck = (() => {
@@ -492,13 +656,16 @@ const AdminDashboard = () => {
             if (!patient.admissionTime) return '';
             const tParts = patient.admissionTime.split(':');
             const hh = parseInt(tParts[0], 10);
-            if (filter.subType === 'Hour') return (hh % 12 || 12).toString();
+            if (filter.subType === 'Hour') {
+              const h12 = (hh % 12 || 12).toString();
+              return [h12, h12.padStart(2, '0')].join(',');
+            }
             if (filter.subType === 'Minute') return tParts[1];
             return formatTime12Hour(patient.admissionTime);
           case 'Occupation': return patient.occupation;
           case 'Income': return patient.income;
-          case "Mother's Name": return patient.motherName;
-          case 'Caretaker Name': return patient.caretakerName;
+          case "Relation Name": return patient.motherName;
+
           case 'Address':
             if (!filter.addressType || filter.addressType === 'All') return patient.address;
             if (!patient.address) return '';
@@ -524,10 +691,25 @@ const AdminDashboard = () => {
       const searchColumn = filter.column;
       if (!searchColumn) return true;
 
+      if (searchColumn === 'Admission Date' && filter.subType === 'Between') {
+        if (!record.admissionDate) return false;
+        const pDate = new Date(record.admissionDate);
+        if (filter.rangeStart && new Date(filter.rangeStart) > pDate) return false;
+        if (filter.rangeEnd && new Date(filter.rangeEnd) < pDate) return false;
+        return true;
+      }
+      if (searchColumn === 'Discharge Date' && filter.subType === 'Between') {
+        if (!record.dischargeDate) return false;
+        const pDate = new Date(record.dischargeDate);
+        if (filter.rangeStart && new Date(filter.rangeStart) > pDate) return false;
+        if (filter.rangeEnd && new Date(filter.rangeEnd) < pDate) return false;
+        return true;
+      }
+
       const checkMatch = (val, strict = false) => {
         if (val == null) return false;
         const strVal = val.toString().toLowerCase();
-        const query = filter.value.toLowerCase();
+        const query = filter.value ? filter.value.toLowerCase().trim() : '';
         if (!query) return true;
         if (filter.matchType === 'Exact' || strict) {
           return strVal === query || strVal.startsWith(query);
@@ -536,7 +718,8 @@ const AdminDashboard = () => {
       };
 
       if (searchColumn === 'All Columns') {
-        if (!filter.value) return true;
+        const query = filter.value ? filter.value.toLowerCase().trim() : '';
+        if (!query) return true;
         return (
           checkMatch(record.destinationTableId || record.customPatientId) ||
           checkMatch(record.patientName) ||
@@ -548,22 +731,37 @@ const AdminDashboard = () => {
         );
       }
 
-      let columnValue = '';
-      switch (searchColumn) {
-        case 'Patient ID': columnValue = record.destinationTableId || record.customPatientId; break;
-        case 'Name': columnValue = record.patientName; break;
-        case 'Admission Date': columnValue = record.admissionDate; break;
-        case 'Discharge Date': columnValue = record.dischargeDate; break;
-        case 'Income': columnValue = record.income; break;
-        default: columnValue = '';
-      }
-
-      if (filter.subType === 'Between') {
-        if (!filter.rangeStart || !filter.rangeEnd) return true;
-        if (!columnValue) return false;
-        const val = columnValue.toString().toLowerCase();
-        return val >= filter.rangeStart.toLowerCase() && val <= filter.rangeEnd.toLowerCase();
-      }
+      let columnValue = (() => {
+        switch (searchColumn) {
+          case 'Patient ID': return record.destinationTableId || record.customPatientId;
+          case 'Name': return record.patientName;
+          case 'Income': return record.income;
+          case 'Relation Name': return record.motherName;
+          case 'Admission Date':
+            if (!record.admissionDate) return '';
+            const dParts = record.admissionDate.split('-');
+            if (filter.subType === 'Year') return dParts[0];
+            if (filter.subType === 'Month') return dParts[1];
+            if (filter.subType === 'Date') return dParts[2];
+            return record.admissionDate;
+          case 'Discharge Date':
+            if (!record.dischargeDate) return '';
+            const ddParts = record.dischargeDate.split('-');
+            if (filter.subType === 'Year') return ddParts[0];
+            if (filter.subType === 'Month') return ddParts[1];
+            if (filter.subType === 'Date') return ddParts[2];
+            return record.dischargeDate;
+          case 'Address':
+            if (!filter.addressType || filter.addressType === 'All') return record.address;
+            if (!record.address) return '';
+            const parts = record.address.split(',').map(s => s.trim());
+            if (filter.addressType === 'Village') return parts[1] || '';
+            if (filter.addressType === 'Taluk') return parts[2] || '';
+            if (filter.addressType === 'District') return parts[3] || '';
+            return record.address;
+          default: return '';
+        }
+      })();
 
       if (!filter.value) return true;
       if (!columnValue) return false;
@@ -655,7 +853,7 @@ const AdminDashboard = () => {
           checkMatch(record.occupation) ||
           checkMatch(record.income) ||
           checkMatch(record.motherName) ||
-          checkMatch(record.caretakerName) ||
+
           checkMatch(record.address)
         );
       }
@@ -691,20 +889,26 @@ const AdminDashboard = () => {
             if (!record.admissionTime) return '';
             const tParts = record.admissionTime.split(':');
             const hh = parseInt(tParts[0], 10);
-            if (filter.subType === 'Hour') return (hh % 12 || 12).toString();
+            if (filter.subType === 'Hour') {
+              const h12 = (hh % 12 || 12).toString();
+              return [h12, h12.padStart(2, '0')].join(',');
+            }
             if (filter.subType === 'Minute') return tParts[1];
             return record.admissionTime;
           case 'Discharge Time':
             if (!record.dischargeTime) return '';
             const dtParts = record.dischargeTime.split(':');
             const dhh = parseInt(dtParts[0], 10);
-            if (filter.subType === 'Hour') return (dhh % 12 || 12).toString();
+            if (filter.subType === 'Hour') {
+              const dh12 = (dhh % 12 || 12).toString();
+              return [dh12, dh12.padStart(2, '0')].join(',');
+            }
             if (filter.subType === 'Minute') return dtParts[1];
             return record.dischargeTime;
           case 'Occupation': return record.occupation;
           case 'Income': return record.income;
-          case "Mother's Name": return record.motherName;
-          case 'Caretaker Name': return record.caretakerName;
+          case "Relation Name": return record.motherName;
+
           case 'Address':
             if (!filter.addressType || filter.addressType === 'All') return record.address;
             if (!record.address) return '';
@@ -724,10 +928,28 @@ const AdminDashboard = () => {
 
   const handleChange = (e) => {
     let { name, value } = e.target;
+    let newErrors = { ...formErrors };
+
+    // Check for non-numeric input in number-only fields
+    if (['mobileNo', 'aadharNo', 'income', 'age'].includes(name)) {
+      let isInvalid = false;
+      if (name === 'aadharNo' && /[^\d\s]/.test(value)) isInvalid = true;
+      else if (name !== 'aadharNo' && /\D/.test(value)) isInvalid = true;
+
+      if (isInvalid) {
+        newErrors[name] = 'Numbers only please';
+        // Auto-clear the message after 2.5 seconds
+        setTimeout(() => setFormErrors(prev => ({ ...prev, [name]: null })), 2500);
+      } else {
+        newErrors[name] = null;
+      }
+    }
 
     if (name === 'mobileNo') {
       // Allow only numbers and restrict to 10 digits
       value = value.replace(/\D/g, '');
+      // Prevent leading zeros
+      value = value.replace(/^0+/, '');
       if (value.length > 10) value = value.slice(0, 10);
     }
 
@@ -740,7 +962,11 @@ const AdminDashboard = () => {
       }
     }
 
-    if (['patientName', 'motherName', 'occupation', 'caretakerName'].includes(name)) {
+    if (name === 'income') {
+      value = value.replace(/\D/g, '');
+    }
+
+    if (['patientName', 'relativeName', 'occupationManual'].includes(name)) {
       value = value.toUpperCase();
     }
 
@@ -757,9 +983,8 @@ const AdminDashboard = () => {
       [name]: value,
       ...(name === 'state' ? { district: '' } : {})
     }));
-    if (formErrors[name]) {
-      setFormErrors(prev => ({ ...prev, [name]: null }));
-    }
+    
+    setFormErrors(newErrors);
   };
 
   const handleSubmit = async (e) => {
@@ -768,33 +993,35 @@ const AdminDashboard = () => {
     setError('');
 
     try {
-          // Perform custom validation
-    const errors = {};
-    const requiredFields = ['patientName', 'age', 'gender', 'income', 'aadharNo', 'mobileNo', 'caseType', 'wardName', 'street', 'village', 'taluk', 'district', 'state'];
-    if (formData.caseType === 'MLC') requiredFields.push('arNo');
+      // Perform custom validation
+      const errors = {};
+      const requiredFields = ['patientName', 'age', 'gender', 'income', 'aadharNo', 'mobileNo', 'caseType', 'wardName', 'street', 'village', 'taluk', 'district', 'state'];
+      if (formData.caseType === 'MLC') requiredFields.push('arNo');
 
-    requiredFields.forEach(field => {
-      if (!formData[field]) {
-        const formattedField = field.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-        errors[field] = `${formattedField} is required`;
+      requiredFields.forEach(field => {
+        if (!formData[field]) {
+          const formattedField = field.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+          errors[field] = `${formattedField} is required`;
+        }
+      });
+
+      if (formData.aadharNo && formData.aadharNo.replace(/\s/g, '').length !== 12) {
+        errors.aadharNo = 'Aadhar number must be exactly 12 digits';
       }
-    });
 
-    if (formData.aadharNo && formData.aadharNo.replace(/\s/g, '').length !== 12) {
-      errors.aadharNo = 'Aadhar number must be exactly 12 digits';
-    }
+      if (Object.keys(errors).length > 0) {
+        setFormErrors(errors);
+        setIsSubmitting(false);
+        return;
+      }
 
-    if (Object.keys(errors).length > 0) {
-      setFormErrors(errors);
-      setIsSubmitting(false);
-      return;
-    }
+      setFormErrors({});
 
-    setFormErrors({});
-
-    const payload = {
+      const payload = {
         ...formData,
         patientId: manualPatientId ? formData.patientId : predictedNextId,
+        motherName: formData.relativeName ? `${formData.relationPrefix} ${formData.relativeName}`.trim() : '',
+        occupation: manualOccupationEdit ? formData.occupationManual : (formData.occupationCategory ? `${formData.occupationCategory}${formData.occupationType ? ' - ' + formData.occupationType : ''}` : ''),
         address: `${formData.street}, ${formData.village}, ${formData.taluk}, ${formData.district}, ${formData.state}`
       };
 
@@ -832,11 +1059,12 @@ const AdminDashboard = () => {
     setFormData({
       patientName: '', age: '', motherName: '', patientId: '',
       admissionDate: getCurrentDate(), admissionTime: getCurrentTime(), wardName: '', mobileNo: '', aadharNo: '',
-      occupation: '', income: '', caretakerName: '', street: '', village: '',
+      occupationCategory: '', occupationType: '', occupationManual: '', income: '', street: '', village: '',
       taluk: 'Vridhachalam', district: 'Cuddalore', state: 'Tamil Nadu', caseType: '', arNo: '', gender: ''
     });
     setManualPatientId(false);
     setManualAdmissionDate(false);
+    setManualOccupationEdit(false);
     setSubmittedData(null);
     fetchNextId(); // Refresh the ID for the new form
     setViewMode('FORM');
@@ -844,12 +1072,12 @@ const AdminDashboard = () => {
 
   const handleUndoAdmission = async () => {
     if (!submittedData?.patientId) return;
-    
+
     try {
       const response = await fetch(`${API_BASE_URL}/api/patients/${submittedData.patientId}`, {
         method: 'DELETE',
       });
-      
+
       if (response.ok) {
         // Keep formData as is, so it is pre-filled when returning to the form
         setSubmittedData(null);
@@ -902,7 +1130,7 @@ const AdminDashboard = () => {
           </a>
           <div className="nav-item-group">
             <a href="#" className="nav-item" onClick={(e) => { e.preventDefault(); setIsDestinationDropdownOpen(!isDestinationDropdownOpen); }}>
-              <Activity size={20} /> Destination Tables {isDestinationDropdownOpen ? '▼' : '▶'}
+              <Activity size={20} /> Medical Records Store Room {isDestinationDropdownOpen ? '▼' : '▶'}
             </a>
             {isDestinationDropdownOpen && (
               <div className="nav-dropdown" style={{ paddingLeft: '2.5rem', display: 'flex', flexDirection: 'column', gap: '0.25rem', marginTop: '0.25rem' }}>
@@ -924,8 +1152,9 @@ const AdminDashboard = () => {
 
       {/* Main Content */}
       <main className="main-content">
-        <header className="content-header">
-          {activeTab === 'ADMISSION' ? (
+        <header className="content-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div style={{ flexGrow: 1 }}>
+            {activeTab === 'ADMISSION' ? (
             <div style={{ textAlign: 'center', width: '100%' }}>
               <h1>DIET SHEET - ADMISSION FORM</h1>
               <p className="subtitle">GOVERNMENT HOSPITAL VRIDHACHALAM</p>
@@ -951,10 +1180,66 @@ const AdminDashboard = () => {
               <p className="subtitle">View and search through all admitted patients.</p>
             </div>
           )}
+          </div>
+          
+          <div className="no-print" style={{ marginLeft: '1rem', marginTop: '0.5rem' }}>
+            <button 
+              className="btn btn-primary" 
+              onClick={() => setShowPrintPrompt(true)}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: '#3b82f6', border: 'none', padding: '0.6rem 1rem' }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+              Print Record
+            </button>
+          </div>
         </header>
 
+        {showPrintPrompt && (
+          <div className="modal-overlay">
+            <div className="modal-content" style={{ maxWidth: '400px' }}>
+              <div className="modal-header">
+                <h2>Print Admission Record</h2>
+                <button className="close-btn" onClick={() => { setShowPrintPrompt(false); setPrintError(''); setPrintPatientId(''); setPrintPatientNumber(''); }}>
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="modal-body">
+                <form onSubmit={handleFetchAndPrint}>
+                  <div className="form-group">
+                    <label>Enter Patient ID</label>
+                    <div style={{ display: 'flex', alignItems: 'center', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', backgroundColor: '#fcfcfc', overflow: 'hidden', height: '44px' }}>
+                      <span style={{ padding: '0 0.75rem', color: 'var(--text-muted)', fontWeight: '600', backgroundColor: '#f4f5f7', borderRight: '1px solid var(--border-color)', height: '100%', display: 'flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
+                        {new Date().getFullYear()}-
+                      </span>
+                      <input
+                        type="number"
+                        min="1"
+                        style={{ flexGrow: 1, padding: '0 0.75rem', border: 'none', background: 'transparent', height: '100%', outline: 'none', fontSize: '1rem' }}
+                        value={printPatientNumber}
+                        onChange={(e) => setPrintPatientNumber(e.target.value)}
+                        placeholder="e.g., 18"
+                        required
+                        autoFocus
+                      />
+                    </div>
+                  </div>
+                  {printError && <div style={{ color: 'red', marginBottom: '1rem', fontSize: '0.9rem' }}>{printError}</div>}
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1.5rem' }}>
+                    <button type="button" className="btn btn-outline" onClick={() => { setShowPrintPrompt(false); setPrintError(''); setPrintPatientId(''); setPrintPatientNumber(''); }}>
+                      Cancel
+                    </button>
+                    <button type="submit" className="btn btn-primary" disabled={isFetchingPrint}>
+                      {isFetchingPrint ? 'Fetching...' : 'Fetch & Print'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="form-container glass-panel">
-          {(activeTab === 'RECORDS' || activeTab === 'DISCHARGE_RECORDS' || activeTab === 'ACTIVE_PATIENTS' || activeTab === 'DESTINATION_RECORDS') && (
+          {(activeTab === 'RECORDS' || activeTab === 'DISCHARGE_RECORDS' || activeTab === 'ACTIVE_PATIENTS' || activeTab === 'DESTINATION_RECORDS') && viewMode !== 'PRINT' && (
             <div className="records-view">
               <div className="records-controls" style={{ marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 {filters.map((filter, index) => (
@@ -1004,31 +1289,9 @@ const AdminDashboard = () => {
                       style={{ padding: '0.75rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', fontSize: '1rem', backgroundColor: 'white', minWidth: '180px' }}
                     >
                       <option value="All Columns">All Columns</option>
-                      <option value="Patient ID">Patient ID</option>
-                      <option value="Name">Name</option>
-                      <option value="Age">Age</option>
-                      <option value="Gender">Gender</option>
-                      <option value="Case Type">Case Type</option>
-                      <option value="AR No">AR No</option>
-                      <option value="Aadhar No">Aadhar No</option>
-                      <option value="Mobile">Mobile</option>
-                      <option value="Ward">Ward</option>
-                      <option value="Admission Date">Admission Date</option>
-                      <option value="Admission Time">Admission Time</option>
-                      <option value="Occupation">Occupation</option>
-                      <option value="Income">Income</option>
-                      <option value="Mother's Name">Mother's Name</option>
-                      <option value="Caretaker Name">Caretaker Name</option>
-                      <option value="Address">Address</option>
-                      <option value="Status">Status</option>
-                      {activeTab === 'DISCHARGE_RECORDS' && (
-                        <>
-                          <option value="Discharge Date">Discharge Date</option>
-                          <option value="Discharge Time">Discharge Time</option>
-                          <option value="Discharge Type">Discharge Type</option>
-                          <option value="Discharge Ward">Discharge Ward</option>
-                        </>
-                      )}
+                      {FILTER_COLUMNS[activeTab]?.map(col => (
+                        <option key={col} value={col}>{col}</option>
+                      ))}
                     </select>
                     {filter.column === 'Address' && (
                       <select
@@ -1115,10 +1378,11 @@ const AdminDashboard = () => {
                               <th style={{ padding: '1rem' }}>Admission Time</th>
                               <th style={{ padding: '1rem' }}>Occupation</th>
                               <th style={{ padding: '1rem' }}>Income</th>
-                              <th style={{ padding: '1rem' }}>Mother's Name</th>
-                              <th style={{ padding: '1rem' }}>Caretaker Name</th>
+                              <th style={{ padding: '1rem' }}>Relation Name</th>
+
                               <th style={{ padding: '1rem' }}>Address</th>
                               <th style={{ padding: '1rem' }}>Status</th>
+                              <th style={{ padding: '1rem' }}>Case File</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -1138,7 +1402,7 @@ const AdminDashboard = () => {
                                 <td style={{ padding: '1rem' }}>{patient.occupation || 'N/A'}</td>
                                 <td style={{ padding: '1rem' }}>{patient.income || 'N/A'}</td>
                                 <td style={{ padding: '1rem' }}>{patient.motherName || 'N/A'}</td>
-                                <td style={{ padding: '1rem' }}>{patient.caretakerName || 'N/A'}</td>
+
                                 <td style={{ padding: '1rem', maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis' }} title={patient.address}>{patient.address || 'N/A'}</td>
                                 <td style={{ padding: '1rem' }}>
                                   <span style={{
@@ -1151,6 +1415,41 @@ const AdminDashboard = () => {
                                   }}>
                                     {patient.status || 'N/A'}
                                   </span>
+                                </td>
+                                <td style={{ padding: '1rem' }}>
+                                  {patient.caseFileName ? (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                      <button 
+                                        onClick={() => handleViewCaseFile(patient.patientId)}
+                                        style={{ padding: '0.4rem 0.8rem', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '0.25rem', cursor: 'pointer', fontSize: '0.85rem', fontWeight: '500' }}
+                                      >
+                                        View PDF
+                                      </button>
+                                      <button
+                                        onClick={() => handleDeleteCaseFile(patient.patientId)}
+                                        style={{ padding: '0.4rem 0.6rem', backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '0.25rem', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 'bold' }}
+                                        title="Delete Case File"
+                                      >
+                                        X
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <>
+                                      <input 
+                                        type="file" 
+                                        id={`upload-case-${patient.patientId}`} 
+                                        style={{ display: 'none' }} 
+                                        accept="application/pdf"
+                                        onChange={(e) => handleUploadCaseFile(patient.patientId, e.target.files[0])}
+                                      />
+                                      <button 
+                                        onClick={() => document.getElementById(`upload-case-${patient.patientId}`).click()}
+                                        style={{ padding: '0.4rem 0.8rem', backgroundColor: '#e2e8f0', color: '#475569', border: '1px solid #cbd5e1', borderRadius: '0.25rem', cursor: 'pointer', fontSize: '0.85rem', fontWeight: '500' }}
+                                      >
+                                        Upload PDF
+                                      </button>
+                                    </>
+                                  )}
                                 </td>
                               </tr>
                             ))}
@@ -1200,6 +1499,7 @@ const AdminDashboard = () => {
                         <table className="records-table" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', whiteSpace: 'nowrap' }}>
                           <thead>
                             <tr style={{ backgroundColor: '#f0fdf4', borderBottom: '2px solid #86efac' }}>
+                              <th style={{ padding: '1rem', width: '80px', textAlign: 'center' }}>Action</th>
                               <th style={{ padding: '1rem' }}>Patient ID</th>
                               <th style={{ padding: '1rem' }}>Name</th>
                               <th style={{ padding: '1rem' }}>Age</th>
@@ -1213,14 +1513,17 @@ const AdminDashboard = () => {
                               <th style={{ padding: '1rem' }}>Admission Time</th>
                               <th style={{ padding: '1rem' }}>Occupation</th>
                               <th style={{ padding: '1rem' }}>Income</th>
-                              <th style={{ padding: '1rem' }}>Mother's Name</th>
-                              <th style={{ padding: '1rem' }}>Caretaker Name</th>
+                              <th style={{ padding: '1rem' }}>Relation Name</th>
+
                               <th style={{ padding: '1rem' }}>Address</th>
                             </tr>
                           </thead>
                           <tbody>
                             {filteredActivePatients.map(patient => (
                               <tr key={patient.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                <td style={{ padding: '0.5rem', textAlign: 'center' }}>
+                                  <button onClick={() => handleEditClick(patient)} style={{ padding: '0.4rem 0.8rem', backgroundColor: 'var(--primary)', color: 'white', border: 'none', borderRadius: '0.25rem', cursor: 'pointer', fontSize: '0.85rem', fontWeight: '500' }}>Edit</button>
+                                </td>
                                 <td style={{ padding: '1rem', fontWeight: '600', color: '#16a34a' }}>{patient.patientId || 'N/A'}</td>
                                 <td style={{ padding: '1rem', fontWeight: '500' }}>{patient.patientName}</td>
                                 <td style={{ padding: '1rem' }}>{patient.age}</td>
@@ -1235,7 +1538,7 @@ const AdminDashboard = () => {
                                 <td style={{ padding: '1rem' }}>{patient.occupation || 'N/A'}</td>
                                 <td style={{ padding: '1rem' }}>{patient.income || 'N/A'}</td>
                                 <td style={{ padding: '1rem' }}>{patient.motherName || 'N/A'}</td>
-                                <td style={{ padding: '1rem' }}>{patient.caretakerName || 'N/A'}</td>
+
                                 <td style={{ padding: '1rem', maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis' }} title={patient.address}>{patient.address || 'N/A'}</td>
                               </tr>
                             ))}
@@ -1360,7 +1663,7 @@ const AdminDashboard = () => {
                           <th style={{ padding: '1rem' }}>patient_{selectedDestinationTable}_id</th>
                           <th style={{ padding: '1rem' }}>Patient ID</th>
                           <th style={{ padding: '1rem' }}>Patient Name</th>
-                          <th style={{ padding: '1rem' }}>Mother Name</th>
+                          <th style={{ padding: '1rem' }}>Relation Name</th>
                           <th style={{ padding: '1rem' }}>Admission Date</th>
                           <th style={{ padding: '1rem' }}>Discharge Date</th>
                           <th style={{ padding: '1rem' }}>Income</th>
@@ -1419,28 +1722,19 @@ const AdminDashboard = () => {
               <div className="print-header" style={{ textAlign: 'center', marginBottom: '2rem', borderBottom: '2px solid #000', paddingBottom: '1rem' }}>
                 <img src={tnLogo} alt="TN Logo" style={{ width: '80px', height: 'auto', marginBottom: '1rem' }} />
                 <h2>GOVERNMENT HOSPITAL VIRUDHACHALAM - Official Admission Record</h2>
-                <p>Date: {new Date().toLocaleDateString()}</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '1rem', padding: '0 2rem' }}>
+                  <p style={{ marginTop: '0.25rem' }}>Date: {new Date().toLocaleDateString()}</p>
+                  <div style={{ textAlign: 'right' }}>
+                    <p style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>Patient ID: {submittedData.patientId || 'Pending Assignment'}</p>
+                    <p style={{ fontSize: '1.1rem', fontWeight: 'bold', marginTop: '0.25rem' }}>NAME: {submittedData.patientName}</p>
+                  </div>
+                </div>
               </div>
 
               <div className="print-body">
                 <div className="print-section">
-                  <h3>Patient Information</h3>
-                  <div className="print-grid">
-                    <p><strong>Name:</strong> {submittedData.patientName}</p>
-                    <p><strong>Age:</strong> {submittedData.age}</p>
-                    <p><strong>Gender:</strong> {submittedData.gender}</p>
-                    <p><strong>Mother's Name:</strong> {submittedData.motherName || 'N/A'}</p>
-                    <p><strong>Occupation:</strong> {submittedData.occupation || 'N/A'}</p>
-                    <p><strong>Income:</strong> {submittedData.income || 'N/A'}</p>
-                    <p><strong>Caretaker:</strong> {submittedData.caretakerName || 'N/A'}</p>
-                    <p><strong>Address:</strong> {submittedData.address}</p>
-                  </div>
-                </div>
-
-                <div className="print-section">
                   <h3>Admission Details</h3>
                   <div className="print-grid">
-                    <p><strong>Patient ID:</strong> {submittedData.patientId || 'Pending Assignment'}</p>
                     <p><strong>Case Type:</strong> {submittedData.caseType}</p>
                     {submittedData.caseType === 'MLC' && <p><strong>AR No:</strong> {submittedData.arNo}</p>}
                     <p><strong>Aadhar No:</strong> {submittedData.aadharNo}</p>
@@ -1448,6 +1742,19 @@ const AdminDashboard = () => {
                     <p><strong>Admission Time:</strong> {formatTime12Hour(submittedData.admissionTime)}</p>
                     <p><strong>Ward Name:</strong> {submittedData.wardName}</p>
                     <p><strong>Mobile No:</strong> {submittedData.mobileNo}</p>
+                  </div>
+                </div>
+
+                <div className="print-section">
+                  <h3>Patient Information</h3>
+                  <div className="print-grid">
+                    <p><strong>Name:</strong> {submittedData.patientName}</p>
+                    <p><strong>Age:</strong> {submittedData.age}</p>
+                    <p><strong>Gender:</strong> {submittedData.gender}</p>
+                    <p><strong>Relation Name:</strong> {submittedData.motherName || 'N/A'}</p>
+                    <p><strong>Occupation:</strong> {submittedData.occupation || 'N/A'}</p>
+                    <p><strong>Income:</strong> {submittedData.income || 'N/A'}</p>
+                    <p><strong>Address:</strong> {submittedData.address}</p>
                   </div>
                 </div>
               </div>
@@ -1485,8 +1792,14 @@ const AdminDashboard = () => {
                             type="checkbox"
                             checked={manualPatientId}
                             onChange={(e) => {
-                              setManualPatientId(e.target.checked);
-                              if (!e.target.checked) setFormData({ ...formData, patientId: '' });
+                              const isChecked = e.target.checked;
+                              setManualPatientId(isChecked);
+                              if (!isChecked) {
+                                setFormData({ ...formData, patientId: '' });
+                              } else {
+                                const currentYear = new Date().getFullYear();
+                                setFormData({ ...formData, patientId: `${currentYear}-` });
+                              }
                             }}
                             style={{ width: 'auto' }}
                           />
@@ -1532,14 +1845,86 @@ const AdminDashboard = () => {
 
                   <div className="form-row">
                     <div className="form-group">
-                      <label>Mother's Name</label>
-                      <input type="text" name="motherName" value={formData.motherName} onChange={handleChange} />
-                      {formErrors.motherName && <span className="error-text">{formErrors.motherName}</span>}
+                      <label>Relation / Name</label>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <select 
+                          name="relationPrefix" 
+                          value={formData.relationPrefix} 
+                          onChange={handleChange}
+                          style={{ width: '30%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', backgroundColor: 'white' }}
+                        >
+                          <option value="S/o">S/o</option>
+                          <option value="W/o">W/o</option>
+                          <option value="H/o">H/o</option>
+                          <option value="D/o">D/o</option>
+                          <option value="F/o">F/o</option>
+                          <option value="C/o">C/o</option>
+                          <option value="M/o">M/o</option>
+                        </select>
+                        <input 
+                          type="text" 
+                          name="relativeName" 
+                          value={formData.relativeName} 
+                          onChange={handleChange} 
+                          style={{ width: '70%' }}
+                        />
+                      </div>
+                      {formErrors.relativeName && <span className="error-text">{formErrors.relativeName}</span>}
                     </div>
                     <div className="form-group">
-                      <label>Occupation</label>
-                      <input type="text" name="occupation" value={formData.occupation} onChange={handleChange} />
-                      {formErrors.occupation && <span className="error-text">{formErrors.occupation}</span>}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <label>Occupation</label>
+                        <label style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.25rem', fontWeight: 'normal' }}>
+                          <input 
+                            type="checkbox" 
+                            checked={manualOccupationEdit} 
+                            onChange={(e) => {
+                              setManualOccupationEdit(e.target.checked);
+                              setFormData({...formData, occupationCategory: '', occupationType: '', occupationManual: ''});
+                            }}
+                          /> Manual Edit
+                        </label>
+                      </div>
+                      
+                      {manualOccupationEdit ? (
+                        <input 
+                          type="text" 
+                          name="occupationManual" 
+                          placeholder="Enter occupation manually..."
+                          value={formData.occupationManual} 
+                          onChange={handleChange} 
+                        />
+                      ) : (
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <select 
+                            name="occupationCategory" 
+                            value={formData.occupationCategory} 
+                            onChange={(e) => {
+                              handleChange(e);
+                              setFormData(prev => ({ ...prev, occupationType: '' })); // Reset type when category changes
+                            }}
+                            style={{ width: '50%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', backgroundColor: 'white' }}
+                          >
+                            <option value="">Select Category...</option>
+                            {Object.keys(OCCUPATION_OPTIONS).map(cat => (
+                              <option key={cat} value={cat}>{cat}</option>
+                            ))}
+                          </select>
+                          
+                          <select 
+                            name="occupationType" 
+                            value={formData.occupationType} 
+                            onChange={handleChange}
+                            disabled={!formData.occupationCategory || OCCUPATION_OPTIONS[formData.occupationCategory]?.length === 0}
+                            style={{ width: '50%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', backgroundColor: !formData.occupationCategory || OCCUPATION_OPTIONS[formData.occupationCategory]?.length === 0 ? '#f3f4f6' : 'white' }}
+                          >
+                            <option value="">Type...</option>
+                            {formData.occupationCategory && OCCUPATION_OPTIONS[formData.occupationCategory]?.map(type => (
+                              <option key={type} value={type}>{type}</option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -1550,9 +1935,6 @@ const AdminDashboard = () => {
                       {formErrors.income && <span className="error-text">{formErrors.income}</span>}
                     </div>
                     <div className="form-group">
-                      <label>Caretaker Name</label>
-                      <input type="text" name="caretakerName" value={formData.caretakerName} onChange={handleChange} />
-                      {formErrors.caretakerName && <span className="error-text">{formErrors.caretakerName}</span>}
                     </div>
                   </div>
 
@@ -1706,6 +2088,94 @@ const AdminDashboard = () => {
           )}
         </div>
       </main>
+
+      {/* Edit Patient Modal */}
+      {showEditModal && editingPatient && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1rem' }}>
+          <div style={{ backgroundColor: 'white', borderRadius: '0.5rem', width: '100%', maxWidth: '800px', maxHeight: '90vh', overflowY: 'auto', padding: '2rem', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' }}>
+            <h2 style={{ marginBottom: '1.5rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.75rem', color: '#1e293b' }}>
+              Edit Patient: {editingPatient.patientId}
+            </h2>
+            <form onSubmit={handleUpdatePatient}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '2rem' }}>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label>Name</label>
+                  <input type="text" value={editFormData.patientName} onChange={(e) => setEditFormData({...editFormData, patientName: e.target.value})} required className="search-input" style={{ width: '100%', padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }} />
+                </div>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label>Age</label>
+                  <input type="number" value={editFormData.age} onChange={(e) => setEditFormData({...editFormData, age: e.target.value})} required className="search-input" style={{ width: '100%', padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }} />
+                </div>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label>Gender</label>
+                  <select value={editFormData.gender} onChange={(e) => setEditFormData({...editFormData, gender: e.target.value})} className="search-input" style={{ width: '100%', padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }}>
+                    <option value="">Select</option>
+                    <option value="MALE">Male</option>
+                    <option value="FEMALE">Female</option>
+                    <option value="TRANSGENDER">Transgender</option>
+                  </select>
+                </div>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label>Case Type</label>
+                  <select value={editFormData.caseType} onChange={(e) => setEditFormData({...editFormData, caseType: e.target.value})} className="search-input" style={{ width: '100%', padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }}>
+                    <option value="NON MLC">NON MLC</option>
+                    <option value="MLC">MLC</option>
+                  </select>
+                </div>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label>AR No</label>
+                  <input type="text" value={editFormData.arNo} onChange={(e) => setEditFormData({...editFormData, arNo: e.target.value})} className="search-input" style={{ width: '100%', padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }} disabled={editFormData.caseType !== 'MLC'} />
+                </div>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label>Aadhar No</label>
+                  <input type="text" value={editFormData.aadharNo} onChange={(e) => setEditFormData({...editFormData, aadharNo: e.target.value})} className="search-input" style={{ width: '100%', padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }} />
+                </div>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label>Mobile No</label>
+                  <input type="text" value={editFormData.mobileNo} onChange={(e) => setEditFormData({...editFormData, mobileNo: e.target.value})} className="search-input" style={{ width: '100%', padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }} />
+                </div>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label>Ward Name</label>
+                  <select value={editFormData.wardName} onChange={(e) => setEditFormData({...editFormData, wardName: e.target.value})} className="search-input" style={{ width: '100%', padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }} required>
+                    <option value="">Select Ward</option>
+                    <option value="Children Ward">CH-Children Ward</option>
+                    <option value="CMCHIS Female Ward">CMCHIS Female Ward</option>
+                    <option value="CMCHIS Male Ward">CMCHIS Male Ward</option>
+                    <option value="Eye Ward">Eye Ward</option>
+                    <option value="Female Ward 1">F1-Female Ward-1</option>
+                    <option value="Female Ward 2">F2-Female Ward-2</option>
+                    <option value="Dialysis Ward">HD-Dialysis ward</option>
+                    <option value="Labour Ward">Labour Ward</option>
+                    <option value="Male Ward 1">M1-Male Ward-1</option>
+                    <option value="Male Ward 2">M2-Male Ward-2</option>
+                    <option value="PS Ward">PS Ward</option>
+                    <option value="SNCU">SNCU</option>
+                  </select>
+                </div>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label>Relation Name</label>
+                  <input type="text" value={editFormData.motherName} onChange={(e) => setEditFormData({...editFormData, motherName: e.target.value})} className="search-input" style={{ width: '100%', padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }} />
+                </div>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label>Occupation</label>
+                  <input type="text" value={editFormData.occupation} onChange={(e) => setEditFormData({...editFormData, occupation: e.target.value})} className="search-input" style={{ width: '100%', padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }} />
+                </div>
+                <div className="form-group" style={{ marginBottom: 0, gridColumn: '1 / -1' }}>
+                  <label>Address</label>
+                  <textarea value={editFormData.address} onChange={(e) => setEditFormData({...editFormData, address: e.target.value})} rows="3" className="search-input" style={{ width: '100%', padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }}></textarea>
+                </div>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', borderTop: '1px solid #e2e8f0', paddingTop: '1.5rem' }}>
+                <button type="button" onClick={() => setShowEditModal(false)} style={{ padding: '0.75rem 1.5rem', border: '1px solid #cbd5e1', backgroundColor: 'white', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: '500' }}>Cancel</button>
+                <button type="submit" disabled={isUpdating} style={{ padding: '0.75rem 1.5rem', border: 'none', backgroundColor: 'var(--primary)', color: 'white', borderRadius: '0.5rem', cursor: 'pointer', fontWeight: '500' }}>
+                  {isUpdating ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

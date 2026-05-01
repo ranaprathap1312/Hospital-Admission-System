@@ -9,6 +9,7 @@ import com.example.demo.repository.PatientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import org.springframework.transaction.annotation.Transactional;
@@ -80,7 +81,7 @@ public class PatientService {
         master.setAadharNo(savedPatient.getAadharNo());
         master.setOccupation(savedPatient.getOccupation());
         master.setIncome(savedPatient.getIncome());
-        master.setCaretakerName(savedPatient.getCaretakerName());
+
         master.setAddress(savedPatient.getAddress());
         master.setCaseType(savedPatient.getCaseType());
         master.setArNo(savedPatient.getArNo());
@@ -115,7 +116,84 @@ public class PatientService {
         return patientRepository.findByPatientId(patientId);
     }
 
-    public Long dischargePatient(String patientId, String dischargeType, String dischargeWard, String dischargeDateStr, String destinationTable, String updatedCaseType) {
+    public java.util.Optional<MasterAdmission> getMasterAdmissionByPatientId(String patientId) {
+        return masterAdmissionRepository.findFirstByPatientIdOrderByIdDesc(patientId);
+    }
+
+    public void saveCaseFile(String patientId, MultipartFile file) throws java.io.IOException {
+        java.util.Optional<MasterAdmission> masterOpt = masterAdmissionRepository.findFirstByPatientIdOrderByIdDesc(patientId);
+        if (masterOpt.isPresent()) {
+            MasterAdmission master = masterOpt.get();
+            master.setCaseFileName(file.getOriginalFilename());
+            master.setCaseFileType(file.getContentType() != null ? file.getContentType() : "application/pdf");
+            master.setCaseFileData(file.getBytes());
+            masterAdmissionRepository.save(master);
+        } else {
+            throw new RuntimeException("Patient record not found in master table");
+        }
+    }
+
+    public void deleteCaseFile(String patientId) {
+        java.util.Optional<MasterAdmission> masterOpt = masterAdmissionRepository.findFirstByPatientIdOrderByIdDesc(patientId);
+        if (masterOpt.isPresent()) {
+            MasterAdmission master = masterOpt.get();
+            master.setCaseFileName(null);
+            master.setCaseFileType(null);
+            master.setCaseFileData(null);
+            masterAdmissionRepository.save(master);
+        } else {
+            throw new RuntimeException("Patient record not found in master table");
+        }
+    }
+
+    public MasterAdmission getCaseFile(String patientId) {
+        return masterAdmissionRepository.findFirstByPatientIdOrderByIdDesc(patientId)
+            .orElseThrow(() -> new RuntimeException("Patient record not found"));
+    }
+
+    @Transactional
+    public Patient updatePatient(String patientId, Patient updatedData) {
+        // Update Patient table
+        Patient patient = patientRepository.findByPatientId(patientId)
+            .orElseThrow(() -> new RuntimeException("Patient not found with ID: " + patientId));
+            
+        patient.setPatientName(updatedData.getPatientName());
+        patient.setAge(updatedData.getAge());
+        patient.setMotherName(updatedData.getMotherName());
+        patient.setWardName(updatedData.getWardName());
+        patient.setMobileNo(updatedData.getMobileNo());
+        patient.setAadharNo(updatedData.getAadharNo());
+        patient.setOccupation(updatedData.getOccupation());
+        patient.setIncome(updatedData.getIncome());
+        patient.setAddress(updatedData.getAddress());
+        patient.setCaseType(updatedData.getCaseType());
+        patient.setArNo(updatedData.getArNo());
+        patient.setGender(updatedData.getGender());
+        // Note: intentionally not updating admission date/time or status
+        
+        Patient savedPatient = patientRepository.save(patient);
+
+        // Synchronize updates to MasterAdmission table
+        masterAdmissionRepository.findByPatientId(patientId).ifPresent(master -> {
+            master.setPatientName(updatedData.getPatientName());
+            master.setAge(updatedData.getAge());
+            master.setMotherName(updatedData.getMotherName());
+            master.setWardName(updatedData.getWardName());
+            master.setMobileNo(updatedData.getMobileNo());
+            master.setAadharNo(updatedData.getAadharNo());
+            master.setOccupation(updatedData.getOccupation());
+            master.setIncome(updatedData.getIncome());
+            master.setAddress(updatedData.getAddress());
+            master.setCaseType(updatedData.getCaseType());
+            master.setArNo(updatedData.getArNo());
+            master.setGender(updatedData.getGender());
+            masterAdmissionRepository.save(master);
+        });
+
+        return savedPatient;
+    }
+
+    public Long dischargePatient(String patientId, String dischargeType, String dischargeWard, String dischargeDateStr, String destinationTable, String updatedCaseType, String summaryText) {
         Patient patient = patientRepository.findByPatientId(patientId)
             .orElseThrow(() -> new RuntimeException("Patient not found with ID: " + patientId));
 
@@ -143,27 +221,27 @@ public class PatientService {
             jdbcTemplate.update(
                 "UPDATE discharge_entry SET custom_patient_id=?, discharge_type=?, discharge_ward=?, " +
                 "ar_no=?, case_type=?, patient_name=?, age=?, gender=?, mother_name=?, mobile_no=?, " +
-                "aadhar_no=?, occupation=?, income=?, caretaker_name=?, address=?, admission_ward=?, " +
-                "admission_date=?, admission_time=?, discharge_date=?, discharge_time=? WHERE patient_db_id=?",
+                "aadhar_no=?, occupation=?, income=?, address=?, admission_ward=?, " +
+                "admission_date=?, admission_time=?, discharge_date=?, discharge_time=?, summary=? WHERE patient_db_id=?",
                 patient.getPatientId(), dischargeType, dischargeWard,
                 patient.getArNo(), finalCaseType, patient.getPatientName(), patient.getAge(), patient.getGender(),
                 patient.getMotherName(), patient.getMobileNo(), patient.getAadharNo(), patient.getOccupation(),
-                patient.getIncome(), patient.getCaretakerName(), patient.getAddress(), patient.getWardName(),
-                patient.getAdmissionDate(), patient.getAdmissionTime(), finalDischargeDate, finalDischargeTime,
+                patient.getIncome(), patient.getAddress(), patient.getWardName(),
+                patient.getAdmissionDate(), patient.getAdmissionTime(), finalDischargeDate, finalDischargeTime, summaryText,
                 patient.getId()
             );
         } else {
             jdbcTemplate.update(
                 "INSERT INTO discharge_entry (custom_patient_id, discharge_type, patient_db_id, discharge_ward, " +
                 "ar_no, case_type, patient_name, age, gender, mother_name, mobile_no, " +
-                "aadhar_no, occupation, income, caretaker_name, address, admission_ward, " +
-                "admission_date, admission_time, discharge_date, discharge_time) " +
+                "aadhar_no, occupation, income, address, admission_ward, " +
+                "admission_date, admission_time, discharge_date, discharge_time, summary) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 patient.getPatientId(), dischargeType, patient.getId(), dischargeWard,
                 patient.getArNo(), finalCaseType, patient.getPatientName(), patient.getAge(), patient.getGender(),
                 patient.getMotherName(), patient.getMobileNo(), patient.getAadharNo(), patient.getOccupation(),
-                patient.getIncome(), patient.getCaretakerName(), patient.getAddress(), patient.getWardName(),
-                patient.getAdmissionDate(), patient.getAdmissionTime(), finalDischargeDate, finalDischargeTime
+                patient.getIncome(), patient.getAddress(), patient.getWardName(),
+                patient.getAdmissionDate(), patient.getAdmissionTime(), finalDischargeDate, finalDischargeTime, summaryText
             );
         }
 
@@ -189,8 +267,8 @@ public class PatientService {
                 String sql = "INSERT INTO " + destinationTable + " (" +
                     "custom_patient_id, discharge_type, patient_db_id, discharge_ward, " +
                     "ar_no, case_type, patient_name, age, gender, mother_name, mobile_no, " +
-                    "aadhar_no, occupation, income, caretaker_name, address, admission_ward, " +
-                    "admission_date, admission_time, discharge_date, discharge_time" +
+                    "aadhar_no, occupation, income, address, admission_ward, " +
+                    "admission_date, admission_time, discharge_date, discharge_time, summary" +
                     ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                 KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -205,18 +283,18 @@ public class PatientService {
                     ps.setObject(7, patient.getPatientName());
                     ps.setObject(8, patient.getAge());
                     ps.setObject(9, patient.getGender());
-                    ps.setObject(10, patient.getMobileNo());
+                    ps.setObject(10, patient.getMotherName());
                     ps.setObject(11, patient.getMobileNo());
                     ps.setObject(12, patient.getAadharNo());
                     ps.setObject(13, patient.getOccupation());
                     ps.setObject(14, patient.getIncome());
-                    ps.setObject(15, patient.getCaretakerName());
-                    ps.setObject(16, patient.getAddress());
-                    ps.setObject(17, patient.getWardName());
-                    ps.setObject(18, patient.getAdmissionDate());
-                    ps.setObject(19, patient.getAdmissionTime());
-                    ps.setObject(20, finalDischargeDate);
-                    ps.setObject(21, finalDischargeTime);
+                    ps.setObject(15, patient.getAddress());
+                    ps.setObject(16, patient.getWardName());
+                    ps.setObject(17, patient.getAdmissionDate());
+                    ps.setObject(18, patient.getAdmissionTime());
+                    ps.setObject(19, finalDischargeDate);
+                    ps.setObject(20, finalDischargeTime);
+                    ps.setObject(21, summaryText);
                     return ps;
                 }, keyHolder);
 
@@ -280,7 +358,7 @@ public class PatientService {
             restoredPatient.setOccupation(master.getOccupation());
             restoredPatient.setIncome(master.getIncome());
             restoredPatient.setMotherName(master.getMotherName());
-            restoredPatient.setCaretakerName(master.getCaretakerName());
+
             restoredPatient.setAddress(master.getAddress());
             restoredPatient.setCreatedAt(LocalDateTime.now());
             restoredPatient.setStatus("ADMITTED");
@@ -348,7 +426,7 @@ public class PatientService {
             entry.setOccupation(rs.getString("occupation"));
             entry.setIncome(rs.getString("income"));
             entry.setMotherName(rs.getString("mother_name"));
-            entry.setCaretakerName(rs.getString("caretaker_name"));
+
             entry.setAddress(rs.getString("address"));
             return entry;
         });

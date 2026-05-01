@@ -42,8 +42,7 @@ public class Patient {
     private String occupation;
     private String income;
 
-    @Column(name = "caretaker_name")
-    private String caretakerName;
+
 
     private String address;
 
@@ -95,8 +94,7 @@ public class Patient {
     public String getOccupation() { return occupation; }
     public void setOccupation(String occupation) { this.occupation = occupation; }
 
-    public String getCaretakerName() { return caretakerName; }
-    public void setCaretakerName(String caretakerName) { this.caretakerName = caretakerName; }
+
 
     public String getAddress() { return address; }
     public void setAddress(String address) { this.address = address; }

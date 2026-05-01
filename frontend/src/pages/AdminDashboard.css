@@ -283,13 +283,25 @@
 
 /* Print Media Query */
 @media print {
-  /* Hide unnecessary UI elements */
+  /* Hide ALL UI except the print form */
   .sidebar, 
   .content-header, 
-  .no-print {
+  .no-print,
+  .records-view,
+  .modal-overlay,
+  .hamburger-btn,
+  .sidebar-overlay {
     display: none !important;
   }
   
+  /* Show only the print-view */
+  .print-view {
+    display: block !important;
+    border: none;
+    padding: 10mm !important;
+    margin: 0;
+  }
+
   .dashboard-wrapper {
     background-color: white !important;
   }
@@ -297,22 +309,18 @@
   .main-content {
     margin-left: 0 !important;
     padding: 0 !important;
+    width: 100% !important;
   }
 
   .glass-panel {
     border: none !important;
     box-shadow: none !important;
     backdrop-filter: none !important;
+    padding: 0 !important;
   }
 
   body {
     background-color: white !important;
-  }
-
-  /* Reset print view constraints for paper */
-  .print-view {
-    border: none;
-    padding: 0;
   }
 
   .print-section h3 {
@@ -323,6 +331,11 @@
   
   .print-grid strong {
     color: black !important;
+  }
+
+  @page {
+    margin: 0;
+    size: auto;
   }
 }
 @keyframes fadeIn {

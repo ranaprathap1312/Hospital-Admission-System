@@ -6,7 +6,11 @@ import com.example.demo.service.PatientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.transaction.annotation.Transactional;
 
 @RestController
 @RequestMapping("/api/patients")
@@ -85,6 +89,18 @@ public class PatientController {
         }
     }
 
+    @Transactional
+    @GetMapping("/master-admissions/by-patient-id/{patientId}")
+    public ResponseEntity<MasterAdmission> getMasterAdmissionByPatientId(@PathVariable String patientId) {
+        try {
+            java.util.Optional<MasterAdmission> admission = patientService.getMasterAdmissionByPatientId(patientId);
+            return admission.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
+                    .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     @GetMapping("/debug")
     public ResponseEntity<java.util.Map<String, Object>> getDebugInfo() {
         java.util.Map<String, Object> info = new java.util.HashMap<>();
@@ -100,6 +116,67 @@ public class PatientController {
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
+    @PutMapping("/id/{patientId}")
+    public ResponseEntity<Patient> updatePatient(@PathVariable String patientId, @RequestBody Patient updatedData) {
+        try {
+            Patient updatedPatient = patientService.updatePatient(patientId, updatedData);
+            return new ResponseEntity<>(updatedPatient, HttpStatus.OK);
+        } catch (RuntimeException e) {
+            System.err.println("Error updating patient " + patientId + ": " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (Exception e) {
+            System.err.println("Unexpected error updating patient: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @Transactional
+    @PostMapping("/id/{patientId}/upload-case-file")
+    public ResponseEntity<String> uploadCaseFile(
+            @PathVariable String patientId,
+            @RequestPart(value = "file") MultipartFile file) {
+        try {
+            patientService.saveCaseFile(patientId, file);
+            return ResponseEntity.ok("Case file uploaded successfully.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error uploading file: " + e.getMessage());
+        }
+    }
+
+    @Transactional
+    @GetMapping("/id/{patientId}/case-file")
+    public ResponseEntity<byte[]> viewCaseFile(@PathVariable String patientId) {
+        try {
+            MasterAdmission master = patientService.getCaseFile(patientId);
+            if (master.getCaseFileData() == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + master.getCaseFileName() + "\"")
+                    .contentType(MediaType.parseMediaType(master.getCaseFileType() != null ? master.getCaseFileType() : "application/pdf"))
+                    .body(master.getCaseFileData());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .contentType(MediaType.TEXT_PLAIN)
+                .body(("Error: " + e.getClass().getName() + " - " + e.getMessage()).getBytes());
+        }
+    }
+
+    @Transactional
+    @DeleteMapping("/id/{patientId}/case-file")
+    public ResponseEntity<String> deleteCaseFile(@PathVariable String patientId) {
+        try {
+            patientService.deleteCaseFile(patientId);
+            return ResponseEntity.ok("Case file deleted successfully.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting case file: " + e.getMessage());
+        }
+    }
+
     @PutMapping("/{patientId}/discharge")
     public ResponseEntity<Object> dischargePatient(@PathVariable String patientId, @RequestBody java.util.Map<String, String> payload) {
         try {
@@ -108,7 +185,8 @@ public class PatientController {
             String dischargeDate = payload.get("dischargeDate");
             String destinationTable = payload.get("destinationTable");
             String caseType = payload.get("caseType");
-            Long destinationId = patientService.dischargePatient(patientId, dischargeType, dischargeWard, dischargeDate, destinationTable, caseType);
+            String summaryText = payload.get("summaryText");
+            Long destinationId = patientService.dischargePatient(patientId, dischargeType, dischargeWard, dischargeDate, destinationTable, caseType, summaryText);
             return ResponseEntity.ok(java.util.Collections.singletonMap("destinationId", destinationId));
         } catch (RuntimeException e) {
             System.err.println("Discharge error for patient " + patientId + ": " + e.getMessage());
@@ -166,13 +244,13 @@ public class PatientController {
             "aadhar_no VARCHAR(255), " +
             "occupation VARCHAR(255), " +
             "income VARCHAR(255), " +
-            "caretaker_name VARCHAR(255), " +
             "address VARCHAR(255), " +
             "admission_ward VARCHAR(255), " +
             "admission_date DATE, " +
             "admission_time TIME, " +
             "discharge_date DATE, " +
-            "discharge_time TIME " +
+            "discharge_time TIME, " +
+            "summary TEXT " +
         ")";
 
         for (String table : tables) {
@@ -184,13 +262,24 @@ public class PatientController {
                 try {
                     jdbcTemplate.execute("ALTER TABLE " + table + " ADD COLUMN income VARCHAR(255);");
                     result.append("   ✅ Added 'income' to ").append(table).append("\n");
-                } catch (Exception e) {
-                    // ignore if already exists
-                }
+                } catch (Exception e) {}
+                
+                // Add summary if the table already existed but was missing the column
+                try {
+                    jdbcTemplate.execute("ALTER TABLE " + table + " ADD COLUMN summary TEXT;");
+                    result.append("   ✅ Added 'summary' to ").append(table).append("\n");
+                } catch (Exception e) {}
+
             } catch (Exception e) {
                 result.append("❌ Failed to create ").append(table).append(": ").append(e.getMessage()).append("\n");
             }
         }
+        
+        // Add summary to discharge_entry explicitly as well
+        try {
+            jdbcTemplate.execute("ALTER TABLE discharge_entry ADD COLUMN summary TEXT;");
+            result.append("✅ Added 'summary' to discharge_entry\n");
+        } catch (Exception e) {}
 
         // Drop the foreign key constraint that blocks discharge on production
         try {
