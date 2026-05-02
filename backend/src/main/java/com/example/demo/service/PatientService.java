@@ -263,6 +263,7 @@ public class PatientService {
                     jdbcTemplate.execute("ALTER TABLE " + destinationTable + " ADD COLUMN IF NOT EXISTS " + newIdColumnName + " VARCHAR(255)");
                     jdbcTemplate.execute("ALTER TABLE " + destinationTable + " ALTER COLUMN " + newIdColumnName + " TYPE VARCHAR(255) USING " + newIdColumnName + "::varchar");
                     jdbcTemplate.execute("ALTER TABLE " + destinationTable + " ALTER COLUMN " + newIdColumnName + " DROP DEFAULT");
+                    jdbcTemplate.execute("ALTER TABLE " + destinationTable + " ALTER COLUMN " + newIdColumnName + " DROP NOT NULL");
                 } catch (Exception e) {
                     System.err.println("Could not alter column " + newIdColumnName + " to VARCHAR in " + destinationTable + ": " + e.getMessage());
                 }
