@@ -296,6 +296,7 @@ public class PatientService {
         } catch (Exception e) {
             System.err.println("Failed to replicate to " + destinationTable + ": " + e.getMessage());
             e.printStackTrace();
+            throw new RuntimeException("Replication failed: " + e.getMessage());
         }
 
         // Step 4: DELETE patient from active patients table
