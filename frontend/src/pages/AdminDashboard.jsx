@@ -348,6 +348,7 @@ const AdminDashboard = () => {
         const data = await response.json();
         // MasterAdmission fields map to the same shape submittedData expects
         setSubmittedData(data);
+        setActiveTab('ADMISSION'); // Switch to ADMISSION tab so print view renders correctly
         setViewMode('PRINT');
         setShowPrintPrompt(false);
         setPrintPatientId('');
@@ -1749,7 +1750,7 @@ const AdminDashboard = () => {
             </>
           )}
 
-          {viewMode === 'PRINT' && submittedData && (
+          {activeTab === 'ADMISSION' && viewMode === 'PRINT' && submittedData && (
             <div className="print-view">
               <div className="print-header" style={{ textAlign: 'center', marginBottom: '2rem', borderBottom: '2px solid #000', paddingBottom: '1rem' }}>
                 <img src={tnLogo} alt="TN Logo" style={{ width: '80px', height: 'auto', marginBottom: '1rem' }} />

@@ -168,27 +168,7 @@ const DischargePage = () => {
     }
   };
 
-  const handleUndoDischarge = async () => {
-    if (!patientId) return;
-    
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/patients/${patientId}/undo-discharge`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ destinationTable, destinationId })
-      });
-      
-      if (response.ok) {
-        // Keep form states intact (dischargeType, destinationTable, etc) to pre-fill
-        setSuccess(false);
-        setDestinationId(null);
-      } else {
-        console.error("Failed to undo discharge.");
-      }
-    } catch (err) {
-      console.error("Error connecting to server to undo discharge.");
-    }
-  };
+
 
   const getSummaryParts = () => {
     if (!summaryText) return { part1: '', part2: '' };
@@ -462,9 +442,6 @@ const DischargePage = () => {
                   </div>
                 )}
                 <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '1.5rem', flexWrap: 'wrap' }}>
-                  <button className="btn btn-outline" onClick={handleUndoDischarge} style={{ borderColor: 'var(--danger-color)', color: 'var(--danger-color)' }}>
-                    Undo Discharge
-                  </button>
                   <button className="btn btn-primary" onClick={() => window.print()} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                     Print Discharge Form
                   </button>
