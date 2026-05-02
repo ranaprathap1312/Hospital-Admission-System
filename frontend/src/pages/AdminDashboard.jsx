@@ -33,14 +33,17 @@ import TimeInput12Hour from '../components/TimeInput12Hour';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
+let globalServerTimeOffsetMs = 0;
+
 const AdminDashboard = () => {
   const getCurrentDate = () => {
-    return new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
+    const d = new Date(Date.now() + globalServerTimeOffsetMs);
+    return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().split('T')[0];
   };
 
   const getCurrentTime = () => {
-    const now = new Date();
-    return now.toTimeString().split(' ')[0].substring(0, 5);
+    const d = new Date(Date.now() + globalServerTimeOffsetMs);
+    return d.toTimeString().split(' ')[0].substring(0, 5);
   };
 
   const formatTime12Hour = (timeString) => {
@@ -442,6 +445,22 @@ const AdminDashboard = () => {
   // Fetch next ID on mount
   React.useEffect(() => {
     fetchNextId();
+    
+    // Fetch exact server time to ensure dates/times are internet-based, not local computer-based
+    fetch(`${API_BASE_URL}/api/server-time`)
+      .then(res => res.json())
+      .then(data => {
+         const serverTimeMs = new Date(data.datetime).getTime();
+         globalServerTimeOffsetMs = serverTimeMs - Date.now();
+         
+         // Update the form data with the new accurate time ONLY if it hasn't been manually changed yet
+         setFormData(prev => ({
+           ...prev,
+           admissionDate: prev.admissionDate === new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0] ? getCurrentDate() : prev.admissionDate,
+           admissionTime: prev.admissionTime === new Date().toTimeString().split(' ')[0].substring(0, 5) ? getCurrentTime() : prev.admissionTime
+         }));
+      })
+      .catch(err => console.error("Failed to sync server time:", err));
   }, []);
 
   // Fetch patients when switching tabs

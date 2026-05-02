@@ -53,6 +53,8 @@ const dischargeResponsiveStyle = `
   }
 `;
 
+let globalServerTimeOffsetMs = 0;
+
 const DischargePage = () => {
   const navigate = useNavigate();
   const [patientNumber, setPatientNumber] = useState('');
@@ -60,12 +62,12 @@ const DischargePage = () => {
   const [patientData, setPatientData] = useState(null);
 
   const getCurrentDate = () => {
-    const now = new Date();
+    const now = new Date(Date.now() + globalServerTimeOffsetMs);
     return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().split('T')[0];
   };
 
   const getCurrentTime = () => {
-    const now = new Date();
+    const now = new Date(Date.now() + globalServerTimeOffsetMs);
     return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(11, 16);
   };
 
@@ -85,6 +87,19 @@ const DischargePage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+
+  React.useEffect(() => {
+    fetch(`${API_BASE_URL}/api/server-time`)
+      .then(res => res.json())
+      .then(data => {
+         const serverTimeMs = new Date(data.datetime).getTime();
+         globalServerTimeOffsetMs = serverTimeMs - Date.now();
+         
+         setDischargeDate(prev => prev === new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0] ? getCurrentDate() : prev);
+         setDischargeTime(prev => prev === new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(11, 16) ? getCurrentTime() : prev);
+      })
+      .catch(err => console.error("Failed to sync server time:", err));
+  }, []);
 
   const handleSearch = async (e) => {
     e.preventDefault();

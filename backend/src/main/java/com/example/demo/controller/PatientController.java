@@ -222,6 +222,12 @@ public class PatientController {
         return ResponseEntity.ok("All patient and discharge records have been successfully deleted. The system is reset for a fresh start!");
     }
 
+    @GetMapping("/server-time")
+    public ResponseEntity<java.util.Map<String, String>> getServerTime() {
+        java.time.ZonedDateTime now = java.time.ZonedDateTime.now(java.time.ZoneId.of("Asia/Kolkata"));
+        return ResponseEntity.ok(java.util.Collections.singletonMap("datetime", now.format(java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
+    }
+
     @GetMapping("/migrate-db")
     public ResponseEntity<String> migrateDb() {
         String[] tables = {"mlc_discharge", "death_discharge", "maternity_block_discharge", "insurance_block_discharge", "general_side_discharge", "x6", "x7"};
