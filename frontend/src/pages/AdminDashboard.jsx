@@ -1979,7 +1979,7 @@ const AdminDashboard = () => {
 
                   <div className="form-row">
                     <div className="form-group">
-                      <label>Income *</label>
+                      <label>Income Per Month (Family Income) *</label>
                       <input type="text" name="income" value={formData.income} onChange={handleChange} required />
                       {formErrors.income && <span className="error-text">{formErrors.income}</span>}
                     </div>
