@@ -94,6 +94,13 @@
   padding-left: 1.75rem;
 }
 
+.dropdown-item.active-lang {
+  background: rgba(0, 82, 204, 0.05);
+  color: var(--primary);
+  border-left: 3px solid var(--primary) !important;
+  font-weight: 700;
+}
+
 /* Hero Section */
 .hero {
   position: relative;
