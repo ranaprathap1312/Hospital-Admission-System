@@ -294,7 +294,7 @@ const AdminDashboard = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [viewMode, setViewMode] = useState('FORM'); // 'FORM', 'SUCCESS', 'PRINT'
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 1024);
   const [activeTab, setActiveTab] = useState('ADMISSION'); // 'ADMISSION', 'RECORDS'
   const [isDestinationDropdownOpen, setIsDestinationDropdownOpen] = useState(false);
   const [destinationRecords, setDestinationRecords] = useState([]);
@@ -1163,7 +1163,7 @@ const AdminDashboard = () => {
 
   return (
     <div className="dashboard-wrapper">
-      {/* Hamburger button - mobile only */}
+      {/* Hamburger button - always visible */}
       <button
         className="hamburger-btn"
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -1222,7 +1222,7 @@ const AdminDashboard = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="main-content">
+      <main className={`main-content ${isSidebarOpen ? 'sidebar-open' : ''}`}>
         <header className="content-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div style={{ flexGrow: 1 }}>
             {activeTab === 'ADMISSION' ? (
