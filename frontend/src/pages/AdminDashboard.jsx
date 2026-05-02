@@ -1815,22 +1815,36 @@ const AdminDashboard = () => {
                           Manual Entry
                         </label>
                       </div>
-                      <input
-                        type="text"
-                        name="patientId"
-                        value={manualPatientId ? formData.patientId : predictedNextId}
-                        readOnly={!manualPatientId}
-                        onChange={(e) => {
-                          if (manualPatientId) handleChange(e);
-                        }}
-                        placeholder={manualPatientId ? "Enter year and IP id (patient ID)" : ""}
-                        style={{
-                          fontSize: '1.25rem',
-                          padding: '0.75rem',
-                          fontWeight: 'bold',
-                          ...(!manualPatientId ? { backgroundColor: '#e2e8f0', cursor: 'not-allowed' } : {})
-                        }}
-                      />
+                      <div style={{ display: 'flex', alignItems: 'center', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', backgroundColor: !manualPatientId ? '#e2e8f0' : '#fff', overflow: 'hidden' }}>
+                        {manualPatientId && (
+                          <span style={{ padding: '0.75rem 0.5rem 0.75rem 1rem', color: '#64748b', fontWeight: 'bold', borderRight: '1px solid var(--border-color)', backgroundColor: '#f8fafc', fontSize: '1.25rem' }}>
+                            {new Date().getFullYear()}-
+                          </span>
+                        )}
+                        <input
+                          type="text"
+                          name="patientId"
+                          value={manualPatientId ? (formData.patientId || '').replace(`${new Date().getFullYear()}-`, '') : predictedNextId}
+                          readOnly={!manualPatientId}
+                          onChange={(e) => {
+                            if (manualPatientId) {
+                               const numPart = e.target.value.replace(/[^0-9]/g, '');
+                               setFormData({ ...formData, patientId: `${new Date().getFullYear()}-${numPart}` });
+                            }
+                          }}
+                          placeholder={manualPatientId ? "Enter IP Number" : ""}
+                          style={{
+                            fontSize: '1.25rem',
+                            padding: '0.75rem',
+                            fontWeight: 'bold',
+                            border: 'none',
+                            outline: 'none',
+                            flexGrow: 1,
+                            backgroundColor: 'transparent',
+                            cursor: !manualPatientId ? 'not-allowed' : 'text'
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
 
