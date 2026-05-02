@@ -300,7 +300,6 @@ const AdminDashboard = () => {
   const [error, setError] = useState('');
   const [formErrors, setFormErrors] = useState({});
   const [manualPatientId, setManualPatientId] = useState(false);
-  const [globalManualPatientIdEnabled, setGlobalManualPatientIdEnabled] = useState(false);
   const [manualAdmissionDate, setManualAdmissionDate] = useState(false);
   const [manualOccupationEdit, setManualOccupationEdit] = useState(false);
   const [manualAddressEdit, setManualAddressEdit] = useState(false);
@@ -443,18 +442,6 @@ const AdminDashboard = () => {
   // Fetch next ID on mount
   React.useEffect(() => {
     fetchNextId();
-  }, []);
-
-  React.useEffect(() => {
-    fetch(`${API_BASE_URL}/api/manual-edit-control`)
-      .then(res => res.json())
-      .then(data => {
-         setGlobalManualPatientIdEnabled(data.isEnabled);
-         if (!data.isEnabled && manualPatientId) {
-            setManualPatientId(false);
-         }
-      })
-      .catch(err => console.error(err));
   }, []);
 
   // Fetch patients when switching tabs
@@ -1809,26 +1796,24 @@ const AdminDashboard = () => {
                           IP No
                           {!manualPatientId && <span style={{ marginLeft: '0.5rem', fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 'normal' }}>(Auto-Generated patient ID)</span>}
                         </label>
-                        {globalManualPatientIdEnabled && (
-                          <label style={{ fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                            <input
-                              type="checkbox"
-                              checked={manualPatientId}
-                              onChange={(e) => {
-                                const isChecked = e.target.checked;
-                                setManualPatientId(isChecked);
-                                if (!isChecked) {
-                                  setFormData({ ...formData, patientId: '' });
-                                } else {
-                                  const currentYear = new Date().getFullYear();
-                                  setFormData({ ...formData, patientId: `${currentYear}-` });
-                                }
-                              }}
-                              style={{ width: 'auto' }}
-                            />
-                            Manual Entry
-                          </label>
-                        )}
+                        <label style={{ fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                          <input
+                            type="checkbox"
+                            checked={manualPatientId}
+                            onChange={(e) => {
+                              const isChecked = e.target.checked;
+                              setManualPatientId(isChecked);
+                              if (!isChecked) {
+                                setFormData({ ...formData, patientId: '' });
+                              } else {
+                                const currentYear = new Date().getFullYear();
+                                setFormData({ ...formData, patientId: `${currentYear}-` });
+                              }
+                            }}
+                            style={{ width: 'auto' }}
+                          />
+                          Manual Entry
+                        </label>
                       </div>
                       <input
                         type="text"

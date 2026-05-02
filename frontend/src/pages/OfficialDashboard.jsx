@@ -16,7 +16,6 @@ const OfficialDashboard = () => {
   const [pendingStockOfficers, setPendingStockOfficers] = useState([]);
   const [pendingDistributeOfficers, setPendingDistributeOfficers] = useState([]);
   const [pendingAssistants, setPendingAssistants] = useState([]);
-  const [manualEditEnabled, setManualEditEnabled] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('admins'); // 'admins', 'billing', 'stock', or 'distribute'
@@ -31,7 +30,7 @@ const OfficialDashboard = () => {
     setLoading(true);
     try {
       const [
-        adminRes, billRes, stockRes, distributeRes, assistantRes, manualEditRes, 
+        adminRes, billRes, stockRes, distributeRes, assistantRes, 
         grantedAdminsRes, grantedBillRes, grantedStockRes, grantedDistributeRes, grantedAssistantRes
       ] = await Promise.all([
         fetch(`${API_BASE_URL}/api/admin/pending`),
@@ -39,7 +38,6 @@ const OfficialDashboard = () => {
         fetch(`${API_BASE_URL}/api/stock-officer-access/pending`),
         fetch(`${API_BASE_URL}/api/distribute-officer-access/pending`),
         fetch(`${API_BASE_URL}/api/assistant-access/pending`),
-        fetch(`${API_BASE_URL}/api/manual-edit-control`),
         fetch(`${API_BASE_URL}/api/admin/granted`),
         fetch(`${API_BASE_URL}/api/bill-register-access/granted`),
         fetch(`${API_BASE_URL}/api/stock-officer-access/granted`),
@@ -52,7 +50,6 @@ const OfficialDashboard = () => {
       const stockData = await stockRes.json();
       const distributeData = await distributeRes.json();
       const assistantData = await assistantRes.json();
-      const manualEditData = await manualEditRes.json();
       const grantedAdminsData = await grantedAdminsRes.json();
       const grantedBillData = await grantedBillRes.json();
       const grantedStockData = await grantedStockRes.json();
@@ -69,7 +66,6 @@ const OfficialDashboard = () => {
       setPendingStockOfficers(stockData);
       setPendingDistributeOfficers(distributeData);
       setPendingAssistants(assistantData);
-      setManualEditEnabled(manualEditData.isEnabled);
     } catch (err) {
       setError('Failed to fetch pending requests');
       console.error(err);
@@ -251,20 +247,6 @@ const OfficialDashboard = () => {
     navigate('/official-login');
   };
 
-  const toggleManualEdit = async (enable) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/manual-edit-control`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isEnabled: enable })
-      });
-      if (response.ok) {
-        setManualEditEnabled(enable);
-      }
-    } catch (err) {
-      console.error('Failed to update manual edit access', err);
-    }
-  };
 
   const renderTable = (data, handleApprove, handleReject, typeField = null, typeLabel = 'Role') => {
     if (data.length === 0) {
@@ -416,33 +398,6 @@ const OfficialDashboard = () => {
       </nav>
 
       <main className="dashboard-content">
-        <div className="glass-panel-dark" style={{ marginBottom: '2rem', padding: '1.5rem', borderRadius: '0.75rem', border: '1px solid var(--border-color)' }}>
-          <h2 style={{ marginTop: 0, marginBottom: '1rem', color: '#f8fafc', fontSize: '1.25rem' }}>Patient id manual edit option access</h2>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
-            <div style={{ color: '#cbd5e1' }}>
-              Current Status: <strong style={{ color: manualEditEnabled ? '#10b981' : '#ef4444' }}>{manualEditEnabled ? 'Enabled' : 'Disabled'}</strong>
-            </div>
-            <div style={{ display: 'flex', gap: '1rem' }}>
-              <button 
-                onClick={() => toggleManualEdit(true)} 
-                disabled={manualEditEnabled}
-                className="btn" 
-                style={{ backgroundColor: manualEditEnabled ? '#1e293b' : '#10b981', color: 'white', border: 'none', opacity: manualEditEnabled ? 0.5 : 1, cursor: manualEditEnabled ? 'not-allowed' : 'pointer' }}
-              >
-                Make Manual Edit Enable
-              </button>
-              <button 
-                onClick={() => toggleManualEdit(false)} 
-                disabled={!manualEditEnabled}
-                className="btn" 
-                style={{ backgroundColor: !manualEditEnabled ? '#1e293b' : '#ef4444', color: 'white', border: 'none', opacity: !manualEditEnabled ? 0.5 : 1, cursor: !manualEditEnabled ? 'not-allowed' : 'pointer' }}
-              >
-                Disable Manual Edit
-              </button>
-            </div>
-          </div>
-        </div>
-
         <div className="page-header">
           <h1>Pending Approvals</h1>
           <p>Review and authorize new accounts</p>
