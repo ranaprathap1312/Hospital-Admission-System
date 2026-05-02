@@ -269,7 +269,7 @@ const AdminDashboard = () => {
   const [formData, setFormData] = useState({
     patientName: '',
     age: '',
-    relationPrefix: 'S/o',
+    relationPrefix: '',
     relativeName: '',
     patientId: '',
     admissionDate: getCurrentDate(),
@@ -1064,7 +1064,7 @@ const AdminDashboard = () => {
     try {
       // Perform custom validation
       const errors = {};
-      const requiredFields = ['patientName', 'age', 'gender', 'income', 'aadharNo', 'mobileNo', 'caseType', 'wardName'];
+      const requiredFields = ['patientName', 'age', 'gender', 'income', 'aadharNo', 'mobileNo', 'caseType', 'wardName', 'relationPrefix', 'relativeName'];
       if (!manualAddressEdit) {
          requiredFields.push('street', 'village', 'taluk', 'district', 'state');
       } else {
@@ -1131,7 +1131,7 @@ const AdminDashboard = () => {
 
   const handleNewAdmission = () => {
     setFormData({
-      patientName: '', age: '', motherName: '', patientId: '',
+      patientName: '', age: '', motherName: '', relationPrefix: '', relativeName: '', patientId: '',
       admissionDate: getCurrentDate(), admissionTime: getCurrentTime(), wardName: '', mobileNo: '', aadharNo: '',
       occupationCategory: '', occupationType: '', occupationManual: '', income: '', street: '', village: '',
       taluk: 'Vridhachalam', district: 'Cuddalore', state: 'Tamil Nadu', caseType: '', arNo: '', gender: ''
@@ -1891,14 +1891,16 @@ const AdminDashboard = () => {
 
                   <div className="form-row">
                     <div className="form-group">
-                      <label>Relation / Name</label>
+                      <label>Relation / Name *</label>
                       <div style={{ display: 'flex', gap: '0.5rem' }}>
                         <select 
                           name="relationPrefix" 
                           value={formData.relationPrefix} 
                           onChange={handleChange}
+                          required
                           style={{ width: '30%', padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)', backgroundColor: 'white' }}
                         >
+                          <option value="">Select</option>
                           <option value="S/o">S/o</option>
                           <option value="W/o">W/o</option>
                           <option value="H/o">H/o</option>
@@ -1912,10 +1914,11 @@ const AdminDashboard = () => {
                           name="relativeName" 
                           value={formData.relativeName} 
                           onChange={handleChange} 
+                          required
                           style={{ width: '70%' }}
                         />
                       </div>
-                      {formErrors.relativeName && <span className="error-text">{formErrors.relativeName}</span>}
+                      {(formErrors.relationPrefix || formErrors.relativeName) && <span className="error-text">Relation and Name are required</span>}
                     </div>
                     <div className="form-group">
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
