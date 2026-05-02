@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Activity, Lock, Mail, User, Phone, ArrowLeft, CheckCircle2 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import './RegisterPage.css';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
@@ -24,7 +23,6 @@ const RegisterPage = () => {
   // Workflow states
   const [otpSent, setOtpSent] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
-  const { t } = useTranslation();
 
   const navigate = useNavigate();
 
@@ -105,9 +103,9 @@ const RegisterPage = () => {
     e.preventDefault();
     // Custom Validation
     const errors = {};
-    if (!formData.name) errors.name = t('name_required', 'Name is required');
-    if (!formData.email) errors.email = t('email_required', 'Email is required');
-    if (!formData.password) errors.password = t('password_required', 'Password is required');
+    if (!formData.name) errors.name = 'Name is required';
+    if (!formData.email) errors.email = 'Email is required';
+    if (!formData.password) errors.password = 'Password is required';
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
       return;
@@ -120,7 +118,7 @@ const RegisterPage = () => {
     setError('');
     
     if (formData.password !== formData.confirmPassword) {
-      setError(t('passwords_do_not_match', "Passwords do not match!"));
+      setError("Passwords do not match!");
       return;
     }
 
@@ -143,13 +141,13 @@ const RegisterPage = () => {
       const data = await response.json();
       
       if (data.success) {
-        setSuccessMsg(t('registration_successful', 'Registration successful! Redirecting to login...'));
+        setSuccessMsg('Registration successful! Redirecting to login...');
         setTimeout(() => navigate('/login'), 1500); 
       } else {
-        setError(data.message || t('registration_failed', 'Registration failed'));
+        setError(data.message || 'Registration failed');
       }
     } catch (err) {
-      setError(t('server_error', 'Could not connect to the server.'));
+      setError('Could not connect to the server.');
       console.error(err);
     } finally {
       setIsSubmitting(false);
@@ -159,7 +157,7 @@ const RegisterPage = () => {
   return (
     <div className="register-wrapper">
       <Link to="/login" className="back-link">
-        <ArrowLeft size={20} /> {t('back_to_login', 'Back to Login')}
+        <ArrowLeft size={20} /> {'Back to Login'}
       </Link>
       
       <div className="register-container glass-panel">
@@ -167,8 +165,8 @@ const RegisterPage = () => {
           <div className="logo-circle">
             <img src="/new_logo.jpg" alt="TN Logo" className="logo-icon-large" style={{ width: '64px', height: 'auto' }} />
           </div>
-          <h2>{t('admin_registration', 'Admin Registration')}</h2>
-          <p>{t('create_admin_account', 'Create a new hospital administrator account')}</p>
+          <h2>{'Admin Registration'}</h2>
+          <p>{'Create a new hospital administrator account'}</p>
         </div>
 
         <div className="register-form">
@@ -176,13 +174,13 @@ const RegisterPage = () => {
           {successMsg && <div className="success-message-banner">{successMsg}</div>}
           
           <div className="form-group">
-            <label>{t('full_name', 'Full Name')}</label>
+            <label>{'Full Name'}</label>
             <div className="input-wrapper">
               <User className="input-icon" size={18} />
               <input 
                 type="text" 
                 name="name"
-                placeholder={t('enter_full_name', 'Enter full name')} 
+                placeholder={'Enter full name'} 
                 value={formData.name}
                 onChange={handleChange}
                 // disabled={isVerified} // Temporarily disabled OTP check
@@ -191,13 +189,13 @@ const RegisterPage = () => {
           </div>
 
           <div className="form-group">
-            <label>{t('email_address', 'Email Address')}</label>
+            <label>{'Email Address'}</label>
             <div className="input-wrapper">
               <Mail className="input-icon" size={18} />
               <input 
                 type="email" 
                 name="email"
-                placeholder={t('enter_email', 'Enter email address')} 
+                placeholder={'Enter email address'} 
                 value={formData.email}
                 onChange={handleChange}
                 // disabled={otpSent || isVerified} // Temporarily disabled OTP check
@@ -253,13 +251,13 @@ const RegisterPage = () => {
 
           {/* Removed opacity and pointerEvents lock */}
           <div className="form-group">
-            <label>{t('phone_number', 'Phone Number')}</label>
+            <label>{'Phone Number'}</label>
             <div className="input-wrapper">
               <Phone className="input-icon" size={18} />
               <input 
                 type="tel" 
                 name="phone"
-                placeholder={t('enter_phone', 'Enter phone number')} 
+                placeholder={'Enter phone number'} 
                 value={formData.phone}
                 onChange={handleChange}
               />
@@ -268,13 +266,13 @@ const RegisterPage = () => {
           
           <div className="form-row-compact">
             <div className="form-group">
-              <label>{t('password', 'Password')}</label>
+              <label>{'Password'}</label>
               <div className="input-wrapper">
                 <Lock className="input-icon" size={18} />
                 <input 
                   type="password" 
                   name="password"
-                  placeholder={t('create_password', 'Create password')} 
+                  placeholder={'Create password'} 
                   value={formData.password}
                   onChange={handleChange}
                 />
@@ -282,13 +280,13 @@ const RegisterPage = () => {
             </div>
 
             <div className="form-group">
-              <label>{t('confirm_password', 'Confirm Password')}</label>
+              <label>{'Confirm Password'}</label>
               <div className="input-wrapper">
                 <Lock className="input-icon" size={18} />
                 <input 
                   type="password" 
                   name="confirmPassword"
-                  placeholder={t('confirm_password_placeholder', 'Confirm password')} 
+                  placeholder={'Confirm password'} 
                   value={formData.confirmPassword}
                   onChange={handleChange}
                 />
@@ -302,7 +300,7 @@ const RegisterPage = () => {
             onClick={handleRegister}
             disabled={isSubmitting} // Temporarily removed !isVerified check
           >
-            {isSubmitting ? t('registering', 'Registering...') : t('register_account', 'Register Account')}
+            {isSubmitting ? 'Registering...' : 'Register Account'}
           </button>
         </div>
       </div>

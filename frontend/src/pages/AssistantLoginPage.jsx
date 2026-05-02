@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Truck, Lock, User, LogIn, AlertCircle, Users } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import './LoginPage.css'; // Reusing existing styles
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
@@ -12,7 +11,6 @@ const AssistantLoginPage = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { t } = useTranslation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -35,10 +33,10 @@ const AssistantLoginPage = () => {
         localStorage.setItem('assistantName', data.name);
         navigate('/assistant-dashboard');
       } else {
-        setError(data.message || t('invalid_credentials', 'Invalid credentials'));
+        setError(data.message || 'Invalid credentials');
       }
     } catch (err) {
-      setError(t('server_error', 'Failed to connect to the server'));
+      setError('Failed to connect to the server');
     } finally {
       setIsLoading(false);
     }
@@ -52,8 +50,8 @@ const AssistantLoginPage = () => {
             <div className="icon-container" style={{ backgroundColor: '#fce7f3', color: '#be185d' }}>
               <Users size={32} />
             </div>
-            <h2>{t('assistant_login_title', 'Assistant Login')}</h2>
-            <p>{t('access_assigned_tasks', 'Access your assigned tasks & bills')}</p>
+            <h2>{'Assistant Login'}</h2>
+            <p>{'Access your assigned tasks & bills'}</p>
           </div>
 
           {error && (
@@ -68,7 +66,7 @@ const AssistantLoginPage = () => {
               <User size={20} className="input-icon" />
               <input
                 type="text"
-                placeholder={t('email_or_phone', 'Email or Phone Number')}
+                placeholder={'Email or Phone Number'}
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
                 required
@@ -79,7 +77,7 @@ const AssistantLoginPage = () => {
               <Lock size={20} className="input-icon" />
               <input
                 type="password"
-                placeholder={t('password', 'Password')}
+                placeholder={'Password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -92,17 +90,17 @@ const AssistantLoginPage = () => {
               style={{ backgroundColor: '#be185d', border: 'none', gap: '0.5rem', display: 'flex' }}
               disabled={isLoading}
             >
-              {isLoading ? t('logging_in', 'Logging in...') : (
+              {isLoading ? 'Logging in...' : (
                 <>
-                  <LogIn size={20} /> {t('login_button', 'Login')}
+                  <LogIn size={20} /> {'Login'}
                 </>
               )}
             </button>
           </form>
 
           <div className="login-footer">
-            <p>{t('new_assistant', 'New Assistant?')} <Link to="/assistant-register" style={{ color: '#be185d' }}>{t('register_here', 'Register here')}</Link></p>
-            <Link to="/" className="back-link">{t('return_to_home', 'Return to Home')}</Link>
+            <p>{'New Assistant?'} <Link to="/assistant-register" style={{ color: '#be185d' }}>{'Register here'}</Link></p>
+            <Link to="/" className="back-link">{'Return to Home'}</Link>
           </div>
         </div>
       </div>

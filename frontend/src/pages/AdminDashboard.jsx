@@ -450,15 +450,19 @@ const AdminDashboard = () => {
     fetch(`${API_BASE_URL}/api/server-time`)
       .then(res => res.json())
       .then(data => {
-         const serverTimeMs = new Date(data.datetime).getTime();
-         globalServerTimeOffsetMs = serverTimeMs - Date.now();
-         
-         // Update the form data with the new accurate time ONLY if it hasn't been manually changed yet
-         setFormData(prev => ({
-           ...prev,
-           admissionDate: prev.admissionDate === new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0] ? getCurrentDate() : prev.admissionDate,
-           admissionTime: prev.admissionTime === new Date().toTimeString().split(' ')[0].substring(0, 5) ? getCurrentTime() : prev.admissionTime
-         }));
+         if (data && data.datetime) {
+           const serverTimeMs = new Date(data.datetime).getTime();
+           if (!isNaN(serverTimeMs)) {
+             globalServerTimeOffsetMs = serverTimeMs - Date.now();
+             
+             // Update the form data with the new accurate time ONLY if it hasn't been manually changed yet
+             setFormData(prev => ({
+               ...prev,
+               admissionDate: prev.admissionDate === new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0] ? getCurrentDate() : prev.admissionDate,
+               admissionTime: prev.admissionTime === new Date().toTimeString().split(' ')[0].substring(0, 5) ? getCurrentTime() : prev.admissionTime
+             }));
+           }
+         }
       })
       .catch(err => console.error("Failed to sync server time:", err));
   }, []);

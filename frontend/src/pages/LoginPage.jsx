@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Activity, Lock, Mail, ArrowLeft } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import './LoginPage.css';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
@@ -14,14 +13,13 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const [formErrors, setFormErrors] = useState({});
   const [successMsg, setSuccessMsg] = useState('');
-  const { t } = useTranslation();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     // Custom Validation
     const errors = {};
-    if (!email) errors.email = t('email_required', 'Email is required');
-    if (!password) errors.password = t('password_required', 'Password is required');
+    if (!email) errors.email = 'Email is required';
+    if (!password) errors.password = 'Password is required';
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
       return;
@@ -41,13 +39,13 @@ const LoginPage = () => {
       const data = await response.json();
       
       if (data.success) {
-        setSuccessMsg(t('login_successful', 'Login successful! Redirecting...'));
+        setSuccessMsg('Login successful! Redirecting...');
         setTimeout(() => navigate('/admin'), 1000);
       } else {
-        setError(data.message || t('invalid_credentials', 'Invalid credentials'));
+        setError(data.message || 'Invalid credentials');
       }
     } catch (err) {
-      setError(t('server_error', 'Could not connect to the server. Is the backend running?'));
+      setError('Could not connect to the server. Is the backend running?');
       console.error(err);
     }
   };
@@ -55,7 +53,7 @@ const LoginPage = () => {
   return (
     <div className="login-wrapper">
       <Link to="/" className="back-link">
-        <ArrowLeft size={20} /> {t('back_to_home', 'Back to Home')}
+        <ArrowLeft size={20} /> {'Back to Home'}
       </Link>
       
       <div className="login-container glass-panel">
@@ -63,8 +61,8 @@ const LoginPage = () => {
           <div className="logo-circle">
             <img src="/new_logo.jpg" alt="TN Logo" className="logo-icon-large" style={{ width: '64px', height: 'auto' }} />
           </div>
-          <h2>{t('admin_portal', 'Admin Portal')}</h2>
-          <p>{t('sign_in_manage', 'Sign in to manage admissions')}</p>
+          <h2>{'Admin Portal'}</h2>
+          <p>{'Sign in to manage admissions'}</p>
         </div>
 
         <form onSubmit={handleLogin} className="login-form" noValidate>
@@ -74,12 +72,12 @@ const LoginPage = () => {
             {successMsg}
           </div>}
           <div className="form-group">
-            <label>{t('email_address', 'Email Address')}</label>
+            <label>{'Email Address'}</label>
             <div className="input-wrapper">
               <Mail className="input-icon" size={18} />
               <input 
                 type="email" 
-                placeholder={t('enter_email', 'Enter your email address')} 
+                placeholder={'Enter your email address'} 
                 value={email}
                 onChange={(e) => {
                 setEmail(e.target.value);
@@ -92,12 +90,12 @@ const LoginPage = () => {
           </div>
           
           <div className="form-group">
-            <label>{t('password', 'Password')}</label>
+            <label>{'Password'}</label>
             <div className="input-wrapper">
               <Lock className="input-icon" size={18} />
               <input 
                 type="password" 
-                placeholder={t('enter_password', 'Enter your password')} 
+                placeholder={'Enter your password'} 
                 value={password}
                 onChange={(e) => {
                 setPassword(e.target.value);
@@ -111,17 +109,17 @@ const LoginPage = () => {
 
           <div className="form-options">
             <label className="remember-me">
-              <input type="checkbox" /> {t('remember_me', 'Remember me')}
+              <input type="checkbox" /> {'Remember me'}
             </label>
-            <a href="#" className="forgot-password">{t('forgot_password', 'Forgot password?')}</a>
+            <a href="#" className="forgot-password">{'Forgot password?'}</a>
           </div>
 
           <button type="submit" className="btn btn-primary btn-block">
-            {t('sign_in', 'Sign In')}
+            {'Sign In'}
           </button>
 
           <div style={{ textAlign: 'center', marginTop: '1rem', fontSize: '0.9rem' }}>
-            {t('new_admin_candidate', 'New admin candidate?')} <Link to="/register" style={{ fontWeight: '600' }}>{t('register_here', 'Register here')}</Link>
+            {'New admin candidate?'} <Link to="/register" style={{ fontWeight: '600' }}>{'Register here'}</Link>
           </div>
         </form>
       </div>

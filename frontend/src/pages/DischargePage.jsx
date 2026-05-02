@@ -92,11 +92,15 @@ const DischargePage = () => {
     fetch(`${API_BASE_URL}/api/server-time`)
       .then(res => res.json())
       .then(data => {
-         const serverTimeMs = new Date(data.datetime).getTime();
-         globalServerTimeOffsetMs = serverTimeMs - Date.now();
-         
-         setDischargeDate(prev => prev === new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0] ? getCurrentDate() : prev);
-         setDischargeTime(prev => prev === new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(11, 16) ? getCurrentTime() : prev);
+         if (data && data.datetime) {
+           const serverTimeMs = new Date(data.datetime).getTime();
+           if (!isNaN(serverTimeMs)) {
+             globalServerTimeOffsetMs = serverTimeMs - Date.now();
+             
+             setDischargeDate(prev => prev === new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0] ? getCurrentDate() : prev);
+             setDischargeTime(prev => prev === new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(11, 16) ? getCurrentTime() : prev);
+           }
+         }
       })
       .catch(err => console.error("Failed to sync server time:", err));
   }, []);

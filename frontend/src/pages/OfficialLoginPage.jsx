@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ShieldAlert, Lock, Mail, ArrowLeft } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import './OfficialLoginPage.css';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
@@ -16,7 +15,6 @@ const OfficialLoginPage = () => {
   const [successMsg, setSuccessMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [step, setStep] = useState(1); // 1: Email/Pass, 2: OTP
-  const { t } = useTranslation();
 
   const navigate = useNavigate();
 
@@ -37,12 +35,12 @@ const OfficialLoginPage = () => {
       
       if (data.success) {
         setStep(2);
-        setSuccessMsg(t('credentials_accepted', "Credentials accepted. An OTP has been sent to your email."));
+        setSuccessMsg("Credentials accepted. An OTP has been sent to your email.");
       } else {
-        setError(data.message || t('invalid_credentials_unauthorized', 'Invalid credentials or unauthorized'));
+        setError(data.message || 'Invalid credentials or unauthorized');
       }
     } catch (err) {
-      setError(t('server_error', 'Could not connect to the server.'));
+      setError('Could not connect to the server.');
       console.error(err);
     } finally {
       setIsSubmitting(false);
@@ -64,12 +62,12 @@ const OfficialLoginPage = () => {
       const data = await response.json();
       
       if (data.success) {
-        setSuccessMsg(t('new_otp_sent', "A new OTP has been sent to your email."));
+        setSuccessMsg("A new OTP has been sent to your email.");
       } else {
-        setError(data.message || t('failed_resend_otp', 'Failed to resend OTP.'));
+        setError(data.message || 'Failed to resend OTP.');
       }
     } catch (err) {
-      setError(t('server_error', 'Could not connect to the server.'));
+      setError('Could not connect to the server.');
     } finally {
       setIsSubmitting(false);
     }
@@ -94,10 +92,10 @@ const OfficialLoginPage = () => {
         console.log('Official Login successful');
         navigate('/official-dashboard');
       } else {
-        setError(data.message || t('invalid_otp', 'Invalid OTP'));
+        setError(data.message || 'Invalid OTP');
       }
     } catch (err) {
-      setError(t('server_error', 'Could not connect to the server.'));
+      setError('Could not connect to the server.');
       console.error(err);
     } finally {
       setIsSubmitting(false);
@@ -107,7 +105,7 @@ const OfficialLoginPage = () => {
   return (
     <div className="official-login-wrapper">
       <Link to="/" className="back-link dark">
-        <ArrowLeft size={20} /> {t('back_to_home', 'Back to Home')}
+        <ArrowLeft size={20} /> {'Back to Home'}
       </Link>
       
       <div className="login-container glass-panel official-panel">
@@ -115,8 +113,8 @@ const OfficialLoginPage = () => {
           <div className="logo-circle danger-circle">
             <img src="/new_logo.jpg" alt="TN Logo" className="logo-icon-large" style={{ width: '64px', height: 'auto' }} />
           </div>
-          <h2>{t('higher_official_portal', 'Higher Official Portal')}</h2>
-          <p>{t('super_admin_access', 'Super Admin access requires 2-Factor Authentication')}</p>
+          <h2>{'Higher Official Portal'}</h2>
+          <p>{'Super Admin access requires 2-Factor Authentication'}</p>
         </div>
 
         {step === 1 ? (
@@ -124,12 +122,12 @@ const OfficialLoginPage = () => {
             {error && <div className="error-message">{error}</div>}
             
             <div className="form-group">
-              <label>{t('official_email', 'Official Email Address')}</label>
+              <label>{'Official Email Address'}</label>
               <div className="input-wrapper">
                 <Mail className="input-icon" size={18} />
                 <input 
                   type="email" 
-                  placeholder={t('enter_official_email', 'Enter official email')} 
+                  placeholder={'Enter official email'} 
                   value={email}
                   onChange={(e) => {
                 setEmail(e.target.value);
@@ -141,12 +139,12 @@ const OfficialLoginPage = () => {
             </div>
             
             <div className="form-group">
-              <label>{t('master_password', 'Master Password')}</label>
+              <label>{'Master Password'}</label>
               <div className="input-wrapper">
                 <Lock className="input-icon" size={18} />
                 <input 
                   type="password" 
-                  placeholder={t('enter_master_password', 'Enter master password')} 
+                  placeholder={'Enter master password'} 
                   value={password}
                   onChange={(e) => {
                 setPassword(e.target.value);
@@ -158,7 +156,7 @@ const OfficialLoginPage = () => {
             </div>
 
             <button type="submit" className="btn btn-danger btn-block" disabled={isSubmitting}>
-              {isSubmitting ? t('verifying', 'Verifying...') : t('verify_credentials', 'Verify Credentials & Send OTP')}
+              {isSubmitting ? 'Verifying...' : 'Verify Credentials & Send OTP'}
             </button>
           </form>
         ) : (
@@ -167,7 +165,7 @@ const OfficialLoginPage = () => {
             {successMsg && <div className="success-message-banner">{successMsg}</div>}
             
             <div className="form-group otp-section">
-              <label>{t('enter_6_digit_otp', 'Enter 6-Digit OTP from Email')}</label>
+              <label>{'Enter 6-Digit OTP from Email'}</label>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
                 <input 
                   type="text" 
@@ -183,7 +181,7 @@ const OfficialLoginPage = () => {
             </div>
 
             <button type="submit" className="btn btn-danger btn-block" disabled={isSubmitting || otp.length !== 6}>
-              {isSubmitting ? t('authenticating', 'Authenticating...') : t('secure_login', 'Secure Login')}
+              {isSubmitting ? 'Authenticating...' : 'Secure Login'}
             </button>
             
             <div style={{ textAlign: 'center', marginTop: '1rem' }}>
@@ -193,7 +191,7 @@ const OfficialLoginPage = () => {
                 disabled={isSubmitting}
                 style={{ background: 'none', border: 'none', color: '#9ca3af', textDecoration: 'underline', cursor: 'pointer', fontSize: '0.875rem' }}
               >
-                {t('resend_otp', "Didn't receive code? Resend OTP")}
+                {"Didn't receive code? Resend OTP"}
               </button>
             </div>
           </form>
