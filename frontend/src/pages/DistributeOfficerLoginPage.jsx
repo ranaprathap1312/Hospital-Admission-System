@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Truck, Lock, User, LogIn, AlertCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import './LoginPage.css';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
@@ -11,6 +12,7 @@ const DistributeOfficerLoginPage = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -32,10 +34,10 @@ const DistributeOfficerLoginPage = () => {
         localStorage.setItem('distributeOfficerName', data.name);
         navigate('/distribute-dashboard');
       } else {
-        setError(data.message || 'Invalid credentials');
+        setError(data.message || t('invalid_credentials', 'Invalid credentials'));
       }
     } catch (err) {
-      setError('Failed to connect to the server');
+      setError(t('server_error', 'Failed to connect to the server'));
     } finally {
       setIsLoading(false);
     }
@@ -49,8 +51,8 @@ const DistributeOfficerLoginPage = () => {
             <div className="icon-container" style={{ backgroundColor: '#e0e7ff', color: '#4338ca' }}>
               <Truck size={32} />
             </div>
-            <h2>Distribute Officer Login</h2>
-            <p>Access your distributed bills & inventory</p>
+            <h2>{t('distribute_officer_login_title', 'Distribute Officer Login')}</h2>
+            <p>{t('access_distributed_bills', 'Access your distributed bills & inventory')}</p>
           </div>
 
           {error && (
@@ -65,7 +67,7 @@ const DistributeOfficerLoginPage = () => {
               <User size={20} className="input-icon" />
               <input
                 type="text"
-                placeholder="Email or Phone Number"
+                placeholder={t('email_or_phone', 'Email or Phone Number')}
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
                 required
@@ -76,7 +78,7 @@ const DistributeOfficerLoginPage = () => {
               <Lock size={20} className="input-icon" />
               <input
                 type="password"
-                placeholder="Password"
+                placeholder={t('password', 'Password')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -89,17 +91,17 @@ const DistributeOfficerLoginPage = () => {
               style={{ backgroundColor: '#4338ca', border: 'none', gap: '0.5rem', display: 'flex' }}
               disabled={isLoading}
             >
-              {isLoading ? 'Logging in...' : (
+              {isLoading ? t('logging_in', 'Logging in...') : (
                 <>
-                  <LogIn size={20} /> Login
+                  <LogIn size={20} /> {t('login_button', 'Login')}
                 </>
               )}
             </button>
           </form>
 
           <div className="login-footer">
-            <p>New officer? <Link to="/distribute-register" style={{ color: '#4338ca' }}>Register here</Link></p>
-            <Link to="/" className="back-link">Return to Home</Link>
+            <p>{t('new_officer', 'New officer?')} <Link to="/distribute-register" style={{ color: '#4338ca' }}>{t('register_here', 'Register here')}</Link></p>
+            <Link to="/" className="back-link">{t('return_to_home', 'Return to Home')}</Link>
           </div>
         </div>
       </div>
