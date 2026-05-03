@@ -19,7 +19,7 @@ const OCCUPATION_OPTIONS = {
 const FILTER_COLUMNS = {
   'RECORDS': ['Patient ID', 'Name', 'Age', 'Gender', 'Case Type', 'AR No', 'Aadhar No', 'Mobile', 'Ward', 'Admission Date', 'Admission Time', 'Occupation', 'Income', 'Relation Name', 'Address', 'Status'],
   'ACTIVE_PATIENTS': ['Patient ID', 'Name', 'Age', 'Gender', 'Case Type', 'AR No', 'Aadhar No', 'Mobile', 'Ward', 'Admission Date', 'Admission Time', 'Occupation', 'Income', 'Relation Name', 'Address'],
-  'DISCHARGE_RECORDS': ['Patient ID', 'Name', 'Age', 'Gender', 'Case Type', 'AR No', 'Admission Date', 'Discharge Date', 'Discharge Time', 'Discharge Type', 'Discharge Ward', 'Mobile', 'Aadhar No', 'Occupation', 'Income', 'Address'],
+  'DISCHARGE_RECORDS': ['Patient ID', 'Name', 'Age', 'Gender', 'Case Type', 'AR No', 'Admission Date', 'Discharge Date', 'Discharge Time', 'Discharge Type', 'Discharge Ward', 'Mobile', 'Aadhar No', 'Occupation', 'Income', 'Address', 'Summary'],
   'DESTINATION_RECORDS': ['Patient ID', 'Name', 'Relation Name', 'Admission Date', 'Discharge Date', 'Income', 'Address']
 };
 
@@ -225,7 +225,7 @@ const AdminDashboard = () => {
       'Patient ID', 'Name', 'Age', 'Gender', 'Case Type', 'AR No',
       'Aadhar No', 'Mobile', 'Admission Ward', 'Admission Date', 'Admission Time',
       'Discharge Ward', 'Discharge Date', 'Discharge Time', 'Discharge Type',
-      'Occupation', 'Income', 'Relation Name', 'Address'
+      'Occupation', 'Income', 'Relation Name', 'Address', 'Summary'
     ];
 
     // Map the filtered discharge records to rows
@@ -248,8 +248,8 @@ const AdminDashboard = () => {
       p.occupation || '',
       p.income || '',
       p.motherName || '',
-
-      p.address ? `"${p.address.replace(/"/g, '""')}"` : ''
+      p.address ? `"${p.address.replace(/"/g, '""')}"` : '',
+      p.summary ? `"${p.summary.replace(/"/g, '""')}"` : ''
     ]);
     // Construct the CSV string
     const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
@@ -346,7 +346,19 @@ const AdminDashboard = () => {
       const response = await fetch(`${API_BASE_URL}/api/patients/master-admissions/by-patient-id/${fullId}`);
       if (response.ok) {
         const data = await response.json();
-        // MasterAdmission fields map to the same shape submittedData expects
+        // Also fetch discharge entry to get the summary (stored in discharge_entry, not master_admission)
+        try {
+          const dischargeRes = await fetch(`${API_BASE_URL}/api/patients/discharge-entries`);
+          if (dischargeRes.ok) {
+            const dischargeList = await dischargeRes.json();
+            const dischargeEntry = dischargeList.find(d => d.customPatientId === fullId);
+            if (dischargeEntry && dischargeEntry.summary) {
+              data.summary = dischargeEntry.summary;
+            }
+          }
+        } catch (err) {
+          console.warn('Could not fetch discharge summary:', err);
+        }
         setSubmittedData(data);
         setActiveTab('ADMISSION'); // Switch to ADMISSION tab so print view renders correctly
         setViewMode('PRINT');
@@ -1648,6 +1660,7 @@ const AdminDashboard = () => {
                               <th style={{ padding: '1rem' }}>Occupation</th>
                               <th style={{ padding: '1rem' }}>Income</th>
                               <th style={{ padding: '1rem' }}>Address</th>
+                              <th style={{ padding: '1rem', minWidth: '200px' }}>Summary</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -1673,6 +1686,9 @@ const AdminDashboard = () => {
                                 <td style={{ padding: '1rem' }}>{record.occupation || 'N/A'}</td>
                                 <td style={{ padding: '1rem' }}>{record.income || 'N/A'}</td>
                                 <td style={{ padding: '1rem', maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis' }} title={record.address}>{record.address || 'N/A'}</td>
+                                <td style={{ padding: '1rem', maxWidth: '300px', whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: '0.85rem', color: record.summary ? '#1e293b' : '#94a3b8' }} title={record.summary || ''}>
+                                  {record.summary ? (record.summary.length > 120 ? record.summary.substring(0, 120) + '…' : record.summary) : '—'}
+                                </td>
                               </tr>
                             ))}
                           </tbody>
@@ -1791,6 +1807,15 @@ const AdminDashboard = () => {
                   </div>
                 </div>
               </div>
+
+              {submittedData.summary && (
+                <div className="print-section" style={{ marginTop: '1.5rem', borderTop: '2px solid #000', paddingTop: '1rem' }}>
+                  <h3 style={{ marginBottom: '0.5rem', fontSize: '1.1rem', textTransform: 'uppercase' }}>Summary / Remarks:</h3>
+                  <div style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word', overflowWrap: 'break-word', wordBreak: 'break-word', lineHeight: '1.6', fontSize: '0.95rem' }}>
+                    {submittedData.summary}
+                  </div>
+                </div>
+              )}
 
               <div className="print-footer no-print">
                 <button className="btn btn-outline" onClick={handleNewAdmission}>Back to Form</button>
