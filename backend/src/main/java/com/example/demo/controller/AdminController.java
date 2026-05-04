@@ -23,10 +23,17 @@ public class AdminController {
         String password = credentials.get("password");
 
         try {
-            boolean isAuthenticated = adminService.login(email, password);
+            Admin admin = adminService.login(email, password);
 
-            if (isAuthenticated) {
-                return ResponseEntity.ok(Map.of("message", "Login successful", "success", true));
+            if (admin != null) {
+                return ResponseEntity.ok(Map.of(
+                    "message", "Login successful",
+                    "success", true,
+                    "adminId", admin.getId(),
+                    "adminName", admin.getName(),
+                    "adminEmail", admin.getEmail(),
+                    "patientIdEditEnabled", admin.isPatientIdEditEnabled()
+                ));
             } else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(Map.of("message", "Invalid email or password", "success", false));
@@ -165,5 +172,14 @@ public class AdminController {
             return ResponseEntity.ok(Map.of("message", "Admin access completely removed", "success", true));
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Failed to remove admin or cannot modify Super Admin", "success", false));
+    }
+
+    @PutMapping("/{id}/toggle-patient-id-edit")
+    public ResponseEntity<?> togglePatientIdEdit(@PathVariable Long id) {
+        boolean success = adminService.togglePatientIdEdit(id);
+        if (success) {
+            return ResponseEntity.ok(Map.of("message", "Patient ID edit access toggled", "success", true));
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Failed to toggle or cannot modify Super Admin", "success", false));
     }
 }

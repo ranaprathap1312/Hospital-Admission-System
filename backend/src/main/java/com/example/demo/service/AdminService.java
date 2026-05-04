@@ -15,7 +15,7 @@ public class AdminService {
     @Autowired
     private AdminRepository adminRepository;
 
-    public boolean login(String email, String password) {
+    public Admin login(String email, String password) {
         Optional<Admin> adminOpt = adminRepository.findByEmail(email);
         
         if (adminOpt.isPresent()) {
@@ -29,10 +29,10 @@ public class AdminService {
                 
                 admin.setUpdatedAt(LocalDateTime.now());
                 adminRepository.save(admin);
-                return true;
+                return admin;
             }
         }
-        return false;
+        return null;
     }
 
     public Admin register(Admin admin) {
@@ -123,6 +123,19 @@ public class AdminService {
         Optional<Admin> adminOpt = adminRepository.findById(id);
         if (adminOpt.isPresent()) {
             adminRepository.delete(adminOpt.get());
+            return true;
+        }
+        return false;
+    }
+
+    public boolean togglePatientIdEdit(Long id) {
+        Optional<Admin> adminOpt = adminRepository.findById(id);
+        if (adminOpt.isPresent()) {
+            Admin admin = adminOpt.get();
+            if ("SUPER_ADMIN".equals(admin.getRole())) return false;
+            admin.setPatientIdEditEnabled(!admin.isPatientIdEditEnabled());
+            admin.setUpdatedAt(LocalDateTime.now());
+            adminRepository.save(admin);
             return true;
         }
         return false;

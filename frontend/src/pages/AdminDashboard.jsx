@@ -329,6 +329,7 @@ const AdminDashboard = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editFormData, setEditFormData] = useState({});
   const [isUpdating, setIsUpdating] = useState(false);
+  const [patientIdEditAllowed, setPatientIdEditAllowed] = useState(false);
 
   const handleFetchAndPrint = async (e) => {
     if (e) e.preventDefault();
@@ -381,6 +382,7 @@ const AdminDashboard = () => {
   const handleEditClick = (patient) => {
     setEditingPatient(patient);
     setEditFormData({
+      patientId: patient.patientId || '',
       patientName: patient.patientName || '',
       age: patient.age || '',
       gender: patient.gender || '',
@@ -409,14 +411,23 @@ const AdminDashboard = () => {
       if (response.ok) {
         setShowEditModal(false);
         setEditingPatient(null);
-        fetchPatients(); // Refresh master records
+        fetchPatients();       // Refresh master records
         fetchActivePatients(); // Refresh active patients
       } else {
-        alert('Failed to update patient.');
+        let errMsg = 'Failed to update patient.';
+        try {
+          const errData = await response.json();
+          if (errData && errData.error) errMsg = errData.error;
+        } catch (_) {}
+        if (response.status === 409) {
+          alert(`\u26A0\uFE0F Patient ID Conflict:\n${errMsg}`);
+        } else {
+          alert(errMsg);
+        }
       }
     } catch (error) {
       console.error('Error updating patient:', error);
-      alert('Error updating patient.');
+      alert('Error connecting to server while updating patient.');
     } finally {
       setIsUpdating(false);
     }
@@ -458,6 +469,10 @@ const AdminDashboard = () => {
   // Fetch next ID on mount
   React.useEffect(() => {
     fetchNextId();
+
+    // Read per-admin Patient ID edit permission from sessionStorage (set during login)
+    const storedPermission = sessionStorage.getItem('patientIdEditEnabled');
+    setPatientIdEditAllowed(storedPermission === 'true');
     
     // Fetch exact server time to ensure dates/times are internet-based, not local computer-based
     fetch(`${API_BASE_URL}/api/server-time`)
@@ -2205,6 +2220,44 @@ const AdminDashboard = () => {
             </h2>
             <form onSubmit={handleUpdatePatient}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '2rem' }}>
+
+                {/* Patient ID — editable only when Higher Official grants access */}
+                <div className="form-group" style={{ marginBottom: 0, gridColumn: '1 / -1' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    Patient ID
+                    {patientIdEditAllowed ? (
+                      <span style={{ display: 'inline-block', backgroundColor: '#fef3c7', color: '#92400e', fontSize: '0.72rem', fontWeight: '600', padding: '0.15rem 0.5rem', borderRadius: '0.25rem', border: '1px solid #fcd34d' }}>
+                        ⚠ Changing this will update all linked records
+                      </span>
+                    ) : (
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', backgroundColor: '#fee2e2', color: '#dc2626', fontSize: '0.72rem', fontWeight: '600', padding: '0.15rem 0.5rem', borderRadius: '0.25rem', border: '1px solid #fca5a5' }}>
+                        🔒 Locked — Higher Official access required
+                      </span>
+                    )}
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormData.patientId}
+                    onChange={(e) => patientIdEditAllowed && setEditFormData({...editFormData, patientId: e.target.value})}
+                    readOnly={!patientIdEditAllowed}
+                    required
+                    className="search-input"
+                    title={!patientIdEditAllowed ? 'Patient ID editing is currently locked. Contact the Higher Official to enable access.' : ''}
+                    style={{
+                      width: '100%', padding: '0.6rem', borderRadius: '0.5rem',
+                      cursor: patientIdEditAllowed ? 'text' : 'not-allowed',
+                      border: !patientIdEditAllowed
+                        ? '1px solid #fca5a5'
+                        : editFormData.patientId !== editingPatient.patientId
+                        ? '2px solid #f59e0b'
+                        : '1px solid var(--border-color)',
+                      fontWeight: patientIdEditAllowed && editFormData.patientId !== editingPatient.patientId ? '700' : '400',
+                      color: !patientIdEditAllowed ? '#9ca3af' : editFormData.patientId !== editingPatient.patientId ? '#92400e' : 'inherit',
+                      backgroundColor: !patientIdEditAllowed ? '#f9fafb' : editFormData.patientId !== editingPatient.patientId ? '#fffbeb' : 'white'
+                    }}
+                  />
+                </div>
+
                 <div className="form-group" style={{ marginBottom: 0 }}>
                   <label>Name</label>
                   <input type="text" value={editFormData.patientName} onChange={(e) => setEditFormData({...editFormData, patientName: e.target.value})} required className="search-input" style={{ width: '100%', padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }} />
@@ -2266,6 +2319,10 @@ const AdminDashboard = () => {
                 <div className="form-group" style={{ marginBottom: 0 }}>
                   <label>Occupation</label>
                   <input type="text" value={editFormData.occupation} onChange={(e) => setEditFormData({...editFormData, occupation: e.target.value})} className="search-input" style={{ width: '100%', padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }} />
+                </div>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label>Income</label>
+                  <input type="text" value={editFormData.income} onChange={(e) => setEditFormData({...editFormData, income: e.target.value})} className="search-input" style={{ width: '100%', padding: '0.6rem', borderRadius: '0.5rem', border: '1px solid var(--border-color)' }} />
                 </div>
                 <div className="form-group" style={{ marginBottom: 0, gridColumn: '1 / -1' }}>
                   <label>Address</label>

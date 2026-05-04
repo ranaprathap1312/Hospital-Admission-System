@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Activity, Lock, Mail, ArrowLeft } from 'lucide-react';
 import './LoginPage.css';
@@ -39,6 +39,11 @@ const LoginPage = () => {
       const data = await response.json();
       
       if (data.success) {
+        // Store admin session info (including per-admin permissions)
+        sessionStorage.setItem('adminId', data.adminId);
+        sessionStorage.setItem('adminName', data.adminName);
+        sessionStorage.setItem('adminEmail', data.adminEmail);
+        sessionStorage.setItem('patientIdEditEnabled', data.patientIdEditEnabled ? 'true' : 'false');
         setSuccessMsg('Login successful! Redirecting...');
         setTimeout(() => navigate('/admin'), 1000);
       } else {

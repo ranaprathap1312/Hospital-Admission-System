@@ -16,6 +16,8 @@ const OfficialDashboard = () => {
   const [pendingStockOfficers, setPendingStockOfficers] = useState([]);
   const [pendingDistributeOfficers, setPendingDistributeOfficers] = useState([]);
   const [pendingAssistants, setPendingAssistants] = useState([]);
+  const [patientIdEditEnabled, setPatientIdEditEnabled] = useState(false);
+  const [togglingAdminId, setTogglingAdminId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('admins'); // 'admins', 'billing', 'stock', or 'distribute'
@@ -66,6 +68,8 @@ const OfficialDashboard = () => {
       setPendingStockOfficers(stockData);
       setPendingDistributeOfficers(distributeData);
       setPendingAssistants(assistantData);
+      // Derive indicator: true if any admin has patient ID edit access active
+      setPatientIdEditEnabled(grantedAdminsData.some(a => a.patientIdEditEnabled));
     } catch (err) {
       setError('Failed to fetch pending requests');
       console.error(err);
@@ -247,6 +251,27 @@ const OfficialDashboard = () => {
     navigate('/official-login');
   };
 
+  const handleTogglePatientIdEditForAdmin = async (adminId) => {
+    setTogglingAdminId(adminId);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/admin/${adminId}/toggle-patient-id-edit`, { method: 'PUT' });
+      if (response.ok) {
+        // Refresh granted admins list to reflect the change
+        const res = await fetch(`${API_BASE_URL}/api/admin/granted`);
+        const updatedAdmins = await res.json();
+        setGrantedAdmins(updatedAdmins);
+        // Update aggregate indicator
+        setPatientIdEditEnabled(updatedAdmins.some(a => a.patientIdEditEnabled));
+      } else {
+        alert('Failed to update Patient ID Edit Access for this admin.');
+      }
+    } catch (err) {
+      console.error('Failed to toggle patient ID edit access', err);
+      alert('Error connecting to server.');
+    } finally {
+      setTogglingAdminId(null);
+    }
+  };
 
   const renderTable = (data, handleApprove, handleReject, typeField = null, typeLabel = 'Role') => {
     if (data.length === 0) {
@@ -385,6 +410,117 @@ const OfficialDashboard = () => {
     );
   };
 
+  const renderPatientIdEditSection = () => {
+    const activeCount = grantedAdmins.filter(a => a.patientIdEditEnabled).length;
+    return (
+      <div style={{ padding: '1rem 0' }}>
+        <div style={{ marginBottom: '1.25rem' }}>
+          <h2 style={{ fontSize: '1.1rem', fontWeight: '700', color: '#1e293b', marginBottom: '0.25rem' }}>Patient ID Edit Access — Per Admin Control</h2>
+          <p style={{ color: '#64748b', fontSize: '0.875rem' }}>Grant or pause the ability to change Patient IDs for each Admission Admin individually. When granted, the admin can edit Patient IDs in the Active Patients form and the change propagates to all linked records.</p>
+        </div>
+
+        {grantedAdmins.length === 0 ? (
+          <div className="empty-state">
+            <UserCheck size={48} className="empty-icon" />
+            <h3>No Admission Admins</h3>
+            <p>There are no granted Admission Admins yet. Approve admins first.</p>
+          </div>
+        ) : (
+          <>
+            {/* Summary bar */}
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '1rem',
+              padding: '0.85rem 1.25rem', borderRadius: '0.5rem',
+              backgroundColor: activeCount > 0 ? '#f0fdf4' : '#f8fafc',
+              border: `1px solid ${activeCount > 0 ? '#86efac' : '#e2e8f0'}`,
+              marginBottom: '1rem'
+            }}>
+              <span style={{ fontSize: '1.4rem' }}>{activeCount > 0 ? '✏️' : '🔒'}</span>
+              <div>
+                <p style={{ fontWeight: '700', color: '#1e293b', fontSize: '0.9rem' }}>
+                  {activeCount} of {grantedAdmins.length} admin{grantedAdmins.length !== 1 ? 's' : ''} have Patient ID Edit access
+                </p>
+                <p style={{ color: '#64748b', fontSize: '0.8rem' }}>Use the buttons below to give or pause access per admin</p>
+              </div>
+            </div>
+
+            {/* Per-admin table */}
+            <table className="official-table">
+              <thead>
+                <tr>
+                  <th>Admin Name</th>
+                  <th>Email</th>
+                  <th>Account Status</th>
+                  <th>Patient ID Edit Access</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {grantedAdmins.map(admin => (
+                  <tr key={admin.id}>
+                    <td><strong>{admin.name}</strong></td>
+                    <td>{admin.email}</td>
+                    <td>
+                      <span style={{
+                        display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
+                        padding: '0.25rem 0.6rem', borderRadius: '2rem', fontSize: '0.8rem', fontWeight: '600',
+                        backgroundColor: admin.status === 'ACTIVE' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
+                        color: admin.status === 'ACTIVE' ? '#10b981' : '#ef4444'
+                      }}>
+                        {admin.status === 'ACTIVE' ? <Check size={12} /> : <X size={12} />}
+                        {admin.status}
+                      </span>
+                    </td>
+                    <td>
+                      <span style={{
+                        display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
+                        padding: '0.3rem 0.75rem', borderRadius: '2rem', fontSize: '0.82rem', fontWeight: '700',
+                        backgroundColor: admin.patientIdEditEnabled ? '#dcfce7' : '#fee2e2',
+                        color: admin.patientIdEditEnabled ? '#16a34a' : '#dc2626'
+                      }}>
+                        {admin.patientIdEditEnabled ? <Check size={13} /> : <X size={13} />}
+                        {admin.patientIdEditEnabled ? 'ACTIVE' : 'PAUSED'}
+                      </span>
+                    </td>
+                    <td className="action-cell">
+                      <button
+                        className={`btn-action ${admin.patientIdEditEnabled ? 'reject' : 'approve'}`}
+                        onClick={() => handleTogglePatientIdEditForAdmin(admin.id)}
+                        disabled={togglingAdminId === admin.id}
+                        title={admin.patientIdEditEnabled ? 'Pause Patient ID Edit Access' : 'Give Patient ID Edit Access'}
+                      >
+                        {togglingAdminId === admin.id ? (
+                          '⏳'
+                        ) : admin.patientIdEditEnabled ? (
+                          <><Clock size={15} /> Pause Access</>
+                        ) : (
+                          <><Check size={15} /> Give Access</>
+                        )}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </>
+        )}
+
+        {/* Warning note */}
+        <div style={{
+          marginTop: '1.25rem', padding: '0.9rem 1.1rem', borderRadius: '0.5rem',
+          backgroundColor: '#fffbeb', border: '1px solid #fcd34d',
+          display: 'flex', gap: '0.75rem', alignItems: 'flex-start'
+        }}>
+          <span style={{ fontSize: '1.1rem' }}>⚠️</span>
+          <div>
+            <p style={{ fontWeight: '600', color: '#92400e', fontSize: '0.85rem', marginBottom: '0.2rem' }}>Important Note</p>
+            <p style={{ color: '#78350f', fontSize: '0.82rem' }}>Changing a Patient ID updates it across all linked records: active patients, master admission table, discharge entries, and all destination tables (MLC, Death, Maternity, etc.).</p>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="official-dashboard-wrapper">
       <nav className="official-navbar">
@@ -443,6 +579,23 @@ const OfficialDashboard = () => {
           >
             Granted Users ({grantedAdmins.length + grantedBillAccesses.length + grantedStockOfficers.length + grantedDistributeOfficers.length + grantedAssistants.length})
           </button>
+          <button 
+            className={`btn ${activeTab === 'patientIdEdit' ? 'btn-primary' : 'btn-outline'}`}
+            onClick={() => setActiveTab('patientIdEdit')}
+            style={{
+              backgroundColor: activeTab === 'patientIdEdit' ? '#f59e0b' : 'transparent',
+              color: activeTab === 'patientIdEdit' ? '#fff' : '#d97706',
+              borderColor: '#f59e0b',
+              display: 'flex', alignItems: 'center', gap: '0.4rem'
+            }}
+          >
+            ✏️ Patient ID Edit Access
+            <span style={{
+              display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%',
+              backgroundColor: patientIdEditEnabled ? '#10b981' : '#ef4444',
+              marginLeft: '0.25rem'
+            }} />
+          </button>
         </div>
 
         <div className="table-container glass-panel-dark">
@@ -459,6 +612,8 @@ const OfficialDashboard = () => {
               ? renderTable(pendingDistributeOfficers, handleApproveDistributeOfficer, handleRejectDistributeOfficer)
               : activeTab === 'granted'
               ? renderGrantedSection()
+              : activeTab === 'patientIdEdit'
+              ? renderPatientIdEditSection()
               : renderTable(pendingAssistants, handleApproveAssistant, handleRejectAssistant, 'assistantType', 'Assistant Level')
           )}
         </div>

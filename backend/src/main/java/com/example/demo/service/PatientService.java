@@ -156,7 +156,22 @@ public class PatientService {
         // Update Patient table
         Patient patient = patientRepository.findByPatientId(patientId)
             .orElseThrow(() -> new RuntimeException("Patient not found with ID: " + patientId));
-            
+
+        // Determine if the patient ID is being changed
+        String newPatientId = (updatedData.getPatientId() != null && !updatedData.getPatientId().trim().isEmpty())
+            ? updatedData.getPatientId().trim()
+            : patientId;
+        boolean idChanged = !newPatientId.equals(patientId);
+
+        // Validate new ID is not already in use by another patient
+        if (idChanged) {
+            patientRepository.findByPatientId(newPatientId).ifPresent(existing -> {
+                if (!existing.getId().equals(patient.getId())) {
+                    throw new RuntimeException("Patient ID '" + newPatientId + "' is already in use.");
+                }
+            });
+        }
+
         patient.setPatientName(updatedData.getPatientName());
         patient.setAge(updatedData.getAge());
         patient.setMotherName(updatedData.getMotherName());
@@ -170,7 +185,11 @@ public class PatientService {
         patient.setArNo(updatedData.getArNo());
         patient.setGender(updatedData.getGender());
         // Note: intentionally not updating admission date/time or status
-        
+
+        if (idChanged) {
+            patient.setPatientId(newPatientId);
+        }
+
         Patient savedPatient = patientRepository.save(patient);
 
         // Synchronize updates to MasterAdmission table
@@ -187,8 +206,40 @@ public class PatientService {
             master.setCaseType(updatedData.getCaseType());
             master.setArNo(updatedData.getArNo());
             master.setGender(updatedData.getGender());
+            if (idChanged) {
+                master.setPatientId(newPatientId);
+            }
             masterAdmissionRepository.save(master);
         });
+
+        // If the patient ID changed, propagate the new ID to all discharge-related tables
+        if (idChanged) {
+            // Update discharge_entry
+            try {
+                jdbcTemplate.update(
+                    "UPDATE discharge_entry SET custom_patient_id = ? WHERE custom_patient_id = ?",
+                    newPatientId, patientId
+                );
+            } catch (Exception e) {
+                System.err.println("Warning: Could not update discharge_entry for ID change: " + e.getMessage());
+            }
+
+            // Update all destination discharge tables
+            String[] destinationTables = {
+                "mlc_discharge", "death_discharge", "maternity_block_discharge",
+                "insurance_block_discharge", "general_side_discharge", "x6", "x7"
+            };
+            for (String table : destinationTables) {
+                try {
+                    jdbcTemplate.update(
+                        "UPDATE " + table + " SET custom_patient_id = ? WHERE custom_patient_id = ?",
+                        newPatientId, patientId
+                    );
+                } catch (Exception e) {
+                    System.err.println("Warning: Could not update " + table + " for ID change: " + e.getMessage());
+                }
+            }
+        }
 
         return savedPatient;
     }

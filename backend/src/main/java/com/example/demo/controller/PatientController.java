@@ -117,16 +117,23 @@ public class PatientController {
     }
 
     @PutMapping("/id/{patientId}")
-    public ResponseEntity<Patient> updatePatient(@PathVariable String patientId, @RequestBody Patient updatedData) {
+    public ResponseEntity<?> updatePatient(@PathVariable String patientId, @RequestBody Patient updatedData) {
         try {
             Patient updatedPatient = patientService.updatePatient(patientId, updatedData);
             return new ResponseEntity<>(updatedPatient, HttpStatus.OK);
         } catch (RuntimeException e) {
             System.err.println("Error updating patient " + patientId + ": " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            String msg = e.getMessage() != null ? e.getMessage() : "Update failed";
+            if (msg.contains("already in use")) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(java.util.Collections.singletonMap("error", msg));
+            }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(java.util.Collections.singletonMap("error", msg));
         } catch (Exception e) {
             System.err.println("Unexpected error updating patient: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(java.util.Collections.singletonMap("error", e.getMessage()));
         }
     }
 
