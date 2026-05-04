@@ -1855,48 +1855,16 @@ const AdminDashboard = () => {
                       {formErrors.patientName && <span className="error-text">{formErrors.patientName}</span>}
                     </div>
                     <div className="form-group">
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <label>
-                          IP No
-                          {!manualPatientId && <span style={{ marginLeft: '0.5rem', fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 'normal' }}>(Auto-Generated patient ID)</span>}
-                        </label>
-                        <label style={{ fontSize: '0.8rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                          <input
-                            type="checkbox"
-                            checked={manualPatientId}
-                            onChange={(e) => {
-                              const isChecked = e.target.checked;
-                              setManualPatientId(isChecked);
-                              if (!isChecked) {
-                                setFormData({ ...formData, patientId: '' });
-                              } else {
-                                const currentYear = new Date().getFullYear();
-                                setFormData({ ...formData, patientId: `${currentYear}-` });
-                              }
-                            }}
-                            style={{ width: 'auto' }}
-                          />
-                          Manual Entry
-                        </label>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', backgroundColor: !manualPatientId ? '#e2e8f0' : '#fff', overflow: 'hidden' }}>
-                        {manualPatientId && (
-                          <span style={{ padding: '0.75rem 0.5rem 0.75rem 1rem', color: '#64748b', fontWeight: 'bold', borderRight: '1px solid var(--border-color)', backgroundColor: '#f8fafc', fontSize: '1.25rem' }}>
-                            {new Date().getFullYear()}-
-                          </span>
-                        )}
+                      <label>
+                        IP No
+                        <span style={{ marginLeft: '0.5rem', fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 'normal' }}>(Auto-Generated)</span>
+                      </label>
+                      <div style={{ display: 'flex', alignItems: 'center', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', backgroundColor: '#e2e8f0', overflow: 'hidden' }}>
                         <input
                           type="text"
                           name="patientId"
-                          value={manualPatientId ? (formData.patientId || '').replace(`${new Date().getFullYear()}-`, '') : predictedNextId}
-                          readOnly={!manualPatientId}
-                          onChange={(e) => {
-                            if (manualPatientId) {
-                               const numPart = e.target.value.replace(/[^0-9]/g, '');
-                               setFormData({ ...formData, patientId: `${new Date().getFullYear()}-${numPart}` });
-                            }
-                          }}
-                          placeholder={manualPatientId ? "Enter IP Number" : ""}
+                          value={predictedNextId}
+                          readOnly
                           style={{
                             fontSize: '1.25rem',
                             padding: '0.75rem',
@@ -1905,7 +1873,7 @@ const AdminDashboard = () => {
                             outline: 'none',
                             flexGrow: 1,
                             backgroundColor: 'transparent',
-                            cursor: !manualPatientId ? 'not-allowed' : 'text'
+                            cursor: 'not-allowed'
                           }}
                         />
                       </div>
