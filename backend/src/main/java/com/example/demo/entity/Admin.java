@@ -35,8 +35,8 @@ public class Admin {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Column(name = "patient_id_edit_enabled", nullable = false)
-    private boolean patientIdEditEnabled = false;
+    @Column(name = "patient_id_edit_enabled", columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean patientIdEditEnabled = false;
 
     // Getters and Setters
     public Long getId() { return id; }
@@ -66,6 +66,6 @@ public class Admin {
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
 
-    public boolean isPatientIdEditEnabled() { return patientIdEditEnabled; }
+    public boolean isPatientIdEditEnabled() { return patientIdEditEnabled != null && patientIdEditEnabled; }
     public void setPatientIdEditEnabled(boolean patientIdEditEnabled) { this.patientIdEditEnabled = patientIdEditEnabled; }
 }
